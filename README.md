@@ -1,8 +1,12 @@
-> **Projekt portfolio.** Nazwy firm są zamienione na fikcyjne, a dane demo i testowe są syntetyczne.
-
 # GROOVE / PalViz
 
 [![ci](https://github.com/TomaszWu14/palviz-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/TomaszWu14/palviz-portfolio/actions/workflows/ci.yml)
+
+![Załadunek luzem — kartony ułożone w kontenerze 40' HC w widoku 3D](docs/img/zaladunek-3d.png)
+
+**Platforma magazynowa dla zespołów magazynu, transportu i obsługi klienta: planuje palety i załadunek w 3D, wycenia przesyłki, pokazuje mapę magazynu i prowadzi kontrolę HU na skanerach.**
+
+> **Projekt portfolio.** Nazwy firm są zamienione na fikcyjne, a dane demo i testowe są syntetyczne.
 
 Aplikacja magazynowo-paletyzacyjna dla **ACME**. Platforma
 GROOVE (modularny monolit Django) obejmuje master data, paletyzację, wycenę przesyłek,
@@ -23,6 +27,37 @@ asystentów AI i pełny opis modułów: [`CLAUDE.md`](CLAUDE.md).
 | **Jakość** | Testy jednostkowe paletyzatora + testy Django z pokryciem (próg 80%), CI na GitHub Actions z PostgreSQL, CodeQL i skany bezpieczeństwa. |
 | **Dane** | Wszystkie dane są fikcyjne — m.in. układ hali B0 pochodzi z generatora `web/ui/data/generate_synthetic_b0.py`. |
 
+## Mój wkład
+
+- **Projekt i implementacja całości** — jestem jedynym autorem: od analizy procesów magazynowych, przez model danych i architekturę, po UI, testy, CI/CD i wdrożenie.
+- **Rdzeń pakowania** `palletizer/` — heurystyki warstw (MaxRects, wzory cegiełkowe, pasy mieszane) + OR-Tools/py3dbp, bez zależności od Django.
+- **Skala:** ok. 2700 testów (biblioteka pakowania + Django na PostgreSQL w CI), ok. 420 tras URL w modułach `ui`, `wh3d`, `huctl`, `transport`, `core`.
+- **Proces i jakość:** 18 zapisanych decyzji architektonicznych ([`docs/adr/`](docs/adr/)), rejestr błędów wykrytych przez testy regresji ([`BUGS-FOUND.md`](BUGS-FOUND.md)), auto-merge przez PR i deploy na Coolify.
+
+## Dlaczego ten stack
+
+Django jako modularny monolit z hubem modułów daje jeden deploy, wspólne uprawnienia i panel admina dla wielu małych modułów ([ADR-0001](docs/adr/0001-modularny-monolit-hub-modulow.md)). Algorytmy pakowania żyją w czystym Pythonie bez frameworka, więc testuje się je szybko i używa też z CLI ([ADR-0002](docs/adr/0002-palletizer-bez-django.md)). SAP jest tylko źródłem do odczytu, żeby aplikacja nie mogła zepsuć systemu księgowego ([ADR-0003](docs/adr/0003-sap-tylko-do-odczytu.md)). Synchroniczny WSGI z Celery do zadań w tle jest prostszy w utrzymaniu niż async ([ADR-0004](docs/adr/0004-synchroniczny-wsgi-celery.md)), a biblioteki front-endu są vendorowane bez CDN ([ADR-0005](docs/adr/0005-vendorowane-biblioteki-bez-cdn.md)). Nazwy grup ról to zamrożony kontrakt z SSO ([ADR-0006](docs/adr/0006-nazwy-grup-rol-zamrozony-kontrakt.md)); SQLite lokalnie, PostgreSQL w CI i na produkcji ([ADR-0007](docs/adr/0007-sqlite-domyslnie-postgres-przygotowany.md)).
+
+## Ograniczenia i co dalej
+
+- **SAP tylko do odczytu, bez czasu rzeczywistego** — integracja SAP real-time jest zawieszona ([`ROADMAP_HU_ZARIA.md`](ROADMAP_HU_ZARIA.md)).
+- **Asystent ZARIA** — streaming, załączniki i RAG czekają na klucz API / serwer Ollama; dostawcy zgodni z OpenAI wymagają doinstalowania pakietu `openai` (B-010 w [`BUGS-FOUND.md`](BUGS-FOUND.md)).
+- **CSP w trybie report-only** — polityka jest raportowana, a nie wymuszana ([ADR-0008](docs/adr/0008-csp-report-only.md)).
+- **Zatwierdzanie błędów kontroli HU przez lidera** odroczone — workflow do zaprojektowania.
+- **Monolit** — rozbicie na usługi jest tylko rozważane ([`ARCHITECTURE-MICROSERVICES.md`](ARCHITECTURE-MICROSERVICES.md)); dziś wszystko wdraża się razem.
+
+## Gdzie zacząć czytać kod
+
+- [`palletizer/services/pallet_calculator.py`](palletizer/services/pallet_calculator.py) — generowanie i wybór wariantów ułożenia kartonów na palecie.
+- [`web/huctl/queue_rank.py`](web/huctl/queue_rank.py) — kolejkowanie kontroli HU na skanerach.
+- [`web/palletweb/config.py`](web/palletweb/config.py) — typowana konfiguracja z walidacją przy starcie (fail-fast).
+
+Historia commitów została zgnieciona przy przygotowaniu wersji portfolio (anonimizacja).
+
+## Wideo
+
+Wkrótce (YouTube).
+
 ## Układ repo
 
 ```
@@ -38,8 +73,8 @@ python -m venv .venv && source .venv/bin/activate   # Windows: setup.bat
 pip install -r requirements.txt
 cd web
 DJANGO_DEBUG=true python manage.py migrate
-python manage.py createsuperuser
-python manage.py create_roles      # 7 grup ról (Polish)
+DJANGO_DEBUG=true python manage.py createsuperuser
+DJANGO_DEBUG=true python manage.py create_roles      # grupy ról (Polish)
 DJANGO_DEBUG=true python manage.py runserver 8080   # lub: run.bat
 ```
 
@@ -79,6 +114,9 @@ Pełna lista i domyślne wartości: `config.py` + `CLAUDE.md`.
 ## Testy
 
 ```bash
+# Zależności testów (hypothesis, tblib, factory_boy, time-machine, PyYAML…)
+pip install -r requirements-test.txt
+
 # Biblioteka pakowania (bezframeworkowa)
 python -m unittest discover -s palletizer/tests -p "test_*.py"
 
