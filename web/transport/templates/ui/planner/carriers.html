@@ -1,0 +1,88 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Przewoźnicy — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_shipments' %}">Wysyłki</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Przewoźnicy i cenniki</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Przewoźnicy</div>
+    <div class="page-header__sub">Zarządzaj cennikami kurierów i spedytorów</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:planner_carrier_new' %}" class="btn btn-primary">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14m-7-7h14"/></svg>
+      Nowy przewoźnik
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nazwa</th>
+          <th>Typ</th>
+          <th>Strefy</th>
+          <th>Dz. obj. [cm³/kg]</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in carriers %}
+      <tr>
+        <td><strong>{{ c.name }}</strong></td>
+        <td>
+          <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;
+            {% if c.carrier_type == 'courier' %}background:var(--blue-light);color:var(--blue-mid)
+            {% elif c.carrier_type == 'ltl' %}background:var(--green-light);color:var(--green)
+            {% else %}background:var(--yellow-light);color:var(--yellow-dark){% endif %}">
+            {{ c.get_carrier_type_display }}
+          </span>
+        </td>
+        <td>
+          {% for zone in c.zones.all %}
+          <span class="badge badge-gray" style="margin-right:2px;font-size:11px">{{ zone.name }}</span>
+          {% empty %}<span class="text-muted">—</span>{% endfor %}
+        </td>
+        <td>{{ c.dim_weight_divisor|floatformat:0 }}</td>
+        <td>{% if c.is_active %}<span class="badge badge-green">Aktywny</span>{% else %}<span class="badge badge-gray">Nieaktywny</span>{% endif %}</td>
+        <td>
+          <div class="actions">
+            <a href="{% url 'ui:planner_carrier_rates' c.pk %}" class="btn btn-primary btn-sm">Cennik</a>
+            <a href="{% url 'ui:planner_carrier_edit' c.pk %}" class="btn btn-ghost btn-sm btn-icon" title="Edytuj">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </a>
+            <form method="post" action="{% url 'ui:planner_carrier_delete' c.pk %}" onsubmit="return confirm('Usunąć przewoźnika „{{ c.name }}"?')">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm btn-icon" style="color:var(--red)">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">
+          <div class="empty-state">
+            <div class="empty-state__icon">{% icon "truck" cls="icon--em" %}</div>
+            <div class="empty-state__title">Brak przewoźników</div>
+            <div class="empty-state__desc"><a href="{% url 'ui:planner_carrier_new' %}">Dodaj pierwszego przewoźnika</a></div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

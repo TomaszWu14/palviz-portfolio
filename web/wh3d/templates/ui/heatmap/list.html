@@ -1,0 +1,163 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% load static %}
+{% block title %}Heatmapa aktywności pickerów — {{ app_name }}{% endblock %}
+{% block nav_heatmap %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+.upload-card {
+  background:var(--surface); border:1px solid var(--gray-200); border-top:3px solid #ea580c;
+  border-radius:12px; padding:24px; margin-bottom:24px;
+}
+.upload-form {
+  display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;
+}
+.form-group { display:flex; flex-direction:column; gap:4px; }
+.form-group label { font-size:12px; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:.4px; }
+.form-control {
+  padding:8px 12px; border:1px solid var(--gray-300); border-radius:6px;
+  font-size:14px; color:var(--gray-900); background:var(--surface);
+  transition:border-color .15s, box-shadow .15s;
+}
+.form-control:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(26,86,219,.12); }
+.btn { padding:8px 16px; border-radius:6px; border:none; cursor:pointer; font-size:13px; font-weight:600; transition:background .15s; }
+.btn-primary { background:var(--blue); color:#fff; }
+.btn-primary:hover { background:var(--blue-dark); }
+.btn-secondary { background:var(--gray-100); color:var(--gray-700); border:1px solid var(--gray-300); }
+.btn-secondary:hover { background:var(--gray-200); }
+.btn-danger { background:var(--surface); color:var(--red); border:1px solid #fecaca; }
+.btn-danger:hover { background:var(--red-light); }
+.btn-sm { padding:5px 10px; font-size:12px; }
+.table-card { background:var(--surface); border:1px solid var(--gray-200); border-top:3px solid #ea580c; border-radius:12px; overflow:hidden; }
+.data-table { width:100%; border-collapse:collapse; }
+.data-table th {
+  background:var(--gray-50); padding:10px 14px; text-align:left;
+  font-size:11px; font-weight:700; color:var(--gray-500); text-transform:uppercase;
+  letter-spacing:.5px; border-bottom:1px solid var(--gray-200);
+}
+.data-table td { padding:12px 14px; border-bottom:1px solid var(--gray-100); vertical-align:middle; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table tr:hover td { background:var(--gray-50); }
+.badge {
+  display:inline-block; padding:2px 8px; border-radius:20px;
+  font-size:11px; font-weight:600;
+}
+.badge-blue { background:var(--blue-light); color:var(--blue-mid); }
+.empty-state { text-align:center; padding:48px 24px; color:var(--gray-400); }
+.empty-state__icon { font-size:40px; margin-bottom:12px; }
+.empty-state__text { font-size:15px; font-weight:500; }
+.empty-state__sub { font-size:13px; margin-top:4px; }
+.template-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 14px; border-radius:6px; border:1px solid var(--green-light);
+  background:var(--green-light); color:var(--green); font-size:13px; font-weight:500;
+  text-decoration:none; transition:background .15s;
+}
+.template-btn:hover { background:var(--green-light); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="panel-head" style="--pc:#ea580c;--pcbg:rgba(245,158,11,.12)">
+    <div class="panel-head__chip">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-1.5.6-2.9 1.3-4"/><path d="M12 22a4 4 0 0 0 4-4c0-2-2-3.5-4-6-2 2.5-4 4-4 6a4 4 0 0 0 4 4z"/></svg>
+    </div>
+    <div>
+      <div class="page-header__title">Heatmapa aktywności pickerów</div>
+      <div class="page-header__sub">Analizuj rozkład aktywności na siatce magazynu</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <a href="{% url 'ui:heatmap_template_download' %}" class="template-btn">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 15V3m0 12-4-4m4 4 4-4"/><path d="M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
+      Pobierz szablon Excel
+    </a>
+  </div>
+</div>
+
+{% if messages %}
+<div style="margin-bottom:16px">
+{% for msg in messages %}
+<div style="padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:13px;
+  {% if msg.tags == 'error' %}background:var(--red-light);color:var(--red);border:1px solid #fecaca;
+  {% elif msg.tags == 'success' %}background:var(--green-light);color:var(--green);border:1px solid #6ee7b7;
+  {% else %}background:var(--blue-light);color:var(--blue-mid);border:1px solid #93c5fd;{% endif %}">
+  {{ msg }}
+</div>
+{% endfor %}
+</div>
+{% endif %}
+
+<div class="upload-card">
+  <div style="font-size:14px;font-weight:600;color:var(--gray-700);margin-bottom:16px">Importuj nowy plik</div>
+  <form method="post" action="{% url 'ui:heatmap_upload' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="upload-form">
+      <div class="form-group" style="flex:2;min-width:200px">
+        <label>Nazwa importu</label>
+        <input aria-label="Nazwa importu" type="text" name="name" class="form-control" placeholder="np. Czerwiec 2025" maxlength="200">
+      </div>
+      <div class="form-group" style="flex:3;min-width:240px">
+        <label>Plik (xlsx lub csv, max 20 MB)</label>
+        <input aria-label="Plik (xlsx lub csv, max 20 MB)" type="file" name="file" class="form-control" accept=".xlsx,.xls,.csv" required>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="margin-right:5px;vertical-align:middle"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Importuj
+      </button>
+    </div>
+  </form>
+</div>
+
+{% if batches %}
+<div class="table-card">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Nazwa importu</th>
+        <th>Zakres dat</th>
+        <th>Wierszy</th>
+        <th>Dodano</th>
+        <th style="text-align:right">Akcje</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for batch in batches %}
+      <tr>
+        <td style="font-weight:600">{{ batch.name }}</td>
+        <td>
+          {% if batch.date_from and batch.date_to %}
+            <span style="font-size:13px;color:var(--gray-600)">{{ batch.date_from }} — {{ batch.date_to }}</span>
+          {% else %}
+            <span style="color:var(--gray-400)">—</span>
+          {% endif %}
+        </td>
+        <td><span class="badge badge-blue">{{ batch.row_count }}</span></td>
+        <td style="font-size:13px;color:var(--gray-500)">{{ batch.uploaded_at|date:"d.m.Y H:i" }}</td>
+        <td style="text-align:right">
+          <a href="{% url 'ui:heatmap_detail' batch.pk %}" class="btn btn-secondary btn-sm" style="margin-right:6px">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:3px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Zobacz
+          </a>
+          <form method="post" action="{% url 'ui:heatmap_delete' batch.pk %}" style="display:inline" onsubmit="return confirm('Usunąć import « {{ batch.name }} »?')">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">Usuń</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="table-card">
+  <div class="empty-state">
+    <div class="empty-state__icon">{% icon "chart-column" cls="icon--em" %}</div>
+    <div class="empty-state__text">Brak importów</div>
+    <div class="empty-state__sub">Prześlij plik Excel lub CSV, aby zobaczyć heatmapę aktywności</div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

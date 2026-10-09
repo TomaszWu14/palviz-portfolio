@@ -1,0 +1,43 @@
+{% extends "ui/base.html" %}
+{% block title %}Usuń kategorię — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block content %}
+
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_categories' %}">Kategorie</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Usuń</span>
+</nav>
+
+<div class="page-header">
+  <div class="page-header__title">Usuń kategorię</div>
+</div>
+
+<div class="card" style="max-width:480px">
+  <div class="card-body">
+    <p style="margin-bottom:8px">
+      Czy na pewno chcesz usunąć kategorię <strong>{{ object.name }}</strong>
+      {% if object.code %}(<span style="font-family:monospace">{{ object.code }}</span>){% endif %}?
+    </p>
+    {% if object.product_cnt %}
+    <p style="margin-bottom:16px;font-size:13px;color:var(--red)">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Ta kategoria ma przypisanych {{ object.product_cnt }} produktów. Usunięcie może mieć wpływ na powiązane dane.
+    </p>
+    {% else %}
+    <p style="margin-bottom:16px;font-size:13px;color:var(--gray-500)">Operacja jest nieodwracalna.</p>
+    {% endif %}
+    <div style="display:flex;gap:10px">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary" style="background:var(--red);border-color:var(--red)">Usuń</button>
+      </form>
+      <a href="{% url 'ui:planner_categories' %}" class="btn btn-secondary">Anuluj</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

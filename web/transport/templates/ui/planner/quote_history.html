@@ -1,0 +1,74 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}{{ app_name }} — Historia wycen{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:planner_shipments' %}">Przesyłki</a> › <span>Historia wycen</span></nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{% icon "coins" %} Historia wycen</div>
+    <div class="page-header__sub">Przesyłki, które otrzymały oferty spedycji — z oszczędnością względem najdroższej oferty</div>
+  </div>
+</div>
+
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
+  <form method="get" autocomplete="off" style="display:flex;gap:8px;flex:1;max-width:480px">
+    <input type="text" name="q" value="{{ q }}" placeholder="Szukaj: nazwa, odbiorca, miasto…"
+           class="input" style="flex:1">
+    <button type="submit" class="btn btn-secondary">Szukaj</button>
+  </form>
+  {% if rows %}
+  <a class="btn btn-ghost" href="?{% if q %}q={{ q|urlencode }}&{% endif %}export=csv">{% icon "download" %} Eksport CSV</a>
+  {% endif %}
+</div>
+
+{% if rows %}
+<div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+  <div class="card" style="padding:12px 18px"><div style="font-size:20px;font-weight:800;color:#2563eb">{{ rows|length }}</div><div class="text-sm text-muted">Wyceny</div></div>
+  <div class="card" style="padding:12px 18px"><div style="font-size:20px;font-weight:800;color:#2563eb">{{ total_offers }}</div><div class="text-sm text-muted">Ofert łącznie</div></div>
+  <div class="card" style="padding:12px 18px"><div style="font-size:20px;font-weight:800;color:var(--green)">{{ total_saving|floatformat:2 }}</div><div class="text-sm text-muted">Oszczędność łącznie</div></div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr>
+        <th>Przesyłka</th><th>Cel</th><th>Data</th><th style="text-align:center">Ofert</th>
+        <th>Wybrana spedycja</th><th style="text-align:right">Kwota</th>
+        <th style="text-align:right">Oszczędność</th>
+      </tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td><a href="{% url 'ui:planner_shipment_detail' r.sh.pk %}" style="font-weight:600;color:#2563eb">{{ r.sh.name }}</a></td>
+          <td class="text-sm">{{ r.sh.destination_city|default:"—" }}{% if r.sh.destination_country %} ({{ r.sh.destination_country }}){% endif %}</td>
+          <td class="text-sm text-muted">{{ r.sh.created_at|date:"Y-m-d" }}</td>
+          <td style="text-align:center">{{ r.n_offers }}</td>
+          <td>
+            {{ r.chosen.display_name }}
+            {% if r.is_selected %}<span class="badge" style="background:var(--green-light);color:var(--green)">wybrana</span>
+            {% else %}<span class="badge" style="background:#e0e7ff;color:#3730a3">najtańsza</span>{% endif %}
+          </td>
+          <td style="text-align:right;font-weight:700">
+            {{ r.best|floatformat:2 }} {{ r.currency }}
+            {% if r.has_surcharge %}<span class="badge" title="Kwota zawiera dopłaty" style="background:var(--yellow-light);color:var(--yellow-dark)">+dopł.</span>{% endif %}
+            {% if r.chosen_pln and not r.normalized %}<div class="text-sm text-muted" title="Przeliczono po kursie NBP">≈ {{ r.chosen_pln|floatformat:2 }} PLN</div>{% endif %}
+          </td>
+          <td style="text-align:right;color:{% if r.saving > 0 %}#16a34a{% else %}var(--gray-400){% endif %}">
+            {% if r.saving > 0 %}−{{ r.saving|floatformat:2 }}{% else %}—{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card"><div class="empty-state" style="padding:40px">
+  <div class="empty-state__title">Brak wycen</div>
+  <div class="empty-state__desc">{% if q %}Brak wyników dla „{{ q }}".{% else %}Żadna przesyłka nie otrzymała jeszcze ofert spedycji.{% endif %}</div>
+</div></div>
+{% endif %}
+{% endblock %}

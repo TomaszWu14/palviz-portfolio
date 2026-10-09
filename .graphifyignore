@@ -1,0 +1,5 @@
+# Vendored / minified front-end bundles — not our code, dominate the graph as noise.
+# (plotly.min.js, echarts.min.js, three.module.min.js — the last also pulls in mapbox-gl)
+*.min.js
+# Vendored Three.js addons (OrbitControls etc). palviz-three.js is our own code — kept.
+three-addons/

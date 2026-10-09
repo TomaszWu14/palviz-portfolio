@@ -1,0 +1,130 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Macierz ról — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .rm-head { display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap; }
+  .rm-kpi { display:flex; gap:16px; align-items:flex-end; }
+  .rm-kpi .n { font-size:20px; font-weight:800; line-height:1; }
+  .rm-kpi .n.hl { color:var(--green); }
+  .rm-kpi .l { font-size:11px; color:var(--gray-500); margin-top:3px; }
+  .rm-kpi .sep { width:1px; height:30px; background:var(--gray-200); }
+  .rm-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:14px 0 12px; }
+  .rm-tabs { display:flex; gap:2px; padding:3px; border-radius:9px; background:var(--gray-100); }
+  .rm-tab { height:30px; padding:0 13px; border:0; border-radius:7px; cursor:pointer; font-size:13px; font-weight:600; background:transparent; color:var(--gray-600); }
+  .rm-tab.on { background:var(--surface); color:var(--gray-900); box-shadow:0 1px 2px rgba(0,0,0,.14); }
+  .rm-search { display:flex; align-items:center; gap:8px; height:36px; padding:0 12px; border-radius:9px; background:var(--surface); border:1px solid var(--gray-200); width:250px; }
+  .rm-search input { border:0; outline:0; background:transparent; font-size:13px; width:100%; color:var(--gray-900); }
+  .rm-legend { display:flex; align-items:center; gap:14px; height:36px; padding:0 12px; border-radius:9px; background:var(--surface); border:1px solid var(--gray-200); font-size:12px; color:var(--gray-600); }
+  table.rm { border-collapse:separate; border-spacing:0; width:max-content; min-width:100%; }
+  .rm th, .rm td { border-bottom:1px solid var(--gray-100); }
+  .rm thead th { position:sticky; top:0; z-index:3; background:var(--gray-50); padding:9px 12px; text-align:left; min-width:126px; border-left:1px solid var(--gray-100); }
+  .rm th.first, .rm td.first { position:sticky; left:0; z-index:2; background:var(--surface); text-align:left; width:280px; min-width:280px; border-right:1px solid var(--gray-100); border-left:0; }
+  .rm thead th.first { z-index:4; background:var(--gray-50); font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--gray-500); }
+  .rm td { padding:11px 12px; text-align:center; }
+  .rm td.first { padding:11px 16px; }
+  .rm .rh { font-weight:700; font-size:12px; color:var(--gray-900); }
+  .rm .rc { font-size:11px; color:var(--gray-400); margin-top:3px; }
+  .rm .nm { font-weight:600; font-size:13px; color:var(--gray-900); }
+  .rm .sub { font-size:11px; color:var(--gray-400); margin-top:2px; }
+  .yes { display:inline-grid; place-items:center; width:22px; height:22px; border-radius:7px; background:var(--green-light); color:var(--green); font-weight:800; font-size:13px; }
+  .no { display:inline-block; width:11px; height:2px; border-radius:2px; background:var(--gray-300); }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_panel' %}">Panel admina</a><span class="breadcrumb__sep">›</span><span>Macierz ról</span></nav>
+
+<div class="rm-head">
+  <div>
+    <div class="page-header__title">Macierz ról → moduły i uprawnienia</div>
+    <div class="page-header__sub" style="max-width:620px">Co widzi i co może zrobić każda rola. Wyjątki dla pojedynczych loginów ustawiasz w <a href="{% url 'ui:admin_module_access' %}">macierzy login × moduł</a>.</div>
+  </div>
+  <div style="flex:1"></div>
+  <div class="rm-kpi">
+    <div style="text-align:right"><div class="n">{{ roles|length }}</div><div class="l">ról</div></div>
+    <div class="sep"></div>
+    <div style="text-align:right"><div class="n" id="rmRows">{{ module_rows|length }}</div><div class="l">pozycji</div></div>
+    <div class="sep"></div>
+    <div style="text-align:right"><div class="n hl" id="rmGrants">{{ module_grants }}</div><div class="l">nadanych</div></div>
+  </div>
+</div>
+
+<div class="rm-bar">
+  <div class="rm-tabs" id="rmTabs" data-mrows="{{ module_rows|length }}" data-mgrants="{{ module_grants }}" data-crows="{{ cap_rows|length }}" data-cgrants="{{ cap_grants }}">
+    <button type="button" class="rm-tab on" data-tab="modules">Moduły — dostęp do zakładki</button>
+    <button type="button" class="rm-tab" data-tab="ops">Uprawnienia szczegółowe</button>
+  </div>
+  <div style="flex:1"></div>
+  <div class="rm-search">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--gray-400)"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+    <input id="rmSearch" type="search" placeholder="Filtruj pozycje" autocomplete="off">
+  </div>
+  <div class="rm-legend">
+    <span><span class="yes" style="width:16px;height:16px;font-size:10px">{% icon "check" cls="icon--em" %}</span> ma dostęp</span>
+    <span><span class="no"></span> brak</span>
+  </div>
+</div>
+
+<div class="card" style="padding:0;overflow:auto;max-height:calc(100vh - 280px)">
+  {% for tab in "12" %}
+  {% if forloop.first %}
+  <table class="rm" data-panel="modules">
+    <thead><tr>
+      <th class="first">Moduł</th>
+      {% for r in roles %}<th><div class="rh">{{ r.name }}</div><div class="rc">{{ r.count }} użytk.</div></th>{% endfor %}
+    </tr></thead>
+    <tbody>
+      {% for row in module_rows %}
+      <tr data-name="{{ row.label|lower }}">
+        <td class="first"><div class="nm">{{ row.icon }} {{ row.label }}</div></td>
+        {% for ok in row.cols %}<td>{% if ok %}<span class="yes">{% icon "check" label="ma dostęp" cls="icon--em" %}</span>{% else %}<span class="no"></span>{% endif %}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <table class="rm" data-panel="ops" style="display:none">
+    <thead><tr>
+      <th class="first">Operacja</th>
+      {% for r in roles %}<th><div class="rh">{{ r.name }}</div><div class="rc">{{ r.count }} użytk.</div></th>{% endfor %}
+    </tr></thead>
+    <tbody>
+      {% for row in cap_rows %}
+      <tr data-name="{{ row.label|lower }}">
+        <td class="first"><div class="nm">{{ row.label }}</div></td>
+        {% for ok in row.cols %}<td>{% if ok %}<span class="yes">{% icon "check" label="ma dostęp" cls="icon--em" %}</span>{% else %}<span class="no"></span>{% endif %}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  {% endfor %}
+</div>
+
+<div style="margin-top:14px;font-size:12px;color:var(--gray-500)">Superuserzy mają dostęp do wszystkiego niezależnie od grup.</div>
+
+<script>
+(function(){
+  var tabs = document.getElementById('rmTabs'), ds = tabs.dataset;
+  var panels = { modules: document.querySelector('[data-panel="modules"]'), ops: document.querySelector('[data-panel="ops"]') };
+  var cur = 'modules';
+  tabs.addEventListener('click', function(e){
+    var b = e.target.closest('.rm-tab'); if(!b) return;
+    cur = b.dataset.tab;
+    tabs.querySelectorAll('.rm-tab').forEach(function(x){ x.classList.toggle('on', x===b); });
+    panels.modules.style.display = cur==='modules' ? '' : 'none';
+    panels.ops.style.display = cur==='ops' ? '' : 'none';
+    document.getElementById('rmRows').textContent = cur==='modules' ? ds.mrows : ds.crows;
+    document.getElementById('rmGrants').textContent = cur==='modules' ? ds.mgrants : ds.cgrants;
+    filter();
+  });
+  document.getElementById('rmSearch').addEventListener('input', filter);
+  function filter(){
+    var q = (document.getElementById('rmSearch').value||'').trim().toLowerCase();
+    panels[cur].querySelectorAll('tbody tr').forEach(function(tr){
+      tr.style.display = (!q || (tr.dataset.name||'').indexOf(q)!==-1) ? '' : 'none';
+    });
+  }
+})();
+</script>
+{% endblock %}

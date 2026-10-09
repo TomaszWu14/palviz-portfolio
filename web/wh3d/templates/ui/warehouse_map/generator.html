@@ -1,0 +1,324 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% block title %}Generator regału — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+.gen-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; max-width:900px; }
+.gen-section { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:10px; padding:20px; }
+.gen-section__title { font-size:13px; font-weight:700; color:var(--gray-900); margin-bottom:14px; }
+.field-row { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:10px; }
+.field-block { display:flex; flex-direction:column; gap:4px; }
+.field-block label { font-size:11px; font-weight:700; color:var(--gray-700); text-transform:uppercase; letter-spacing:.3px; }
+.field-block input,
+.field-block select { padding:7px 10px; border:1px solid #d1d5db; border-radius:6px; font-size:13px; width:100%; box-sizing:border-box; }
+.level-row { display:grid; grid-template-columns:60px 1fr 1fr 1fr 1fr; gap:8px; align-items:center; margin-bottom:8px; }
+.level-badge { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:6px; background:#f59e0b; color:#fff; font-size:12px; font-weight:800; }
+.rack-preview { position:relative; display:flex; flex-direction:column-reverse; gap:0; border:2px solid var(--gray-300); border-radius:8px; overflow:hidden; background:#1e293b; padding:8px 16px; min-height:200px; }
+.rack-level { background:linear-gradient(135deg, #f59e0b22 0%, #f59e0b11 100%); border:1px solid #f59e0b44; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#f59e0b; font-size:11px; font-weight:700; min-height:30px; transition:min-height .2s; margin-bottom:2px; }
+.rack-beam { height:6px; background:#e07020; border-radius:2px; margin:1px 0; }
+.rack-floor { height:10px; background:var(--gray-500); border-radius:3px; margin-top:4px; }
+.code-preview { font-family:monospace; font-size:12px; color:#7c3aed; background:#f5f3ff; padding:3px 8px; border-radius:4px; display:inline-block; margin-top:6px; }
+@media(max-width:700px){ .gen-grid { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_map' %}">Mapa magazynu</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Generator regału</span>
+</nav>
+
+<div class="page-header" style="margin-bottom:20px">
+  <div>
+    <div class="page-header__title">Generator regału 3D</div>
+    <div class="page-header__sub">Zdefiniuj wymiary fizyczne regału — system wygeneruje lokalizacje i master data automatycznie</div>
+  </div>
+</div>
+
+<form method="post" action="{% url 'ui:warehouse_rack_generator' %}" id="gen-form">
+  {% csrf_token %}
+
+<div class="gen-grid">
+
+  <!-- Left: identification + columns + location count -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <div class="gen-section">
+      <div class="gen-section__title">Identyfikacja</div>
+      <div class="field-row">
+        <div class="field-block" style="flex:2">
+          <label>Nazwa layoutu</label>
+          <input aria-label="Nazwa layoutu" type="text" name="name" placeholder="np. Regał 01 — prawa ściana" value="">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-block" style="flex:1">
+          <label>Strefa (prefiks)</label>
+          <input aria-label="Strefa (prefiks)" type="text" name="zone" value="B0" maxlength="4" style="text-transform:uppercase">
+        </div>
+        <div class="field-block" style="flex:1">
+          <label>Numer alei</label>
+          <input aria-label="Numer alei" type="text" name="aisle" value="01" maxlength="4" id="f-aisle">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-block" style="flex:1">
+          <label>Stos startowy</label>
+          <input aria-label="Stos startowy" type="number" name="stack_start" value="100" min="1" id="f-ss">
+        </div>
+        <div class="field-block" style="flex:1">
+          <label>Liczba stosów</label>
+          <input aria-label="Liczba stosów" type="number" name="stack_count" value="10" min="1" max="200" id="f-sc">
+        </div>
+        <div class="field-block" style="flex:1">
+          <label>Krok stosu</label>
+          <input aria-label="Krok stosu" type="number" name="stack_step" value="2" min="1" id="f-st">
+        </div>
+      </div>
+    </div>
+
+    <div class="gen-section">
+      <div class="gen-section__title">Wymiary jednego miejsca paletowego</div>
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:12px;line-height:1.5">
+        Fizyczna szerokość miejsca (np. 80 cm) + przestrzeń manipulacyjna (np. 10 cm) = <b>łączna szerokość z manipulacją</b> (np. 90 cm).
+        System wyliczy ile kolumn (A,B,C…) mieści się w całkowitej szerokości regału.
+      </div>
+      <div class="field-row">
+        <div class="field-block" style="flex:1">
+          <label>Szer. fiz. miejsca [mm]</label>
+          <input aria-label="Szer. fiz. miejsca [mm]" type="number" name="slot_width" value="800" min="100" max="5000" step="10" id="f-sw">
+        </div>
+        <div class="field-block" style="flex:1">
+          <label>Szer. z manipulacją [mm]</label>
+          <input aria-label="Szer. z manipulacją [mm]" type="number" name="slot_width_manip" value="900" min="100" max="5000" step="10" id="f-swm">
+        </div>
+        <div class="field-block" style="flex:1">
+          <label>Głębokość miejsca [mm]</label>
+          <input aria-label="Głębokość miejsca [mm]" type="number" name="slot_depth" value="1100" min="100" max="5000" step="10" id="f-sd">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-block" style="flex:2">
+          <label>Całkowita szerokość regału [mm]</label>
+          <input aria-label="Całkowita szerokość regału [mm]" type="number" name="rack_width" value="2700" min="100" max="99999" step="100" id="f-rw">
+        </div>
+        <div class="field-block" style="flex:1">
+          <label>Kolumny (auto)</label>
+          <div style="padding:7px 10px;border:1px solid var(--gray-200);border-radius:6px;font-size:13px;background:var(--green-light);color:var(--green);font-weight:700" id="cols-calc">3 (A,B,C)</div>
+        </div>
+      </div>
+      <input type="hidden" name="columns" id="f-cols" value="A,B,C">
+      <div style="font-size:11px;color:var(--gray-400);margin-top:4px">
+        Przy 2700mm / 900mm = <b id="cols-math">3 kolumny</b>.
+        Kody przypisywane automatycznie (A, B, C, D, E…).
+      </div>
+      <div style="margin-top:10px">
+        Przykładowy kod lokalizacji:
+        <span class="code-preview" id="loc-preview">B0-01-100-1A</span>
+      </div>
+    </div>
+
+    <div class="gen-section">
+      <div class="gen-section__title">Master data</div>
+      <div class="field-row">
+        <div class="field-block" style="flex:1">
+          <label>Typ magazynu</label>
+          <input aria-label="Typ magazynu" type="text" name="wh_type" placeholder="np. K01" maxlength="10">
+        </div>
+        <div class="field-block" style="flex:1">
+          <label>Max waga [kg]</label>
+          <input aria-label="Max waga [kg]" type="number" name="max_weight" value="1200" min="0" step="50">
+        </div>
+        <div class="field-block" style="flex:1">
+          <label>Max objętość [m³]</label>
+          <input aria-label="Max objętość [m³]" type="number" name="max_volume" value="2.5" min="0" step="0.1">
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right: levels with heights -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+
+    <div class="gen-section">
+      <div class="gen-section__title" style="display:flex;align-items:center;gap:8px">
+        Poziomy i wysokości
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
+          <label style="font-size:11px;font-weight:600;color:var(--gray-700);text-transform:none">Liczba poziomów:</label>
+          <select aria-label="Liczba poziomów" name="num_levels" id="f-nl" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4" selected>4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:40px 1fr 1fr 1fr;gap:6px;margin-bottom:6px;font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase">
+        <div>#</div>
+        <div>Wysokość [mm]</div>
+        <div>Szerokość [mm]</div>
+        <div>Głębokość [mm]</div>
+      </div>
+      <div id="levels-container"></div>
+    </div>
+
+    <!-- Live rack preview -->
+    <div class="gen-section">
+      <div class="gen-section__title">Podgląd przekroju (widok boczny)</div>
+      <div class="rack-preview" id="rack-preview">
+        <div class="rack-floor"></div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--gray-400)" id="rack-stats">
+        Łącznie: <b id="total-locs">0</b> lokalizacji
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- gen-grid -->
+
+<label style="margin-top:20px;max-width:900px;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;background:var(--green-light);border:1px solid #bbf7d0;border-radius:8px;cursor:pointer">
+  <input type="checkbox" name="append" value="1" style="margin-top:2px">
+  <span style="font-size:13px;color:var(--green)">
+    <strong>Dodaj do aktywnego układu</strong> (nie nadpisuj)<br>
+    <span style="color:var(--green)">Zaznacz, aby zbudować magazyn z wielu alej — każdy regał trafi do osobnego rzędu obok istniejących. Bez zaznaczenia tworzony jest nowy, czysty układ.</span>
+  </span>
+</label>
+
+<div style="margin-top:20px;max-width:900px;display:flex;gap:12px;align-items:center">
+  <button type="submit" class="btn btn-primary" style="min-width:180px">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="margin-right:6px"><path d="M12 4v16M4 12h16"/></svg>
+    Generuj regał
+  </button>
+  <a href="{% url 'ui:warehouse_map' %}" class="btn btn-ghost">Anuluj</a>
+</div>
+
+</form>
+
+<script>
+const DEFAULTS = [
+  { h: 2494, w: 2700, d: 1100 },
+  { h: 2500, w: 2700, d: 1100 },
+  { h: 2500, w: 2700, d: 1100 },
+  { h: 2000, w: 2700, d: 1100 },
+  { h: 2000, w: 2700, d: 1100 },
+  { h: 2000, w: 2700, d: 1100 },
+];
+
+function buildLevelRow(lv, def) {
+  const row = document.createElement('div');
+  row.style.cssText = 'display:grid;grid-template-columns:40px 1fr 1fr 1fr;gap:6px;margin-bottom:8px;';
+  row.innerHTML = `
+    <div style="display:flex;align-items:center"><span class="level-badge">${lv}</span></div>
+    <div><input type="number" aria-label="Poziom ${lv} — wysokość [mm]" name="level_${lv}_height" value="${def.h}" min="100" max="9999" step="1"
+          class="level-h-input" data-lv="${lv}"
+          style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"></div>
+    <div><input type="number" aria-label="Poziom ${lv} — szerokość [mm]" name="level_${lv}_width" value="${def.w}" min="100" max="9999" step="1"
+          style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"></div>
+    <div><input type="number" aria-label="Poziom ${lv} — głębokość [mm]" name="level_${lv}_depth" value="${def.d}" min="100" max="9999" step="1"
+          style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"></div>
+  `;
+  return row;
+}
+
+function getNumLevels() { return parseInt(document.getElementById('f-nl').value) || 4; }
+function getNumCols() {
+  const v = document.getElementById('f-cols').value;
+  return v.split(',').filter(c => c.trim()).length || 1;
+}
+
+function rebuildLevels() {
+  const n = getNumLevels();
+  const container = document.getElementById('levels-container');
+  container.innerHTML = '';
+  for (let i = 1; i <= n; i++) {
+    const def = DEFAULTS[i - 1] || { h: 2000, w: 2700, d: 1100 };
+    container.appendChild(buildLevelRow(i, def));
+  }
+  rebuildPreview();
+  updateLocCode();
+  updateStats();
+}
+
+function getHeights() {
+  return Array.from(document.querySelectorAll('.level-h-input'))
+    .map(el => parseInt(el.value) || 2500);
+}
+
+function rebuildPreview() {
+  const heights = getHeights();
+  const preview = document.getElementById('rack-preview');
+  preview.innerHTML = '<div class="rack-floor"></div>';
+  const total = heights.reduce((a, b) => a + b, 0);
+  const PREVIEW_H = 240;
+  heights.forEach((h, i) => {
+    const pct = h / total;
+    const pxH = Math.max(28, Math.round(pct * PREVIEW_H));
+    const beam = document.createElement('div');
+    beam.className = 'rack-beam';
+    const level = document.createElement('div');
+    level.className = 'rack-level';
+    level.style.minHeight = pxH + 'px';
+    level.textContent = `Poz. ${i + 1} — ${h.toLocaleString('pl')} mm`;
+    preview.insertBefore(level, preview.firstChild);
+    if (i < heights.length - 1) preview.insertBefore(beam, preview.firstChild);
+  });
+}
+
+const COL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+function calcCols() {
+  const rw   = parseInt(document.getElementById('f-rw').value)  || 2700;
+  const swm  = parseInt(document.getElementById('f-swm').value) || 900;
+  const n    = Math.max(1, Math.floor(rw / swm));
+  const cols = COL_LETTERS.slice(0, n);
+  const colStr = cols.join(',');
+  document.getElementById('f-cols').value = colStr;
+  document.getElementById('cols-calc').textContent = `${n} (${colStr})`;
+  document.getElementById('cols-math').textContent = `${rw}mm / ${swm}mm = ${n} kolumn${n === 1 ? 'a' : n < 5 ? 'y' : ''}`;
+  return cols;
+}
+
+function getNumCols() { return calcCols().length; }
+
+function updateLocCode() {
+  const zone = (document.querySelector('[name=zone]').value || 'B0').trim().toUpperCase();
+  const aisle = (document.querySelector('[name=aisle]').value || '01').trim();
+  const ss = (document.querySelector('[name=stack_start]').value || '100').trim();
+  const cols = calcCols();
+  const firstCol = cols[0] || 'A';
+  document.getElementById('loc-preview').textContent = `${zone}-${aisle}-${ss}-1${firstCol}`;
+}
+
+function updateStats() {
+  const n = getNumLevels();
+  const cols = getNumCols();
+  const stacks = parseInt(document.getElementById('f-sc').value) || 10;
+  document.getElementById('total-locs').textContent = (n * cols * stacks).toLocaleString('pl');
+}
+
+// Wire events
+document.getElementById('f-nl').addEventListener('change', rebuildLevels);
+document.getElementById('f-rw').addEventListener('input',  () => { calcCols(); updateLocCode(); updateStats(); });
+document.getElementById('f-swm').addEventListener('input', () => { calcCols(); updateLocCode(); updateStats(); });
+document.getElementById('f-sw').addEventListener('input',  () => {});
+document.querySelector('[name=zone]').addEventListener('input', updateLocCode);
+document.getElementById('f-aisle').addEventListener('input', updateLocCode);
+document.getElementById('f-ss').addEventListener('input', updateLocCode);
+document.getElementById('f-sc').addEventListener('input', updateStats);
+document.getElementById('levels-container').addEventListener('input', e => {
+  if (e.target.classList.contains('level-h-input')) rebuildPreview();
+});
+
+// Init
+calcCols();
+rebuildLevels();
+</script>
+{% endblock %}

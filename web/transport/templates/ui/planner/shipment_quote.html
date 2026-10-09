@@ -1,0 +1,91 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Zapytanie o wycenę — {{ shipment.name }} — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_shipments' %}">Wysyłki</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_shipment_detail' shipment.pk %}">{{ shipment.name }}</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Zapytanie o wycenę</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Zapytanie o wycenę transportu</div>
+    <div class="page-header__sub">
+      {{ shipment.name }}
+      {% if km %}· <strong style="color:#1a56db">{{ km }} km</strong> trasy{% endif %}
+      {% if maps_url %}· <a href="{{ maps_url }}" target="_blank" rel="noopener">trasa w Google Maps ↗</a>{% endif %}
+    </div>
+  </div>
+</div>
+
+{% if calc.has_missing %}
+<div class="alert alert-error" style="margin-bottom:16px;border:2px solid #dc2626;background:#fef2f2;color:var(--red)">
+  <strong>{% icon "triangle-alert" %} Uwaga: wycena pomija towar bez instrukcji paletyzacji</strong> —
+  liczba palet i waga są zaniżone. Pozycje:
+  {% for m in calc.missing_products %}<b>{{ m.code }}</b>{% if not forloop.last %}, {% endif %}{% endfor %}.
+  Uzupełnij instrukcje przed wysłaniem zapytania.
+</div>
+{% endif %}
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  <!-- Route map -->
+  <div class="card">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:600;font-size:14px">Trasa</div>
+    <form method="get" style="padding:10px 16px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+      <label style="font-size:12px;color:var(--gray-700);font-weight:600">Start</label>
+      <input aria-label="Start" type="text" name="origin" value="{{ origin }}" style="flex:1 1 12em;padding:6px 8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px">
+      <button type="submit" class="btn btn-secondary btn-sm">Wyznacz</button>
+    </form>
+    {% if static_map %}
+      <img src="{{ static_map }}" alt="Trasa" style="width:100%;display:block">
+    {% elif embed_url %}
+      <iframe title="Trasa" width="100%" height="300" style="border:0;display:block" loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade" src="{{ embed_url }}"></iframe>
+    {% else %}
+      <div class="empty-state" style="padding:24px"><div class="empty-state__title">Brak adresu docelowego</div></div>
+    {% endif %}
+    <div style="padding:10px 16px;font-size:13px;color:var(--gray-700)">
+      {% if shipment.recipient_name %}<strong>{{ shipment.recipient_name }}</strong> · {% endif %}{{ dest|default:"—" }}
+    </div>
+  </div>
+
+  <!-- Recipients — each forwarder e-mailed separately -->
+  <div class="card">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-weight:600;font-size:14px">Wyślij zapytanie (osobno do każdego)</span>
+      <a href="{% url 'ui:planner_quote_recipients' %}" class="btn btn-ghost btn-sm" style="font-size:12px">Lista adresów</a>
+    </div>
+    <div style="padding:8px 16px;font-size:12px;color:var(--gray-500)">
+      Palety: <strong>{{ scenario.n_pallets }}</strong> (120×80, wys. do {{ scenario.max_h_cm }} cm) ·
+      {{ calc.total_vol_m3 }} m³ · {{ calc.total_weight_kg }} kg.
+      Treść zawiera link, w którym spedycja wpisze kwotę i terminy.
+    </div>
+    {% for r in recipients %}
+    <div style="padding:10px 16px;border-top:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <div>
+        <strong>{{ r.obj.name }}</strong>
+        <div class="text-sm text-muted">{{ r.obj.email }}</div>
+        {% if r.offer.submitted_at %}
+        <div class="text-sm" style="color:#059669">{% icon "check" %} {{ r.offer.amount }} {{ r.offer.currency }} · podst. {{ r.offer.truck_date|date:"d.m"|default:"—" }} · dost. {{ r.offer.delivery_date|date:"d.m"|default:"—" }}</div>
+        {% endif %}
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <a href="{{ r.mailto }}" class="btn btn-primary btn-sm" title="Otwórz w Outlooku z gotową treścią i linkiem do formularza">{% icon "mail" %} Wyślij (Outlook)</a>
+        <form method="post" action="{% url 'ui:planner_shipment_send_quote' shipment.pk r.obj.pk %}" style="margin:0">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--gray-400)" title="Wyślij serwerowo (wymaga SMTP)">serwer</button>
+        </form>
+      </div>
+    </div>
+    {% empty %}
+    <div style="padding:16px;font-size:13px;color:var(--gray-500)">
+      Brak adresów — <a href="{% url 'ui:planner_quote_recipients' %}">dodaj listę adresową</a>.
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

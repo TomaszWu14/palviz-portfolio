@@ -1,0 +1,7389 @@
+{
+ "bare_default": {
+  "annual": 0,
+  "baseline": {
+   "cartons_per_pallet": 64,
+   "error": "",
+   "fill": 98,
+   "fits": true,
+   "h": 25,
+   "l": 40,
+   "label": "Obecny (instrukcja)",
+   "w": 30
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [
+   {
+    "cartons_per_pallet": 64,
+    "delta_pp": 2,
+    "fill": 100,
+    "h": 102,
+    "l": 10,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 30
+   },
+   {
+    "cartons_per_pallet": 72,
+    "delta_pp": 2,
+    "fill": 100,
+    "h": 68,
+    "l": 10,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 40
+   },
+   {
+    "cartons_per_pallet": 64,
+    "delta_pp": 2,
+    "fill": 100,
+    "h": 51,
+    "l": 10,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 60
+   },
+   {
+    "cartons_per_pallet": 72,
+    "delta_pp": 2,
+    "fill": 100,
+    "h": 68,
+    "l": 20,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 20
+   },
+   {
+    "cartons_per_pallet": 64,
+    "delta_pp": 2,
+    "fill": 100,
+    "h": 51,
+    "l": 20,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 30
+   }
+  ],
+  "hier_a": [
+   {
+    "dims": null,
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "—",
+     "error": "Brak wymiarów sztuki w master data",
+     "fill": null
+    },
+    "three_data": "",
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": null,
+    "key": "inner_pack",
+    "spec": {
+     "contains": null,
+     "dims_str": "—",
+     "error": "Brak OPZ w hierarchii materiału",
+     "fill": null
+    },
+    "three_data": "",
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": null,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "96df479b7a8c6cf56e9500d5d87f38f3e22246522975ec20bdebf3cd55ca9d24",
+     "type": "box"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "799a07830e950eb2f05813faa79c9d84f4907b1d4d4cd772688dfa71a814e179",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": null,
+  "hier_c": null,
+  "instr": {
+   "product": "CV-BARE",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-BARE",
+  "promotions": [],
+  "q": "CV-BARE",
+  "rows": [],
+  "suggestions": [],
+  "variant_b": null,
+  "variant_c": null
+ },
+ "blank_query": {
+  "annual": 0,
+  "baseline": null,
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": null,
+  "hier_b": null,
+  "hier_c": null,
+  "instr": null,
+  "issue": null,
+  "pallet_three": null,
+  "product": null,
+  "promotions": [],
+  "q": "",
+  "rows": [],
+  "suggestions": [],
+  "variant_b": null,
+  "variant_c": null
+ },
+ "full_annual_custom": {
+  "annual": 5000,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "CV-FULL",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": 13,
+    "save_trucks": 0,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_annual_float": {
+  "annual": 100000,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "CV-FULL",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": 260,
+    "save_trucks": 8,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_annual_invalid": {
+  "annual": 100000,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "CV-FULL",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": 260,
+    "save_trucks": 8,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_annual_negative": {
+  "annual": 0,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "CV-FULL",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_annual_zero": {
+  "annual": 0,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "CV-FULL",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_by_ean": {
+  "annual": 100000,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "5901234123457",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": 260,
+    "save_trucks": 8,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_default": {
+  "annual": 100000,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "CV-FULL",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": 260,
+    "save_trucks": 8,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_issue_missing": {
+  "annual": 100000,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "CV-FULL",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": 260,
+    "save_trucks": 8,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_issue_not_digit": {
+  "annual": 100000,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "CV-FULL",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": 260,
+    "save_trucks": 8,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_issue_other_product": {
+  "annual": 100000,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": {
+   "product": "CV-OTHER",
+   "ref_code": "CV-OTHER"
+  },
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "CV-FULL",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": 260,
+    "save_trucks": 8,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_issue_own": {
+  "annual": 100000,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": {
+   "product": "CV-FULL",
+   "ref_code": "CV-FULL"
+  },
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "CV-FULL",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": 260,
+    "save_trucks": 8,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_lowercase_ref": {
+  "annual": 100000,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "cv-full",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": 260,
+    "save_trucks": 8,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "full_suggest": {
+  "annual": 100000,
+  "baseline": {
+   "cartons_per_pallet": 24,
+   "error": "",
+   "fill": 60,
+   "fits": true,
+   "h": 120,
+   "l": 20,
+   "label": "Obecny (instrukcja)",
+   "w": 20
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [
+   {
+    "cartons_per_pallet": 48,
+    "delta_pp": 40,
+    "fill": 100,
+    "h": 200,
+    "l": 10,
+    "save_pallets": 208,
+    "save_trucks": 6,
+    "w": 20
+   },
+   {
+    "cartons_per_pallet": 48,
+    "delta_pp": 40,
+    "fill": 100,
+    "h": 100,
+    "l": 10,
+    "save_pallets": 208,
+    "save_trucks": 6,
+    "w": 40
+   },
+   {
+    "cartons_per_pallet": 48,
+    "delta_pp": 40,
+    "fill": 100,
+    "h": 50,
+    "l": 10,
+    "save_pallets": 208,
+    "save_trucks": 6,
+    "w": 80
+   },
+   {
+    "cartons_per_pallet": 48,
+    "delta_pp": 40,
+    "fill": 100,
+    "h": 200,
+    "l": 20,
+    "save_pallets": 208,
+    "save_trucks": 6,
+    "w": 10
+   },
+   {
+    "cartons_per_pallet": 48,
+    "delta_pp": 40,
+    "fill": 100,
+    "h": 100,
+    "l": 20,
+    "save_pallets": 208,
+    "save_trucks": 6,
+    "w": 20
+   }
+  ],
+  "hier_a": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     20,
+     20,
+     120
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 10,
+     "dims_str": "20×20×120",
+     "error": "",
+     "fill": 75
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "73820cc8b314a995dc577c42ef0f218e821939e7d702cec8ea30950683e88e03",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 59,
+     "stack": "135/220 cm (zapas 85)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 24,
+     "sha256": "1aec61925a8e8091be0669eb4b0711703d1879617b8dd61a6e85219ef0ff16eb",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": [
+   {
+    "dims": [
+     5,
+     5,
+     10
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "5×5×10",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "c7f5c63e559479646b0a47d1212b316f7d62dcf102c47aa4ed94f27b9b8e42ae",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 12,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 83
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "dbff4ce58c97a0a15cc48c91c70840372a5c0857714d99298436dd28a9e27661",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 8,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": 96
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "837448aedaeaebc987bbb04dba935997e301edd6cff121ab7443955886ee7f5f",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "0acc19089fa0746c9da503d9b26dada93fc410f6c28e13131782a8de45c30abd",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_c": [
+   {
+    "dims": [
+     6,
+     6,
+     12
+    ],
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "6×6×12",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "d61aeea9ee1ef9f6ec3aa60c8d785571e622c90d10e7a4fd6e0fd006c2b1e77c",
+     "type": "box"
+    },
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": [
+     20,
+     15,
+     12
+    ],
+    "key": "inner_pack",
+    "spec": {
+     "contains": 6,
+     "dims_str": "20×15×12",
+     "error": "",
+     "fill": 72
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "334c05b267e219d0ea69472d2b336a81b3268f9f43ff12c4444e58211f838c03",
+     "type": "box_with_units"
+    },
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     60,
+     40,
+     30
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": 16,
+     "dims_str": "60×40×30",
+     "error": "",
+     "fill": 80
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "unit_h",
+      "unit_l",
+      "unit_w",
+      "units",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "3afac0077e3dfafa5f357e064a508e7ea816b334e4af7861553fc4f9c9ac4c62",
+     "type": "box_with_units"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 24,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 88,
+     "stack": "195/220 cm (zapas 25)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 4,
+     "sha256": "6fa00e0945b428dd9b0794026950233ecdbc1dd68ee1822bf6eb6e0b6a0a634d",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "instr": {
+   "product": "CV-FULL",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-FULL",
+  "promotions": [
+   {
+    "dims": "45×40×30",
+    "fill_after": 80,
+    "fill_before": 25,
+    "label": "Płaski",
+    "user": "promotor",
+    "version": 2
+   }
+  ],
+  "q": "CV-FULL",
+  "rows": [
+   {
+    "alt": {
+     "label": "Slot B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": 64,
+    "delta_cpp": 40,
+    "delta_pp": 40,
+    "error": "",
+    "fill": 100,
+    "fits": true,
+    "h": 25,
+    "history": [
+     {
+      "h": 25,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": 260,
+    "save_trucks": 8,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Slot C",
+     "slot": "C"
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 30,
+    "error": "",
+    "fill": 90,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 60,
+      "w": 40
+     }
+    ],
+    "l": 60,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Płaski",
+     "slot": ""
+    },
+    "cartons_per_pallet": 24,
+    "delta_cpp": 0,
+    "delta_pp": 8,
+    "error": "",
+    "fill": 68,
+    "fits": true,
+    "h": 30,
+    "history": [
+     {
+      "h": 30,
+      "l": 45,
+      "w": 40
+     },
+     {
+      "h": 30,
+      "l": 40,
+      "w": 40
+     }
+    ],
+    "l": 45,
+    "save_pallets": 0,
+    "save_trucks": 0,
+    "w": 40
+   },
+   {
+    "alt": {
+     "label": "Gigant",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Nie mieści się / błąd: Karton CV-FULL:ALT jest wyższy (300 cm) niż dozwolona wysokość ładunku na palecie EU (200 cm) — n",
+    "fill": null,
+    "fits": false,
+    "h": 300,
+    "history": [
+     {
+      "h": 300,
+      "l": 300,
+      "w": 300
+     }
+    ],
+    "l": 300,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 300
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Slot B",
+  "variant_c": "Slot C"
+ },
+ "laid_default": {
+  "annual": 100000,
+  "baseline": {
+   "cartons_per_pallet": 64,
+   "error": "",
+   "fill": 100,
+   "fits": true,
+   "h": 25,
+   "l": 40,
+   "label": "Obecny (instrukcja)",
+   "w": 30
+  },
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": [
+   {
+    "dims": null,
+    "key": "unit",
+    "spec": {
+     "contains": null,
+     "dims_str": "—",
+     "error": "Brak wymiarów sztuki w master data",
+     "fill": null
+    },
+    "three_data": "",
+    "title": "Sztuka / opakowanie"
+   },
+   {
+    "dims": null,
+    "key": "inner_pack",
+    "spec": {
+     "contains": null,
+     "dims_str": "—",
+     "error": "Brak OPZ w hierarchii materiału",
+     "fill": null
+    },
+    "three_data": "",
+    "title": "Opakowanie zbiorcze (OPZ)"
+   },
+   {
+    "dims": [
+     40,
+     30,
+     25
+    ],
+    "key": "carton",
+    "spec": {
+     "contains": null,
+     "dims_str": "40×30×25",
+     "error": "",
+     "fill": null
+    },
+    "three_data": {
+     "keys": [
+      "color",
+      "h",
+      "l",
+      "label",
+      "type",
+      "w"
+     ],
+     "n_placements": 0,
+     "sha256": "633447dc095b272668e6b417822a6569ff750199e8344ff1ce7e0062ab767bbd",
+     "type": "box"
+    },
+    "title": "Karton"
+   },
+   {
+    "dims": [
+     120,
+     80,
+     null
+    ],
+    "key": "pallet",
+    "spec": {
+     "contains": 64,
+     "dims_str": "120×80 · max 220 (instrukcja: 215)",
+     "error": "",
+     "fill": 98,
+     "stack": "215/220 cm (zapas 5)"
+    },
+    "three_data": {
+     "keys": [
+      "carton",
+      "color",
+      "label",
+      "layers",
+      "pallet",
+      "placements",
+      "type"
+     ],
+     "n_placements": 8,
+     "sha256": "de129bd04ef6570b8e420af31ad873c8ccd9793b3039ba0565df4f0ea33228a7",
+     "type": "pallet"
+    },
+    "title": "Paleta"
+   }
+  ],
+  "hier_b": null,
+  "hier_c": null,
+  "instr": {
+   "product": "CV-LAID",
+   "version": 1
+  },
+  "issue": null,
+  "pallet_three": {
+   "keys": [
+    "carton",
+    "color",
+    "label",
+    "layers",
+    "noRuler",
+    "pallet",
+    "placements",
+    "type"
+   ],
+   "n_placements": 8,
+   "sha256": "4ec0aa51745236ddd877b4bee6f259375bb21ad2af9f9ee00c8520973ff4b636",
+   "type": "pallet"
+  },
+  "product": "CV-LAID",
+  "promotions": [],
+  "q": "CV-LAID",
+  "rows": [],
+  "suggestions": [],
+  "variant_b": null,
+  "variant_c": null
+ },
+ "no_product_with_issue": {
+  "annual": 0,
+  "baseline": null,
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": null,
+  "hier_b": null,
+  "hier_c": null,
+  "instr": null,
+  "issue": null,
+  "pallet_three": null,
+  "product": null,
+  "promotions": [],
+  "q": "",
+  "rows": [],
+  "suggestions": [],
+  "variant_b": null,
+  "variant_c": null
+ },
+ "no_query": {
+  "annual": 0,
+  "baseline": null,
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": null,
+  "hier_b": null,
+  "hier_c": null,
+  "instr": null,
+  "issue": null,
+  "pallet_three": null,
+  "product": null,
+  "promotions": [],
+  "q": "",
+  "rows": [],
+  "suggestions": [],
+  "variant_b": null,
+  "variant_c": null
+ },
+ "noinstr_default": {
+  "annual": 0,
+  "baseline": null,
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": null,
+  "hier_b": null,
+  "hier_c": null,
+  "instr": null,
+  "issue": null,
+  "pallet_three": null,
+  "product": "CV-NOINSTR",
+  "promotions": [],
+  "q": "CV-NOINSTR",
+  "rows": [
+   {
+    "alt": {
+     "label": "Samotny",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Brak instrukcji bazowej materiału",
+    "fill": null,
+    "fits": false,
+    "h": 20,
+    "history": [
+     {
+      "h": 20,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Samotny B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Brak instrukcji bazowej materiału",
+    "fill": null,
+    "fits": false,
+    "h": 20,
+    "history": [
+     {
+      "h": 20,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 30
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Samotny B",
+  "variant_c": null
+ },
+ "noinstr_issue": {
+  "annual": 0,
+  "baseline": null,
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": null,
+  "hier_b": null,
+  "hier_c": null,
+  "instr": null,
+  "issue": {
+   "product": "CV-OTHER",
+   "ref_code": "CV-OTHER"
+  },
+  "pallet_three": null,
+  "product": "CV-NOINSTR",
+  "promotions": [],
+  "q": "CV-NOINSTR",
+  "rows": [
+   {
+    "alt": {
+     "label": "Samotny",
+     "slot": ""
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Brak instrukcji bazowej materiału",
+    "fill": null,
+    "fits": false,
+    "h": 20,
+    "history": [
+     {
+      "h": 20,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 30
+   },
+   {
+    "alt": {
+     "label": "Samotny B",
+     "slot": "B"
+    },
+    "cartons_per_pallet": null,
+    "delta_cpp": null,
+    "delta_pp": null,
+    "error": "Brak instrukcji bazowej materiału",
+    "fill": null,
+    "fits": false,
+    "h": 20,
+    "history": [
+     {
+      "h": 20,
+      "l": 40,
+      "w": 30
+     }
+    ],
+    "l": 40,
+    "save_pallets": null,
+    "save_trucks": null,
+    "w": 30
+   }
+  ],
+  "suggestions": [],
+  "variant_b": "Samotny B",
+  "variant_c": null
+ },
+ "query_no_match": {
+  "annual": 0,
+  "baseline": null,
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": null,
+  "hier_b": null,
+  "hier_c": null,
+  "instr": null,
+  "issue": null,
+  "pallet_three": null,
+  "product": null,
+  "promotions": [],
+  "q": "ZZZ-NIC",
+  "rows": [],
+  "suggestions": [],
+  "variant_b": null,
+  "variant_c": null
+ },
+ "query_suggestions_by_code": {
+  "annual": 0,
+  "baseline": null,
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": null,
+  "hier_b": null,
+  "hier_c": null,
+  "instr": null,
+  "issue": null,
+  "pallet_three": null,
+  "product": null,
+  "promotions": [],
+  "q": "CV-",
+  "rows": [],
+  "suggestions": [
+   {
+    "code": "CV-BARE",
+    "name": "Goły"
+   },
+   {
+    "code": "CV-FULL",
+    "name": "Pełny wariantowy"
+   },
+   {
+    "code": "CV-LAID",
+    "name": "Z układem"
+   },
+   {
+    "code": "CV-NOINSTR",
+    "name": "Bez instrukcji"
+   },
+   {
+    "code": "CV-OTHER",
+    "name": "Inny materiał"
+   }
+  ],
+  "variant_b": null,
+  "variant_c": null
+ },
+ "query_suggestions_by_name": {
+  "annual": 0,
+  "baseline": null,
+  "cfg": {
+   "down": 20,
+   "min_fill_pct": 70,
+   "ppt": 33,
+   "up": 20
+  },
+  "dim_suggestions": [],
+  "hier_a": null,
+  "hier_b": null,
+  "hier_c": null,
+  "instr": null,
+  "issue": null,
+  "pallet_three": null,
+  "product": null,
+  "promotions": [],
+  "q": "wariantowy",
+  "rows": [],
+  "suggestions": [
+   {
+    "code": "CV-FULL",
+    "name": "Pełny wariantowy"
+   }
+  ],
+  "variant_b": null,
+  "variant_c": null
+ }
+}

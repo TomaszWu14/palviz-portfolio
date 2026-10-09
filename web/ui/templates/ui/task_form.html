@@ -1,0 +1,108 @@
+{% extends "ui/base.html" %}
+{% block title %}{% if task.pk %}Edytuj zadanie{% else %}Nowe zadanie{% endif %} — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .chk-row { display:flex; align-items:center; gap:8px; padding:4px 0; }
+  .chk-btn {
+    background:none; border:1.5px solid var(--gray-300); border-radius:5px;
+    width:20px; height:20px; padding:0; cursor:pointer; flex-shrink:0;
+    display:inline-flex; align-items:center; justify-content:center; color:#fff;
+    transition:background .12s, border-color .12s;
+  }
+  .chk-btn:hover { border-color: var(--blue); }
+  .chk-btn--done { background:var(--green); border-color:var(--green); }
+  .chk-text--done { text-decoration:line-through; color:var(--gray-400); }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:tasks_home' %}">Zadania</a> › <span>{% if task.pk %}Edycja{% else %}Nowe{% endif %}</span></nav>
+
+<div class="page-header"><div><div class="page-header__title">{% if task.pk %}Edytuj zadanie{% else %}Nowe zadanie{% endif %}</div></div></div>
+
+<form method="post" class="card" style="max-width:640px">
+  {% csrf_token %}
+  <div class="card-body">
+    <div class="form-grid" style="grid-template-columns:1fr">
+      <div class="form-group">
+        <label>Tytuł</label>
+        <input aria-label="Tytuł" name="title" value="{{ task.title }}" required>
+      </div>
+      <div class="form-group">
+        <label>Opis</label>
+        <textarea aria-label="Opis" name="description" rows="4">{{ task.description }}</textarea>
+      </div>
+    </div>
+    <div class="form-grid mt-3" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+      <div class="form-group">
+        <label>Priorytet</label>
+        <select aria-label="Priorytet" name="priority">{% for v, l in priority_choices %}<option value="{{ v }}" {% if task.priority == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select aria-label="Status" name="status">{% for v, l in status_choices %}<option value="{{ v }}" {% if task.status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group">
+        <label>Termin</label>
+        <input aria-label="Termin" type="date" name="due_date" value="{{ task.due_date|date:'Y-m-d' }}">
+      </div>
+      <div class="form-group">
+        <label>Przypisane do</label>
+        <select aria-label="Przypisane do" name="assignee"><option value="">— zespół —</option>
+          {% for u in users %}<option value="{{ u.pk }}" {% if task.assignee_id == u.pk %}selected{% endif %}>{{ u.username }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer flex gap-2">
+    <a class="btn btn-secondary" href="{% url 'ui:tasks_home' %}">Anuluj</a>
+    <button class="btn btn-primary" type="submit">Zapisz</button>
+  </div>
+</form>
+
+{% if task.pk %}
+<div class="card mt-4" style="max-width:640px">
+  <div class="card-header">
+    <span class="card-header__title">Lista kontrolna{% if checklist %} <span class="text-muted" style="font-weight:400">({{ checklist_done }}/{{ checklist|length }})</span>{% endif %}</span>
+  </div>
+  <div class="card-body">
+    <div class="mb-2">
+      {% for c in checklist %}
+      <div class="chk-row">
+        <form method="post" action="{% url 'ui:task_checklist_toggle' c.pk %}" style="margin:0">{% csrf_token %}
+          <button type="submit" class="chk-btn {% if c.done %}chk-btn--done{% endif %}"
+                  title="{% if c.done %}Cofnij{% else %}Oznacz zrobione{% endif %}">
+            {% if c.done %}<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>{% endif %}
+          </button>
+        </form>
+        <span class="{% if c.done %}chk-text--done{% endif %}">{{ c.text }}</span>
+      </div>
+      {% empty %}<div class="text-muted text-sm">Brak pozycji.</div>{% endfor %}
+    </div>
+    <form method="post" action="{% url 'ui:task_checklist_add' task.pk %}" class="flex gap-2">
+      {% csrf_token %}
+      <input name="text" placeholder="Dodaj pozycję listy…" style="flex:1" required>
+      <button class="btn btn-secondary" type="submit">Dodaj</button>
+    </form>
+  </div>
+</div>
+
+<div class="card mt-4" style="max-width:640px">
+  <div class="card-header"><span class="card-header__title">Komentarze i dziennik</span></div>
+  <div class="card-body">
+    <div style="max-height:340px;overflow:auto" class="mb-2">
+      {% for c in comments %}
+      <div style="padding:8px 0;border-bottom:1px solid var(--gray-100);{% if c.is_system %}color:var(--gray-500);font-size:13px{% endif %}">
+        {% if c.is_system %}{{ c.body }}{% else %}<strong>{{ c.author.username|default:"—" }}:</strong> {{ c.body }}{% endif %}
+        <span style="float:right;font-size:11px;color:var(--gray-400)">{{ c.created_at|date:"d.m H:i" }}</span>
+      </div>
+      {% empty %}<div class="text-muted text-sm">Brak wpisów.</div>{% endfor %}
+    </div>
+    <form method="post" action="{% url 'ui:task_comment' task.pk %}" class="flex gap-2">
+      {% csrf_token %}
+      <input name="body" placeholder="Dodaj komentarz…" style="flex:1" required>
+      <button class="btn btn-primary" type="submit">Dodaj</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

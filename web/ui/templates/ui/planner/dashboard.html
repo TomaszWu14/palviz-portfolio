@@ -1,0 +1,309 @@
+{% extends "ui/base.html" %}
+{% block title %}Planer — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Dashboard layout ── */
+  .dash { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+
+  /* ── Section frame ── */
+  .dash-section {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 16px;
+    padding: 16px 16px 18px;
+    margin-bottom: 20px;
+  }
+  .dash-section:last-child { margin-bottom: 0; }
+  .dash-section__label {
+    display: flex; align-items: center; gap: 9px;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--gray-500);
+    margin: 2px 0 14px 2px;
+  }
+  .dash-section__label::before {
+    content: ""; width: 4px; height: 15px; border-radius: 3px;
+    background: var(--sc, var(--blue));
+  }
+  .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* ── Tile ── */
+  .tile {
+    --c:  var(--blue);
+    --cbg:var(--blue-light);
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    text-decoration: none;
+    transition: box-shadow .15s, border-color .15s, transform .15s;
+  }
+  .tile:hover {
+    border-color: var(--c);
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--c) 22%, transparent);
+    transform: translateY(-2px);
+  }
+  .tile__icon {
+    width: 46px; height: 46px; flex-shrink: 0;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--c) 20%, transparent);
+    color: var(--c);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tile__body { min-width: 0; flex: 1; }
+  .tile__title {
+    font-size: 15px; font-weight: 700; color: var(--gray-900);
+    display: flex; align-items: center; gap: 8px; line-height: 1.2;
+  }
+  .tile__sub { font-size: 12px; color: var(--gray-500); margin-top: 3px; }
+  .tile__count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 20px; height: 20px; padding: 0 6px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--c) 22%, transparent); color: color-mix(in srgb, var(--c) 55%, var(--gray-900));
+    font-size: 11px; font-weight: 700;
+  }
+  .tile__arrow {
+    margin-left: auto; color: var(--gray-300); flex-shrink: 0;
+    transition: transform .15s, color .15s;
+  }
+  .tile:hover .tile__arrow { color: var(--c); transform: translateX(2px); }
+
+  /* ── Side panels ── */
+  .side-card { background: var(--surface); border: 1px solid var(--gray-200); border-radius: 14px; box-shadow: var(--shadow-sm); margin-bottom: 20px; overflow: hidden; }
+  .side-card__head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 18px; border-bottom: 1px solid var(--gray-100);
+  }
+  .side-card__title { font-size: 15px; font-weight: 700; color: var(--gray-900); display:flex; align-items:center; gap:8px; }
+  .side-card__title::before { content:""; width:4px; height:15px; border-radius:3px; background: var(--sc, var(--blue)); }
+  .side-card__meta { font-size: 12px; color: var(--gray-400); font-weight: 500; }
+  .side-card__body { padding: 16px 18px; }
+
+  .side-empty { text-align: center; padding: 26px 12px; }
+  .side-empty__icon {
+    width: 52px; height: 52px; margin: 0 auto 12px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--c, var(--gray-400)) 18%, transparent);
+    color: var(--c, var(--gray-400));
+    display: flex; align-items: center; justify-content: center;
+  }
+  .side-empty__title { font-size: 15px; font-weight: 700; color: var(--gray-700); }
+  .side-empty__desc { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
+
+  .report-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+  .report-row:last-child { border-bottom: none; }
+
+  /* occupancy bars */
+  .occ-row { display: grid; grid-template-columns: 64px 1fr 42px; align-items: center; gap: 12px; padding: 9px 0; }
+  .occ-label { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+  .occ-track { height: 8px; border-radius: 5px; background: var(--gray-200); overflow: hidden; }
+  .occ-fill { height: 100%; border-radius: 5px; transition: width .4s ease; }
+  .occ-fill--high { background: #ea580c; }
+  .occ-fill--mid  { background: var(--green); }
+  .occ-fill--low  { background: var(--gray-300); }
+  .occ-pct { font-size: 13px; font-weight: 700; color: var(--gray-700); text-align: right; }
+
+  @media (max-width: 1024px) { .dash { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .dash-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Panel planisty</div>
+    <div class="page-header__sub">Zarządzaj produktami, kartonami i instrukcjami paletyzacji</div>
+  </div>
+</div>
+
+<!-- Alert: products without instruction -->
+{% if no_instruction_count %}
+<div class="alert alert-warning" style="align-items:center;gap:14px;margin-bottom:20px">
+  <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="var(--yellow)" stroke-width="2" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+  <div style="flex:1">
+    <div style="font-weight:700;font-size:14px">
+      {{ no_instruction_count }} aktywn{{ no_instruction_count|pluralize:"y produkt,e produkty,ych produktów" }} bez instrukcji paletyzacji
+    </div>
+    <div style="font-size:12px;margin-top:2px">
+      {% for p in no_instruction_sample %}{{ p.code }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if no_instruction_count > 5 %} i inne…{% endif %}
+    </div>
+  </div>
+  <a href="{% url 'ui:planner_products' %}?no_instr=1" class="btn btn-sm" style="background:var(--yellow-solid);color:#fff;border:none;white-space:nowrap">
+    Pokaż wszystkie →
+  </a>
+</div>
+{% endif %}
+
+<div class="dash">
+  <!-- ── Left: grouped navigation tiles ── -->
+  <div>
+    <!-- Dane podstawowe -->
+    <div class="dash-section" style="--sc:#6366f1">
+      <div class="dash-section__label">Dane podstawowe</div>
+      <div class="dash-grid">
+        <a href="{% url 'ui:planner_products' %}" class="tile" style="--c:#6366f1;--cbg:#eef2ff">
+          <div class="tile__icon">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.27 6.96 8.73 5.05 8.73-5.05"/><path d="M12 22.08V12"/></svg>
+          </div>
+          <div class="tile__body">
+            <div class="tile__title">Produkty {% if product_count %}<span class="tile__count">{{ product_count }}</span>{% endif %}</div>
+            <div class="tile__sub">Baza indeksów</div>
+          </div>
+        </a>
+        <a href="{% url 'ui:planner_cartons' %}" class="tile" style="--c:#2563eb;--cbg:var(--blue-light)">
+          <div class="tile__icon">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+          </div>
+          <div class="tile__body">
+            <div class="tile__title">Kartony {% if carton_count %}<span class="tile__count">{{ carton_count }}</span>{% endif %}</div>
+            <div class="tile__sub">Baza opakowań</div>
+          </div>
+        </a>
+        <a href="{% url 'ui:planner_instructions' %}" class="tile" style="--c:#0891b2;--cbg:#ecfeff">
+          <div class="tile__icon">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2"/></svg>
+          </div>
+          <div class="tile__body">
+            <div class="tile__title">Instrukcje {% if instruction_count %}<span class="tile__count">{{ instruction_count }}</span>{% endif %}</div>
+            <div class="tile__sub">Instrukcje paletyzacji</div>
+          </div>
+        </a>
+        <a href="{% url 'ui:planner_excel_templates' %}" class="tile" style="--c:#0d9488;--cbg:#f0fdfa">
+          <div class="tile__icon">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9.5 12.5 5 5M14.5 12.5l-5 5"/></svg>
+          </div>
+          <div class="tile__body">
+            <div class="tile__title">Szablony Excel</div>
+            <div class="tile__sub">Importy masowe danych</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Planowanie i operacje -->
+    <div class="dash-section" style="--sc:var(--green-solid)">
+      <div class="dash-section__label">Planowanie i operacje</div>
+      <div class="dash-grid">
+        <a href="{% url 'ui:planner_calc_index' %}" class="tile" style="--c:var(--green-solid);--cbg:#ecfdf5">
+          <div class="tile__icon">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M14 10h2M8 14h2M14 14h2M8 18h2M14 18h2"/></svg>
+          </div>
+          <div class="tile__body">
+            <div class="tile__title">Kalkulator</div>
+            <div class="tile__sub">Symulacja paletyzacji ad-hoc</div>
+          </div>
+        </a>
+        <a href="{% url 'ui:packaging_optimizer' %}" class="tile" style="--c:#0d9488;--cbg:#f0fdfa">
+          <div class="tile__icon">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.27 6.96 8.73 5.05 8.73-5.05"/><path d="M12 22.08V12"/></svg>
+          </div>
+          <div class="tile__body">
+            <div class="tile__title">Optymalizator opakowań</div>
+            <div class="tile__sub">Dobór kartonu, wypełnienie %, tolerancja</div>
+          </div>
+        </a>
+        <a href="{% url 'ui:planner_shipments' %}" class="tile" style="--c:#7c3aed;--cbg:#f5f3ff">
+          <div class="tile__icon">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v5"/><path d="M14 17v4a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-4"/><path d="M18 17h4"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+          </div>
+          <div class="tile__body">
+            <div class="tile__title">Wysyłki</div>
+            <div class="tile__sub">Kalkulator transportu</div>
+          </div>
+        </a>
+        <a href="{% url 'ui:planner_reports' %}" class="tile" style="--c:var(--yellow-solid);--cbg:var(--yellow-light)">
+          <div class="tile__icon">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="tile__body">
+            <div class="tile__title">Zgłoszenia <span class="tile__count">{{ report_count }}</span></div>
+            <div class="tile__sub">Błędy od magazynierów</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Magazyn i analizy -->
+    <div class="dash-section" style="--sc:#ea580c">
+      <div class="dash-section__label">Magazyn i analizy</div>
+      <div class="dash-grid">
+        <a href="{% url 'ui:warehouse_map' %}" class="tile" style="--c:#10b981;--cbg:#ecfdf5">
+          <div class="tile__icon">
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 21V8l9-5 9 5v13"/><path d="M3 21h18M7 21v-6h4v6M13 21v-9h4v9"/></svg>
+          </div>
+          <div class="tile__body">
+            <div class="tile__title">Magazyn 3D</div>
+            <div class="tile__sub">Lokalizacje · widok 3D · kompletacja, heatmapa, zajętość</div>
+          </div>
+          <span class="tile__arrow"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right: side panels ── -->
+  <aside>
+    <!-- New error reports -->
+    <div class="side-card" style="--sc:var(--yellow-solid);--c:var(--yellow-solid);--cbg:var(--yellow-light)">
+      <div class="side-card__head">
+        <span class="side-card__title">Nowe zgłoszenia błędów</span>
+        <a href="{% url 'ui:planner_reports' %}" class="btn btn-ghost btn-sm" style="color:var(--blue-mid)">Wszystkie →</a>
+      </div>
+      <div class="side-card__body">
+        {% if recent_reports %}
+          {% for r in recent_reports %}
+          <a href="{% url 'ui:planner_report_detail' r.pk %}" class="report-row" style="text-decoration:none">
+            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="var(--yellow-solid)" stroke-width="2" style="flex-shrink:0"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:600;color:var(--gray-900);font-size:13px">{{ r.product_code|default:"—" }}</div>
+              <div class="text-sm text-muted">{{ r.reporter_location|truncatechars:24 }}</div>
+            </div>
+            <div class="text-sm text-muted" style="white-space:nowrap">{{ r.created_at|date:"d.m H:i" }}</div>
+          </a>
+          {% endfor %}
+        {% else %}
+          <div class="side-empty">
+            <div class="side-empty__icon">
+              <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="side-empty__title">Brak zgłoszeń</div>
+            <div class="side-empty__desc">Wszystkie instrukcje bez uwag magazynierów</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Warehouse occupancy -->
+    <div class="side-card" style="--sc:#16a34a;--c:#16a34a;--cbg:#f0fdf4">
+      <div class="side-card__head">
+        <span class="side-card__title">Wypełnienie magazynu</span>
+        {% if occupancy_zones %}<span class="side-card__meta">{{ zones_label }}</span>{% endif %}
+      </div>
+      <div class="side-card__body">
+        {% if occupancy_zones %}
+          {% for z in occupancy_zones %}
+          <div class="occ-row">
+            <span class="occ-label">Strefa {{ z.zone }}</span>
+            <div class="occ-track">
+              <div class="occ-fill {% if z.pct >= 85 %}occ-fill--high{% elif z.pct >= 35 %}occ-fill--mid{% else %}occ-fill--low{% endif %}" style="width:{{ z.pct }}%"></div>
+            </div>
+            <span class="occ-pct">{{ z.pct }}%</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="side-empty">
+            <div class="side-empty__icon">
+              <svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="21" x2="21" y2="21"/><rect x="5" y="11" width="4" height="9"/><rect x="11" y="6" width="4" height="14"/><rect x="17" y="14" width="4" height="6"/></svg>
+            </div>
+            <div class="side-empty__title">Brak danych</div>
+            <div class="side-empty__desc">Wgraj snapshot magazynu, aby zobaczyć wypełnienie stref</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

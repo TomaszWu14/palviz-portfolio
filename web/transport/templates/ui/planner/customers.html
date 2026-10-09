@@ -1,0 +1,90 @@
+{% extends "ui/base.html" %}{% load palviz_extras %}
+{% block title %}Klienci — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_shipments' %}">Wysyłki</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Baza klientów</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Baza klientów / odbiorców</h1>
+    <div class="page-header__sub">Dane klientów i wymagania per klient (wysokość palety, fumigacja, typ palety)</div>
+  </div>
+  <div class="page-header__actions toolbar__end">
+    <form method="post" action="{% url 'ui:planner_customer_import' %}" enctype="multipart/form-data"
+          title="Import klientów z eksportu SAP KNA1 / Excel (Klient, Nazwa klienta, Kraj, Miasto, Kod pocztowy, Ulica, Telefon). Upsert po numerze klienta — nie nadpisuje wymagań.">
+      {% csrf_token %}
+      <label class="btn btn-secondary menu__upload" style="cursor:pointer">{% icon "file-up" %}Importuj klientów
+        <input type="file" name="file" accept=".csv,.xlsx,.xls" onchange="gvUpload(this)"></label>
+    </form>
+    <a href="{% url 'ui:planner_customer_new' %}" class="btn btn-primary" data-testid="customer-new">{% icon "plus" %}Nowy klient</a>
+  </div>
+</div>
+
+<form method="get" class="filterbar" role="search" data-testid="customers-filter">
+  <label class="filterbar__search"><span class="sr-only">Szukaj klienta</span>{% icon "search" %}
+    <input type="text" name="q" value="{{ q }}" placeholder="Szukaj: nazwa, kod, miasto…"></label>
+  <button type="submit" class="btn btn-secondary">{% icon "filter" %}Szukaj</button>
+  {% if q %}<a href="{% url 'ui:planner_customers' %}" class="btn btn-ghost">{% icon "x" %}Wyczyść</a>{% endif %}
+</form>
+
+<div class="card">
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Lista klientów">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nazwa / kod</th>
+          <th>Typ</th>
+          <th>Lokalizacja</th>
+          <th>Wymagania</th>
+          <th class="num">Przesyłki</th>
+          <th><span class="sr-only">Akcje</span></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in customers %}
+      <tr {% if not c.is_active %}style="opacity:.55"{% endif %}>
+        <td>
+          <strong>{{ c.name }}</strong>
+          {% if c.code %}<div class="text-sm text-muted">{{ c.code }}</div>{% endif %}
+        </td>
+        <td><span class="badge badge-gray">{{ c.get_kind_display }}</span></td>
+        <td class="text-sm">{{ c.city }}{% if c.country %} · {{ c.country }}{% endif %}</td>
+        <td>
+          {% if c.max_pallet_height_cm %}<span class="badge badge-blue" style="margin:1px">≤ {{ c.max_pallet_height_cm }} cm</span>{% endif %}
+          {% if c.max_pallet_weight_kg %}<span class="badge badge-blue" style="margin:1px">≤ {{ c.max_pallet_weight_kg }} kg</span>{% endif %}
+          {% if c.requires_fumigated_pallet %}<span class="badge badge-amber" style="margin:1px">{% icon "thermometer" %} fumigacja</span>{% endif %}
+          {% if c.pallet_type %}<span class="badge badge-gray" style="margin:1px">{{ c.get_pallet_type_display }}</span>{% endif %}
+          {% if not c.has_requirements %}<span class="text-muted">—</span>{% endif %}
+        </td>
+        <td class="num">{{ c.n_shipments }}</td>
+        <td>
+          <div class="actions">
+            {% url 'ui:planner_customer_edit' c.pk as edit_url %}{% icon_button "pencil" label="Edytuj" href=edit_url size="sm" %}
+            <form method="post" action="{% url 'ui:planner_customer_delete' c.pk %}">
+              {% csrf_token %}
+              {% icon_button "trash-2" label="Usuń" type="submit" variant="btn-ghost text-danger" size="sm" confirm="Usunąć klienta „"|add:c.name|add:"”?" %}
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">
+          <div class="empty-state">
+            <div class="empty-state__icon">{% icon "users" 24 %}</div>
+            <div class="empty-state__title">Brak klientów</div>
+            <div class="empty-state__desc"><a href="{% url 'ui:planner_customer_new' %}">Dodaj pierwszego klienta</a></div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

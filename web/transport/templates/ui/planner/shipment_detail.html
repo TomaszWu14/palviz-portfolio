@@ -1,0 +1,1052 @@
+{% extends "ui/base.html" %}{% load palviz_extras %}
+{% block title %}{{ shipment.name }} — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_shipments' %}">Wysyłki</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{{ shipment.name }}</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">
+      {{ shipment.name }}
+      {% if shipment.destination_country %}
+        <span class="badge badge-gray" style="font-size:14px;vertical-align:middle;margin-left:6px">{{ shipment.destination_country }}</span>
+      {% endif %}
+      {% if shipment.destination_city %}
+        <span style="font-size:15px;color:var(--gray-500);font-weight:400"> {{ shipment.destination_city }}</span>
+      {% endif %}
+    </div>
+    <div class="page-header__sub">
+      {{ shipment.get_status_display }} · {{ shipment.created_at|date:"d.m.Y H:i" }}
+      {% if shipment.author %} · Autor: <strong>{{ shipment.author }}</strong>{% endif %}
+      {% if shipment.author_email %}
+        · <a href="mailto:{{ shipment.author_email }}">{{ shipment.author_email }}</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="page-header__actions">
+    {% if shipment.status != 'cancelled' %}
+    <a href="{% url 'ui:planner_shipment_quote' shipment.pk %}" class="btn btn-primary" title="Trasa + wysyłka zapytania do spedycji">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      Zapytanie o wycenę
+    </a>
+    {% if quote_offers %}
+    <form method="post" action="{% url 'ui:planner_shipment_requote' shipment.pk %}" style="margin:0"
+          onsubmit="return confirm('Otworzyć ponowną wycenę? Odblokuje formularze spedycji i wyczyści wybór/kierowcę.');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-secondary" title="Ponowna wycena gdy coś się zmieniło">{% icon "refresh-cw" %} Ponowna wycena</button>
+    </form>
+    {% endif %}
+    <form method="post" action="{% url 'ui:planner_shipment_cancel' shipment.pk %}" style="margin:0"
+          onsubmit="return confirm('Anulować przesyłkę? Powiadomimy wybraną spedycję.');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-secondary" style="color:var(--red)">{% icon "x" %} Anuluj</button>
+    </form>
+    {% else %}
+    <span class="badge" style="background:var(--red-light);color:var(--red);font-size:13px;padding:6px 12px">Przesyłka anulowana</span>
+    {% if cancel_mailto %}<a href="{{ cancel_mailto }}" class="btn btn-secondary">{% icon "mail" %} Powiadom spedycję</a>{% endif %}
+    {# Status nie jest już edytowalny w formularzu (BIZ-003) — powrót do roboczej = ponowna wycena. #}
+    <form method="post" action="{% url 'ui:planner_shipment_requote' shipment.pk %}" style="margin:0"
+          onsubmit="return confirm('Przywrócić przesyłkę jako roboczą? Otworzy ponowną wycenę i wyczyści wybór/kierowcę.');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-secondary" title="Przywróć jako roboczą (ponowna wycena)">{% icon "refresh-cw" %} Przywróć</button>
+    </form>
+    {% endif %}
+    <a href="{% url 'ui:planner_shipment_export' shipment.pk %}" class="btn btn-secondary">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Excel
+    </a>
+    <a href="{% url 'ui:planner_shipment_edit' shipment.pk %}" class="btn btn-secondary">Edytuj</a>
+    <a href="{% url 'ui:planner_shipment_new' %}" class="btn btn-primary">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14m-7-7h14"/></svg>
+      Nowa
+    </a>
+  </div>
+</div>
+
+{% if customer and customer.has_requirements %}
+<div class="card" style="margin-bottom:14px;border-left:4px solid #b45309;background:var(--yellow-light)">
+  <div style="padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <div style="font-weight:700;color:var(--yellow-dark)">{% icon "triangle-alert" %} Wymagania klienta — {{ customer.name }}</div>
+    {% if customer.max_pallet_height_cm %}<span class="badge badge-blue">Maks. wysokość palety: {{ customer.max_pallet_height_cm }} cm{% if height_capped %} (zastosowano){% endif %}</span>{% endif %}
+    {% if customer.max_pallet_weight_kg %}<span class="badge badge-blue">Maks. waga palety: {{ customer.max_pallet_weight_kg }} kg{% if weight_capped %} (zastosowano){% endif %}</span>{% endif %}
+    {% if customer.requires_fumigated_pallet %}<span class="badge badge-amber">{% icon "thermometer" %} Paleta fumigowana (ISPM 15)</span>{% endif %}
+    {% if customer.pallet_type %}<span class="badge badge-gray">Typ palety: {{ customer.get_pallet_type_display }}</span>{% endif %}
+    {% if customer.requires_adr %}<span class="badge badge-amber">{% icon "biohazard" %} ADR</span>{% endif %}
+    {% if customer.temp_control %}<span class="badge badge-amber">{% icon "snowflake" %} {{ customer.temp_control }}</span>{% endif %}
+    {% if customer.delivery_hours %}<span class="badge badge-gray">{% icon "clock" %} {{ customer.delivery_hours }}</span>{% endif %}
+  </div>
+  {% if customer.requirements_notes %}
+  <div style="padding:0 16px 12px;color:#78350f;font-size:13px">{{ customer.requirements_notes|linebreaksbr }}</div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if shipment.recipient_name or shipment.destination_city %}
+<div class="card" style="margin-bottom:12px">
+  <div class="card-body" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+    <div style="font-size:13px">
+      {% if shipment.recipient_name %}<strong>{{ shipment.recipient_name }}</strong> · {% endif %}
+      Cel: <strong>{{ shipment.destination_address|default:"—" }}</strong>
+      {% if shipment.ramp %} · Rampa: <strong>{{ shipment.ramp }}</strong>{% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Status realizacji (workflow) -->
+<div class="card" style="margin-bottom:12px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:600;font-size:14px">Status realizacji</div>
+  <div style="padding:12px 16px;display:flex;gap:8px;flex-wrap:wrap">
+    {% for s in shipment.workflow %}
+    <div style="display:flex;align-items:center;gap:6px;font-size:12px;padding:6px 10px;border-radius:999px;
+                background:{% if s.state == 'done' %}var(--green-light){% elif s.state == 'err' %}var(--red-light){% elif s.state == 'warn' %}var(--warn-bg){% else %}var(--gray-100){% endif %};
+                color:{% if s.state == 'done' %}var(--ok-fg){% elif s.state == 'err' %}var(--danger-fg){% elif s.state == 'warn' %}var(--warn-fg){% else %}var(--gray-600){% endif %}">
+      <span>{% if s.state == 'done' %}{% icon "check" %}{% elif s.state == 'err' %}{% icon "x" %}{% elif s.state == 'warn' %}{% icon "hourglass" %}{% else %}{% icon "circle" %}{% endif %}</span>
+      <strong>{{ s.label }}</strong>{% if s.detail %}<span>· {{ s.detail }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% if shipment.client_requirements %}
+<div class="alert" style="margin-bottom:12px;border:2px solid #f59e0b;background:var(--yellow-light);color:var(--yellow-dark)">
+  <strong>{% icon "triangle-alert" %} Wymagania klienta:</strong> {{ shipment.client_requirements }}
+  <div style="font-size:12px;margin-top:2px">Zostaną dołączone do maila o gotowości do magazynu.</div>
+</div>
+{% endif %}
+
+{% if calc.has_missing %}
+<div class="alert alert-error" style="margin-bottom:12px;border:2px solid #dc2626;background:#fef2f2;color:var(--red)">
+  <strong>{% icon "triangle-alert" %} Wycena zaniżona — pominięto towar bez instrukcji paletyzacji!</strong>
+  <div style="margin:4px 0">Poniższe pozycje NIE są wliczone do objętości, wagi ani liczby palet.
+    Dodaj instrukcję paletyzacji dla tych produktów, zanim wyślesz wycenę:</div>
+  <ul style="margin:4px 0 0 18px;padding:0">
+    {% for m in calc.missing_products %}<li><b>{{ m.code }}</b> — {{ m.name }} ({{ m.quantity }} {{ m.unit }})</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% if calc.errors and not calc.has_missing %}
+<div class="alert alert-warning" style="margin-bottom:12px">
+  <strong>Uwagi:</strong>
+  <ul style="margin:4px 0 0 18px;padding:0">
+    {% for e in calc.errors %}<li>{{ e }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<!-- KPI banner -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+  <div class="card" style="text-align:center;padding:16px">
+    <div style="font-size:28px;font-weight:700;color:var(--blue-mid)">{{ calc.total_cartons }}</div>
+    <div style="font-size:12px;color:var(--gray-500);margin-top:2px">Kartonów</div>
+  </div>
+  <div class="card" style="text-align:center;padding:16px">
+    <div style="font-size:28px;font-weight:700;color:var(--blue-mid)">{{ calc.total_vol_m3 }}</div>
+    <div style="font-size:12px;color:var(--gray-500);margin-top:2px">m³ objętości</div>
+  </div>
+  <div class="card" style="text-align:center;padding:16px">
+    <div style="font-size:28px;font-weight:700;color:var(--blue-mid)">{{ calc.total_weight_kg }}</div>
+    <div style="font-size:12px;color:var(--gray-500);margin-top:2px">kg wagi brutto</div>
+  </div>
+  <div class="card" style="text-align:center;padding:16px">
+    <div style="font-size:28px;font-weight:700;color:#059669">{{ calc.dim_weight_kg }}</div>
+    <div style="font-size:12px;color:var(--gray-500);margin-top:2px">kg waga obj. (÷5000)</div>
+  </div>
+</div>
+
+<style>
+  .hstp{width:40px;height:40px;border:1px solid var(--gray-300);border-radius:10px;background:var(--gray-50);
+        font-size:24px;font-weight:800;color:var(--blue-mid);cursor:pointer;line-height:1;display:flex;
+        align-items:center;justify-content:center;flex-shrink:0}
+  .hstp:active{background:var(--gray-200)}
+  .viz-panel{display:flex;flex-direction:column}
+</style>
+
+<!-- Definicja wysyłki: typ pojazdu + tryb załadunku → steruje wizualizacją (bez blokady) -->
+<div class="card" style="margin-bottom:14px">
+  <form method="post" style="padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    {% csrf_token %}
+    <input type="hidden" name="define" value="1">
+    <span style="font-weight:600;font-size:15px">Definicja wysyłki</span>
+    <label style="font-size:13px;color:var(--gray-700);font-weight:600">Typ pojazdu
+      <select name="vehicle" style="margin-left:6px;padding:5px 8px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px">
+        {% for v in vehicles %}<option value="{{ v.key }}" {% if v.key == primary_vehicle_key %}selected{% endif %}>{{ v.name }}</option>{% endfor %}
+      </select>
+    </label>
+    <span style="font-size:13px;color:var(--gray-700);font-weight:600">Załadunek:</span>
+    <label style="font-size:13px;cursor:pointer"><input type="radio" name="load_mode" value="pallets" {% if shipment.load_mode != 'loose' %}checked{% endif %}> Na paletach</label>
+    <label style="font-size:13px;cursor:pointer"><input type="radio" name="load_mode" value="loose" {% if shipment.load_mode == 'loose' %}checked{% endif %}> Bez palet (luzem)</label>
+    <button type="submit" class="btn btn-primary btn-sm">Zastosuj</button>
+    <span style="margin-left:auto;font-size:12px;color:var(--gray-500)">
+      Wizualizacja: <strong>{% if viz_kind == 'container' %}kontener (kartony luzem){% else %}palety{% endif %}</strong>
+    </span>
+  </form>
+</div>
+
+{% if viz_kind == 'container' %}
+<div class="card" style="margin-bottom:8px;overflow:hidden">
+  <div style="padding:10px 16px;border-bottom:1px solid var(--gray-100);font-weight:600;font-size:14px">
+    Załadunek w pojeździe — {{ shipment.get_load_mode_display }}
+    <a href="{% url 'ui:planner_shipment_container' shipment.pk %}?mode={{ shipment.load_mode }}&vehicle={{ primary_vehicle_key }}"
+       class="btn btn-ghost btn-sm" style="float:right" target="_blank" rel="noopener">Otwórz w pełnym oknie ↗</a>
+  </div>
+  <iframe src="{% url 'ui:planner_shipment_container' shipment.pk %}?mode={{ shipment.load_mode }}&vehicle={{ primary_vehicle_key }}"
+          style="width:100%;height:600px;border:0;display:block"></iframe>
+</div>
+{% endif %}
+
+<!-- Controls: efficiency is global; pallet heights are edited inline per scenario -->
+<div class="card" style="margin-bottom:14px">
+  <div style="padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+    <span style="font-weight:600;font-size:15px">Scenariusze paletyzacji</span>
+    <span style="font-size:12px;color:var(--gray-400)">Oba scenariusze naraz · zmień wysokość +/- bezpośrednio przy wizualizacji</span>
+    {% if shipment.actual_hu_count %}
+    <span title="Faktyczna liczba jednostek obsługi (palet) z dokumentu dostawy SAP — wycena kotwiczy się na tej wartości, niezależnie od efektywności."
+          style="display:inline-flex;align-items:center;gap:6px;background:#ecfdf5;color:var(--green);border:1px solid #6ee7b7;font-weight:700;font-size:13px;padding:5px 11px;border-radius:8px">
+      {% icon "check" %} Rzeczywiste HU (SAP): {{ shipment.actual_hu_count }} palet
+    </span>
+    {% elif shipment.warehouse_pallets %}
+    <span title="Liczba palet uzgodniona z magazynem — kotwiczy wycenę i wysyłkę do spedycji."
+          style="display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);color:var(--blue-mid);border:1px solid #93c5fd;font-weight:700;font-size:13px;padding:5px 11px;border-radius:8px">
+      {% icon "warehouse" %} Uzgodniono z magazynem: {{ shipment.warehouse_pallets }} palet
+    </span>
+    {% endif %}
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <span style="font-size:13px;color:var(--gray-700);font-weight:600">Efektywność</span>
+      {% if shipment.is_pallet_count_anchored %}
+      <button type="button" class="hstp" disabled style="opacity:.35;cursor:not-allowed" title="Liczba palet jest uzgodniona — efektywność jej nie zmienia">−</button>
+      <span style="min-width:58px;text-align:center;font-size:18px;font-weight:800;color:var(--gray-400)">{{ calc.stow_eff_pct }}%</span>
+      <button type="button" class="hstp" disabled style="opacity:.35;cursor:not-allowed" title="Liczba palet jest uzgodniona — efektywność jej nie zmienia">+</button>
+      <span style="font-size:11px;color:var(--gray-400);max-width:170px;line-height:1.2">Liczba palet uzgodniona — suwak nieaktywny</span>
+      {% else %}
+      <button type="button" class="hstp" onclick="bumpEff(-5)">−</button>
+      <span id="eff-val" data-eff="{{ calc.stow_eff_pct }}"
+            style="min-width:58px;text-align:center;font-size:18px;font-weight:800;color:var(--gray-900)">{{ calc.stow_eff_pct }}%</span>
+      <button type="button" class="hstp" onclick="bumpEff(5)">+</button>
+      {% endif %}
+    </div>
+  </div>
+  {% if shipment.is_pallet_count_anchored %}
+  {% with sc0=calc.scenarios.0 %}
+  <div style="padding:8px 16px;border-top:1px solid var(--gray-100);font-size:12px;color:var(--gray-700);display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    {% if sc0 and sc0.est_theoretical and sc0.est_theoretical != sc0.n_pallets %}
+    <span style="color:var(--yellow-dark)">{% icon "triangle-alert" %} Szacunek przy {{ calc.stow_eff_pct }}% to {{ sc0.est_theoretical }} palet, a uzgodniono {{ sc0.n_pallets }}.</span>
+    {% endif %}
+    <form method="post" style="display:flex;gap:6px;align-items:center;flex:1;min-width:260px;margin:0">
+      {% csrf_token %}
+      <input type="hidden" name="save_anchor_note" value="1">
+      <span style="white-space:nowrap">{% icon "file-pen" %} Komentarz:</span>
+      <input type="text" name="anchor_note" value="{{ shipment.anchor_note }}" maxlength="300"
+             placeholder="np. magazyn potwierdził 2 palety mimo szacunku 3"
+             style="flex:1;padding:4px 8px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px">
+      <button type="submit" class="btn btn-secondary btn-sm">Zapisz</button>
+    </form>
+  </div>
+  {% endwith %}
+  {% endif %}
+</div>
+
+{% if viz_kind != 'container' and three_views %}
+<div style="display:grid;grid-template-columns:repeat({{ three_views|length }},minmax(0,1fr));gap:16px;margin-bottom:8px">
+  {% for v in three_views %}
+  <div class="card viz-panel"
+       style="{% if chosen_height and v.scenario.max_h_cm == chosen_height %}outline:3px solid #16a34a;outline-offset:-3px{% elif chosen_height and v.scenario.max_h_cm != chosen_height %}opacity:.5;filter:grayscale(.55){% endif %}">
+    <!-- Header: inline height stepper + key stats -->
+    <div style="padding:10px 14px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button type="button" class="hstp" {% if chosen_height and v.scenario.max_h_cm != chosen_height %}disabled style="opacity:.4;cursor:not-allowed"{% else %}onclick="bumpHeight({{ forloop.counter0 }},-0.01)"{% endif %} title="Niżej o 1 cm">−</button>
+      <div style="text-align:center;min-width:96px">
+        <div class="h-disp" data-idx="{{ forloop.counter0 }}" data-h="{{ v.scenario.max_h_cm }}"
+             style="font-size:22px;font-weight:800;color:var(--blue-mid);line-height:1">{{ v.scenario.label }}</div>
+        <input type="number" min="100" max="280" step="1" value="{{ v.scenario.max_h_cm }}"
+               {% if chosen_height and v.scenario.max_h_cm != chosen_height %}disabled{% endif %}
+               onchange="setHeight({{ forloop.counter0 }}, this.value)"
+               style="width:70px;font-size:11px;text-align:center;margin-top:3px;border:1px solid var(--gray-300);border-radius:4px"
+               title="Wpisz dokładną wysokość w cm">
+        <div style="font-size:11px;color:var(--gray-400)">wys. palety [cm]</div>
+      </div>
+      <button type="button" class="hstp" {% if chosen_height and v.scenario.max_h_cm != chosen_height %}disabled style="opacity:.4;cursor:not-allowed"{% else %}onclick="bumpHeight({{ forloop.counter0 }},0.01)"{% endif %} title="Wyżej o 1 cm">+</button>
+      <div style="margin-left:auto;display:flex;gap:16px;text-align:center">
+        <div><div style="font-size:26px;font-weight:700;color:var(--blue-mid);line-height:1" title="{% if v.scenario.actual_hu %}Liczba palet wg rzeczywistych HU z SAP{% elif v.scenario.n_slack %}{{ v.scenario.n_filled }} palet z towarem + {{ v.scenario.n_slack }} zapas (bufor na ręczne układanie){% else %}Wszystkie palety zapełnione{% endif %}">{{ v.scenario.n_pallets }}</div><div style="font-size:11px;color:var(--gray-400)">palet{% if v.scenario.actual_hu %} · SAP{% elif v.scenario.n_slack %} · {{ v.scenario.n_filled }}+{{ v.scenario.n_slack }} zapas{% endif %}</div>{% if v.scenario.model_pallets > v.scenario.n_pallets %}<div style="font-size:10px;color:var(--gray-300)" title="Model 3D układa luźno (bez przekładania); rzeczywisty/szacowany załadunek mieści się w {{ v.scenario.n_pallets }}.">model: {{ v.scenario.model_pallets }}</div>{% endif %}</div>
+        <div><div style="font-size:18px;font-weight:700;line-height:1.3">{{ v.scenario.ldm }} m</div><div style="font-size:11px;color:var(--gray-400)">LDM</div></div>
+        <div><div style="font-size:18px;font-weight:700;line-height:1.3;color:{% if v.scenario.fill_pct > 85 %}var(--danger-fg){% elif v.scenario.fill_pct > 60 %}var(--warn-fg){% else %}var(--ok-fg){% endif %}">{{ v.scenario.fill_pct }}%</div><div style="font-size:11px;color:var(--gray-400)">wypełn.</div></div>
+      </div>
+    </div>
+    <!-- Select for quote + warehouse build -->
+    <div style="padding:8px 14px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:34px">
+      {% if chosen_height and v.scenario.max_h_cm == chosen_height %}
+        <span style="display:inline-flex;align-items:center;gap:6px;background:var(--green-light);color:var(--green);font-weight:700;font-size:13px;padding:5px 10px;border-radius:8px">{% icon "check" %} Wybrany do wyceny i realizacji</span>
+        <form method="post" action="{% url 'ui:planner_shipment_select_scenario' shipment.pk %}" style="margin:0 0 0 auto">
+          {% csrf_token %}
+          <input type="hidden" name="height" value="clear">
+          <input type="hidden" name="h1" value="{{ h1_m }}"><input type="hidden" name="h2" value="{{ h2_m }}"><input type="hidden" name="eff" value="{{ calc.stow_eff_pct }}">
+          <button type="submit" class="btn btn-ghost btn-sm">Zmień wybór</button>
+        </form>
+      {% elif chosen_height %}
+        <span style="display:inline-flex;align-items:center;gap:6px;color:var(--gray-500);font-weight:700;font-size:13px">{% icon "lock" %} Zamrożone — magazyn przygotuje {{ chosen_label }}</span>
+      {% else %}
+        <form method="post" action="{% url 'ui:planner_shipment_select_scenario' shipment.pk %}" style="margin:0;width:100%">
+          {% csrf_token %}
+          <input type="hidden" name="height" value="{{ v.scenario.max_h_cm }}">
+          <input type="hidden" name="h1" value="{{ h1_m }}"><input type="hidden" name="h2" value="{{ h2_m }}"><input type="hidden" name="eff" value="{{ calc.stow_eff_pct }}">
+          <button type="submit" class="btn btn-primary" style="width:100%">{% icon "check" %} Wybierz do wyceny i realizacji</button>
+        </form>
+      {% endif %}
+    </div>
+    {% if v.scenario.three.warnings %}
+    {# Kartony narysowane mimo przekroczenia limitu palety (waga/wysokość) — towar nie znika z modelu. #}
+    <div class="alert alert-warning" style="margin:8px 14px;font-size:12px">
+      <strong>{% icon "triangle-alert" %} Model 3D — przekroczone limity palety:</strong>
+      <ul style="margin:4px 0 0 18px;padding:0">
+        {% for w in v.scenario.three.warnings %}<li>{{ w }}</li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    <!-- 3D canvas -->
+    <div class="viz-canvas-wrap" style="height:560px;background:#1a1a2e;position:relative">
+      <canvas class="viz-canvas" style="width:100%;height:100%"></canvas>
+      <script type="application/json" class="viz-json">{{ v.data_json|safe }}</script>
+      {# Large silver height label — readable on a printout. #}
+      <div style="position:absolute;top:14px;left:20px;font-size:54px;font-weight:800;line-height:1;
+                  color:#dfe6ee;letter-spacing:1px;text-shadow:0 2px 8px rgba(0,0,0,.7);pointer-events:none">{{ v.scenario.label }}</div>
+      <div style="position:absolute;top:74px;left:22px;font-size:12px;font-weight:700;color:rgba(223,230,238,.75);
+                  letter-spacing:.18em;text-shadow:0 1px 4px rgba(0,0,0,.7);pointer-events:none">WYSOKOŚĆ PALETY</div>
+      <div style="position:absolute;top:14px;right:18px;font-size:13px;font-weight:700;color:rgba(223,230,238,.9);
+                  text-shadow:0 1px 4px rgba(0,0,0,.7);pointer-events:none">max {{ v.scenario.max_w_kg }} kg/pal
+        · ogr.: {% if v.scenario.by_weight > v.scenario.by_vol %}waga{% else %}obj.{% endif %}</div>
+      <div style="position:absolute;bottom:10px;left:12px;font-size:11px;color:rgba(255,255,255,0.5)">Scroll = zoom · Drag = obróć</div>
+      {% if chosen_height and v.scenario.max_h_cm != chosen_height %}
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.35);pointer-events:none">
+        <span style="background:rgba(15,23,42,.82);color:var(--gray-200);font-weight:800;font-size:18px;padding:10px 18px;border-radius:10px">{% icon "lock" %} Zamrożone</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% if calc.lines %}
+<div class="card" style="margin-bottom:8px"><div style="padding:10px 16px;display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+  <span style="font-size:12px;color:var(--gray-500);font-weight:600">Produkty:</span>
+  {% for lc in calc.lines %}
+  <div style="display:flex;align-items:center;gap:5px;font-size:12px">
+    <div style="width:12px;height:12px;border-radius:2px;background:{{ lc.color }};flex-shrink:0"></div>
+    <span>{{ lc.product.code }}</span>
+  </div>
+  {% endfor %}
+</div></div>
+{% endif %}
+
+{% if calc.is_small %}
+<div class="alert" style="background:#f0fdf4;border:1px solid #bbf7d0;color:var(--green);margin-bottom:8px;padding:10px 14px;border-radius:8px;font-size:13px">
+  <strong>Przesyłka kurierska możliwa</strong> (≤70 kg, ≤0,3 m³) · waga billingowa: <strong>{{ calc.billed_kg }} kg</strong>
+</div>
+{% endif %}
+
+<div style="font-size:12px;color:var(--gray-500);margin-bottom:16px">
+  LDM = loading meters przy szerokości naczepy 2,4 m · Paleta Euro 120×80 cm
+</div>
+
+<script>
+  // Auto-open Outlook after an action that has no server SMTP: ?driver_mail=1 for the
+  // forwarder confirmation, ?wh_mail=<id> for a warehouse-readiness request. The flag is
+  // stripped afterwards so a refresh doesn't reopen the mail client.
+  (function(){
+    var p = new URLSearchParams(window.location.search);
+    var dm = p.get('driver_mail'), wm = p.get('wh_mail');
+    if (!dm && !wm) return;
+    var href = null;
+    {% if driver_form_mailto %}if (dm === '1') href = "{{ driver_form_mailto|escapejs }}";{% endif %}
+    if (!href && wm) {
+      var el = document.querySelector('.wh-mailto[data-wr="' + wm.replace(/[^0-9]/g, '') + '"]');
+      if (el) href = el.getAttribute('href');
+    }
+    // Always strip the flags first so a refresh/bookmark never re-fires the mail client,
+    // even when the target row is gone (answered/deleted) and no mailto is opened.
+    p.delete('driver_mail'); p.delete('wh_mail');
+    try { history.replaceState(null, '', window.location.pathname + (p.toString() ? '?' + p.toString() : '')); } catch(e){}
+    if (href) window.location.href = href;
+  })();
+  // Inline scenario controls — every change re-navigates (no separate "Przelicz").
+  function _vizState(){
+    var hs = Array.prototype.map.call(document.querySelectorAll('.h-disp'),
+                                      function(el){ return parseFloat(el.dataset.h)/100; });
+    var eff = parseInt(document.getElementById('eff-val').dataset.eff, 10) || 80;
+    return { hs: hs, eff: eff };
+  }
+  function _go(hs, eff){
+    var p = new URLSearchParams(window.location.search);
+    p.set('h1', (hs[0] || 1.8).toFixed(2));                 // 2 decimals → 1 cm resolution
+    p.set('h2', (hs.length > 1 ? hs[1] : hs[0]).toFixed(2));
+    p.set('eff', eff);
+    window.location.search = p.toString();
+  }
+  function bumpHeight(idx, d){
+    var s = _vizState();
+    s.hs[idx] = Math.min(2.8, Math.max(1.0, Math.round((s.hs[idx] + d) * 100) / 100));
+    _go(s.hs, s.eff);
+  }
+  // Manual height entry in cm.
+  function setHeight(idx, cm){
+    var s = _vizState();
+    var m = (parseInt(cm, 10) || 100) / 100;
+    s.hs[idx] = Math.min(2.8, Math.max(1.0, Math.round(m * 100) / 100));
+    _go(s.hs, s.eff);
+  }
+  function bumpEff(d){
+    var s = _vizState();
+    _go(s.hs, Math.min(100, Math.max(30, s.eff + d)));
+  }
+</script>
+{% else %}
+<div class="card" style="display:flex;align-items:center;justify-content:center;color:var(--gray-400);min-height:300px;margin-bottom:16px">Brak danych do wizualizacji 3D ładunku.</div>
+{% endif %}
+
+{% if vehicle_plans %}
+<!-- Whole-vehicle load plan (#8) -->
+<div class="card" style="margin-bottom:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center">
+    <span style="font-weight:600;font-size:14px">Załadunek pojazdu — {{ selected_scenario.n_pallets }} palet · {{ calc.total_weight_kg|floatformat:0 }} kg</span>
+    <span style="font-size:12px">
+      {% if double_stack %}
+        <a href="?h={{ selected_height }}" class="btn btn-ghost btn-sm">Bez piętrowania</a>
+      {% else %}
+        <a href="?h={{ selected_height }}&stack=2" class="btn btn-ghost btn-sm">Z piętrowaniem palet ↕</a>
+      {% endif %}
+      <a href="{% url 'ui:planner_shipment_container' shipment.pk %}" class="btn btn-secondary btn-sm" style="margin-left:6px">{% icon "package" %} Załaduj luzem (bez palet) →</a>
+    </span>
+  </div>
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Pojazdy dla ładunku">
+    <table class="table">
+      <thead><tr>
+        <th>Pojazd</th><th>Palet/szt.</th><th>Pojazdów</th><th>LDM</th>
+        <th>Wyk. ładowności</th><th>Wyk. przestrzeni</th><th>kg/LDM</th><th>Limit</th>
+      </tr></thead>
+      <tbody>
+        {% for p in vehicle_plans %}
+        <tr {% if p.recommended %}style="background:#f0fdf4"{% endif %}>
+          <td><b>{{ p.name }}</b>{% if p.recommended %} <span style="color:var(--green);font-weight:700">{% icon "check" %} rekomendacja</span>{% endif %}{% if p.layers > 1 %} <span style="color:#2563eb">×{{ p.layers }}</span>{% endif %}</td>
+          <td>{{ p.per_vehicle }}</td>
+          <td><b>{{ p.vehicles }}</b></td>
+          <td>{{ p.ldm }}</td>
+          <td>{{ p.payload_util }}%</td>
+          <td>{{ p.space_util }}%</td>
+          <td style="{% if not p.balance_ok %}color:#dc2626;font-weight:700{% endif %}">{{ p.kg_per_ldm|floatformat:0 }}{% if not p.balance_ok %} {% icon "triangle-alert" %}{% endif %}</td>
+          <td>{{ p.limited_by }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="padding:8px 16px;font-size:11px;color:var(--gray-400)">
+    Szacunek: pozycje podłogowe wg lepszej z dwóch orientacji palety 120×80; „kg/LDM" &gt; 1800 sygnalizuje ryzyko przeciążenia/osi.
+  </div>
+</div>
+{% endif %}
+
+{% if quote_offers %}
+<!-- Received forwarder quotes -->
+<div class="card" style="margin-bottom:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:600;font-size:14px">Otrzymane wyceny spedycji</div>
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Otrzymane wyceny spedycji">
+    <table class="table">
+      <thead><tr><th>Spedycja</th><th>Kwota</th><th>Dopłaty (paliwo % / stała)</th><th>Podstawienie auta</th><th>Data dostawy</th><th></th></tr></thead>
+      <tbody>
+      {% for o in quote_offers %}
+      <tr {% if o.selected %}style="background:rgba(139,92,246,.18)"{% elif forloop.first and quote_single_currency %}style="background:#f0fdf4"{% endif %}>
+        <td><strong>{{ o.display_name }}</strong>
+          {% if o.selected %}<span class="badge" style="background:#7c3aed;color:#fff;font-size:10px;margin-left:4px">wybrana</span>
+          {% elif forloop.first and quote_single_currency %}<span class="badge badge-green" style="font-size:10px;margin-left:4px">najtaniej</span>{% endif %}
+          <div class="text-sm text-muted">{{ o.submitted_at|date:"d.m.Y H:i" }}</div>
+          {% if o.attachment %}<a href="{{ o.attachment.url }}" target="_blank" class="text-sm" style="color:var(--blue-mid)" rel="noopener">{% icon "paperclip" %} załącznik</a>{% endif %}</td>
+        <td><strong style="font-size:16px;color:{% if forloop.first and quote_single_currency %}#059669{% else %}#374151{% endif %}">{{ o.total_amount }} {{ o.currency }}</strong>
+          {% if o.has_surcharge %}<div class="text-sm text-muted">baza {{ o.amount }}</div>{% endif %}</td>
+        <td>
+          <form method="post" action="{% url 'ui:planner_offer_surcharge' o.pk %}" style="margin:0;display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+            {% csrf_token %}
+            <input type="number" step="0.01" min="0" name="fuel_pct" value="{{ o.fuel_pct }}" style="width:60px" title="Dopłata paliwowa %">
+            <input type="number" step="0.01" min="0" name="surcharge_fixed" value="{{ o.surcharge_fixed }}" style="width:80px" title="Dopłata stała">
+            <input type="text" name="surcharge_note" value="{{ o.surcharge_note }}" placeholder="opis" style="width:90px" title="Opis dopłat">
+            <button type="submit" class="btn btn-ghost btn-sm">Zapisz</button>
+          </form>
+        </td>
+        <td class="text-sm">{{ o.truck_date|date:"d.m.Y"|default:"—" }}</td>
+        <td class="text-sm">{{ o.delivery_date|date:"d.m.Y"|default:"—" }}</td>
+        <td>
+          {% if not o.selected and o.amount is not None and shipment.status != 'cancelled' %}{# BIZ-009: jak bramka w widoku #}
+          <form method="post" action="{% url 'ui:planner_shipment_select_offer' shipment.pk o.pk %}" style="margin:0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary btn-sm">Wybierz</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if driver %}
+  <div style="padding:12px 16px;border-top:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+    <div style="font-size:13px">
+      <strong>Kierowca:</strong>
+      {{ driver.driver_plate|default:"— auto" }} · {{ driver.driver_phone|default:"— tel." }}
+      {% if driver.driver_name %}· {{ driver.driver_name }}{% endif %}
+      · odbiór:
+      {% if driver.pickup_status == 'confirmed' %}<span class="badge badge-green">potwierdzony</span>
+      {% elif driver.pickup_status == 'declined' %}<span class="badge" style="background:var(--red-light);color:var(--red)">odmowa</span>
+      {% else %}<span class="badge badge-gray">oczekuje</span>{% endif %}
+      {% if driver.sms_count %}<span class="text-sm text-muted">· SMS×{{ driver.sms_count }}</span>{% endif %}
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <form method="post" action="{% url 'ui:planner_shipment_driver_send' shipment.pk %}" style="margin:0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-sm" title="Wyślij e-mail z serwera do wybranej spedycji">{% icon "mail" %} Wyślij potwierdzenie do spedycji</button>
+      </form>
+      {% if driver_form_mailto %}<a href="{{ driver_form_mailto }}" class="btn btn-ghost btn-sm" title="Otwórz w kliencie poczty (Outlook)">{% icon "mail" %} Outlook</a>{% endif %}
+      <form method="post" action="{% url 'ui:planner_shipment_send_driver_sms' shipment.pk %}" style="margin:0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-sm" {% if not driver.driver_phone %}disabled title="Brak telefonu kierowcy"{% endif %}>{% icon "smartphone" %} SMS / ponaglenie</button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- Warehouse readiness confirmations -->
+<div class="card" style="margin-bottom:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+    <span style="font-weight:600;font-size:14px">Gotowość magazynu</span>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <form method="post" action="{% url 'ui:planner_shipment_wh_request' shipment.pk 'pre' %}" style="margin:0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-secondary btn-sm" title="Szybkie potwierdzenie: czy damy radę przygotować (15 min)">Zapytaj magazyn (15 min)</button>
+      </form>
+      <form method="post" action="{% url 'ui:planner_shipment_wh_request' shipment.pk 'date' %}" style="margin:0;display:flex;gap:4px;align-items:center">
+        {% csrf_token %}
+        <input type="date" name="pickup_date" aria-label="Data odbioru" style="padding:5px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px">
+        <button type="submit" class="btn btn-secondary btn-sm" title="Potwierdzenie przygotowania na datę odbioru">Na datę odbioru</button>
+      </form>
+    </div>
+  </div>
+  {% if wh_confirmations %}
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Potwierdzenia magazynu">
+    <table class="table">
+      <thead><tr><th>Rodzaj</th><th>Status</th><th>Palety</th><th>Gotowość / termin</th><th>Uwagi</th><th></th></tr></thead>
+      <tbody>
+      {% for w in wh_confirmations %}
+      <tr>
+        <td class="text-sm"><strong>{{ w.obj.get_kind_display }}</strong>{% if w.obj.pickup_date %}<div class="text-muted">odbiór {{ w.obj.pickup_date|date:"d.m.Y" }}</div>{% endif %}</td>
+        <td>
+          {% if w.obj.status == 'yes' %}<span class="badge badge-green">Potwierdzone</span>
+          {% elif w.obj.status == 'no' %}<span class="badge" style="background:var(--red-light);color:var(--red)">Odmowa</span>
+          {% else %}<span class="badge badge-gray">Oczekuje</span>{% endif %}
+        </td>
+        <td class="text-sm">
+          {% if w.obj.asked_pallets %}Zapytano: <strong>{{ w.obj.asked_pallets }}</strong>{% endif %}
+          {% if w.obj.suggested_pallets %}<div style="color:var(--yellow-dark);font-weight:700">Magazyn proponuje: {{ w.obj.suggested_pallets }}</div>
+          {% elif w.obj.confirmed_pallets %}<div style="color:var(--green)">Potwierdzono: {{ w.obj.confirmed_pallets }}</div>{% endif %}
+          {% if not w.obj.asked_pallets %}<span class="text-muted">—</span>{% endif %}
+        </td>
+        <td class="text-sm">
+          {% if w.obj.ready_at %}<strong style="color:#0369a1">{{ w.obj.ready_at|date:"d.m H:i" }}</strong><br>{% endif %}
+          {% if w.obj.overdue %}<span style="color:var(--red);font-weight:700">po terminie</span>{% elif w.obj.deadline %}<span class="text-muted">do {{ w.obj.deadline|date:"H:i" }}</span>{% elif not w.obj.ready_at %}—{% endif %}
+        </td>
+        <td class="text-sm text-muted">{{ w.obj.note|truncatechars:36 }}</td>
+        <td style="display:flex;gap:4px;align-items:center;flex-wrap:wrap">
+          {% if w.obj.status == 'yes' and w.obj.suggested_pallets and shipment.warehouse_pallets != w.obj.suggested_pallets %}
+          <form method="post" action="{% url 'ui:planner_shipment_apply_wh_count' shipment.pk %}" style="margin:0">
+            {% csrf_token %}
+            <input type="hidden" name="count" value="{{ w.obj.suggested_pallets }}">
+            <button type="submit" class="btn btn-primary btn-sm" style="font-size:12px;background:#d97706;border-color:#d97706" title="Przelicz na ilość proponowaną przez magazyn i otwórz wycenę spedycji">{% icon "refresh-cw" %} Ustal {{ w.obj.suggested_pallets }} i wyceń</button>
+          </form>
+          {% endif %}
+          <a href="{{ w.mailto }}" class="btn btn-secondary btn-sm wh-mailto" data-wr="{{ w.obj.pk }}" style="font-size:12px" title="Otwórz w Outlooku z gotową treścią i linkiem">{% icon "mail" %} Do magazynu</a>
+          <form method="post" action="{% url 'ui:planner_shipment_wh_send' shipment.pk w.obj.pk %}" style="margin:0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-sm" style="font-size:11px;color:var(--gray-400)" title="Wyślij serwerowo (wymaga SMTP)">serwer</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="padding:14px 16px;font-size:13px;color:var(--gray-500)">Brak zapytań. „Zapytaj magazyn (15 min)" przed wysyłką do wyceny; „Na datę odbioru" po wyborze spedycji.</div>
+  {% endif %}
+</div>
+
+<!-- Powiadomienie klienta: towar załadowany + przybliżona data dostawy (decyzja operatora) -->
+<div class="card" style="margin-bottom:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+    <span style="font-weight:600;font-size:14px">Powiadomienie klienta — załadunek</span>
+    <span style="display:flex;gap:8px;align-items:center;margin-left:auto;flex-wrap:wrap">
+      {% if shipment.client_loaded_notified_at %}
+      <span class="badge" style="background:var(--green-light);color:var(--green)">{% icon "check" %} Powiadomiono {{ shipment.client_loaded_notified_at|date:"d.m.Y H:i" }}{% if shipment.client_eta %} · dostawa ~{{ shipment.client_eta|date:"d.m.Y" }}{% endif %}</span>
+      {% endif %}
+      <a href="{% url 'ui:planner_shipment_cmr' shipment.pk %}" target="_blank" class="btn btn-secondary btn-sm" title="Wygeneruj list przewozowy CMR (PDF)" rel="noopener">{% icon "file-text" %} List CMR (PDF)</a>
+      <a href="{% url 'ui:planner_shipment_wz' shipment.pk %}" target="_blank" class="btn btn-secondary btn-sm" title="Dokument WZ (kopie wg wymagań klienta)" rel="noopener">{% icon "file-text" %} WZ (PDF)</a>
+      <a href="{% url 'ui:planner_shipment_carrier_csv' shipment.pk %}" class="btn btn-secondary btn-sm" title="CSV z paletami (wymiary, wagi) dla przewoźnika">{% icon "truck" %} Dla przewoźnika (CSV)</a>
+    </span>
+  </div>
+  <div style="padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--gray-700)">
+    {% if client_email %}
+    <form method="post" action="{% url 'ui:planner_shipment_notify_client' shipment.pk %}" style="margin:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      {% csrf_token %}
+      <span>Przybliżona data dostawy:</span>
+      <input type="date" name="client_eta" aria-label="Przybliżona data dostawy" min="{% now 'Y-m-d' %}" value="{{ client_eta_default|date:'Y-m-d' }}"
+             style="padding:5px;border:1px solid var(--gray-300);border-radius:6px;font-size:12px"
+             title="Domyślnie data od spedycji z wybranej oferty — możesz nadpisać">
+      <button type="submit" class="btn btn-primary btn-sm" title="Wyślij e-mail do klienta (serwer/SMTP)">{% icon "package" %} Powiadom klienta (serwer)</button>
+    </form>
+    <a href="{{ client_mailto }}" class="btn btn-secondary btn-sm" title="Otwórz w Outlooku z gotową treścią">{% icon "mail" %} Do klienta (Outlook)</a>
+    <span style="color:var(--gray-400)">klient: {{ client_email }}</span>
+    {% else %}
+    <span style="color:var(--yellow-dark)">{% icon "triangle-alert" %} Brak e-maila klienta — uzupełnij kontakt u odbiorcy w bazie klientów, aby wysłać powiadomienie.</span>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Route to recipient (drawn origin → recipient), full width -->
+<div class="card" style="margin-bottom:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <span style="font-weight:600;font-size:14px">Trasa odbiór → odbiorca</span>
+    <span id="route-meta" style="font-size:13px;font-weight:700;color:var(--blue-mid)"></span>
+  </div>
+  {% if shipment.destination_address %}
+  {% if google_maps_key %}
+  {# Full JS map — scroll/gesture zoom, drawn route, distance + time. #}
+  <div id="route-map" style="height:520px;min-height:420px"></div>
+  <script>
+    function initRouteMap(){
+      var map = new google.maps.Map(document.getElementById('route-map'),
+        {zoom:6, center:{lat:48.5,lng:14}, gestureHandling:'greedy', streetViewControl:false});
+      var ds = new google.maps.DirectionsService();
+      var dr = new google.maps.DirectionsRenderer({map:map});
+      ds.route({origin:'{{ origin|escapejs }}', destination:'{{ shipment.destination_address|escapejs }}',
+                travelMode:google.maps.TravelMode.DRIVING}, function(res, status){
+        if(status==='OK'){ dr.setDirections(res); var leg=res.routes[0].legs[0];
+          document.getElementById('route-meta').textContent = leg.distance.text+' · '+leg.duration.text; }
+      });
+    }
+  </script>
+  <script async src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key|urlencode }}&callback=initRouteMap"></script>
+  {% else %}
+  <div style="padding:0">
+    <iframe title="Trasa" width="100%" height="520" style="border:0;display:block;min-height:420px"
+            loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            src="https://maps.google.com/maps?saddr={{ origin|urlencode }}&daddr={{ shipment.destination_address|urlencode }}&z=6&output=embed"></iframe>
+  </div>
+  <div style="padding:10px 16px;font-size:12px;color:var(--gray-400)">Przewiń kółkiem myszy nad mapą, aby przybliżać/oddalać.</div>
+  {% endif %}
+  <div style="padding:10px 16px;font-size:13px;color:var(--gray-700)">
+    <strong>{{ origin }}</strong> → {% if shipment.recipient_name %}<strong>{{ shipment.recipient_name }}</strong> · {% endif %}{{ shipment.destination_address }}
+  </div>
+  {% else %}
+  <div class="empty-state" style="padding:24px">
+    <div class="empty-state__icon">{% icon "map" 24 %}</div>
+    <div class="empty-state__title">Brak adresu docelowego</div>
+    <div class="empty-state__desc">Uzupełnij miasto / kraj w przesyłce albo zaimportuj dostawę z adresem odbiorcy.</div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Lines breakdown -->
+<div class="card">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:600;font-size:14px">
+    Zestawienie pozycji
+  </div>
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Zestawienie pozycji">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Kod</th>
+          <th>Nazwa</th>
+          <th>Zamówienie</th>
+          <th>Kartony</th>
+          <th>Wymiary kartonu</th>
+          <th>Obj. [m³]</th>
+          <th>Waga [kg]</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for lc in calc.lines %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="width:8px;height:8px;border-radius:2px;background:{{ lc.color }};flex-shrink:0"></div>
+            <strong>{{ lc.product.code }}</strong>
+          </div>
+        </td>
+        <td class="text-sm">{{ lc.product.name|truncatechars:45 }}</td>
+        <td class="text-sm"><strong>{{ lc.line.quantity }}</strong> {{ lc.line.source_unit|default:lc.line.get_unit_display }}</td>
+        <td><strong style="color:var(--blue-mid)">{{ lc.n_cartons }}</strong></td>
+        <td class="text-sm text-muted">{{ lc.carton_dims.0 }}×{{ lc.carton_dims.1 }}×{{ lc.carton_dims.2 }} cm</td>
+        <td>{{ lc.volume_m3 }}</td>
+        <td>{{ lc.weight_kg }}</td>
+      </tr>
+      {% endfor %}
+      <tr style="background:var(--gray-50);font-weight:600">
+        <td colspan="3">Łącznie</td>
+        <td>{{ calc.total_cartons }}</td>
+        <td></td>
+        <td>{{ calc.total_vol_m3 }}</td>
+        <td>{{ calc.total_weight_kg }}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Handling Units (palety) — oczekiwana zawartość + status weryfikacji ze skanera -->
+<div class="card" style="margin-top:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-weight:600;font-size:14px">HU — palety i weryfikacja zawartości</span>
+    <form method="post" action="{% url 'ui:planner_shipment_generate_hus' shipment.pk %}" style="margin:0"
+          onsubmit="return confirm('Wygenerować HU z aktualnej paletyzacji? Nadpisze istniejące.')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-secondary btn-sm">{% icon "refresh-cw" %} Generuj HU z paletyzacji</button>
+    </form>
+  </div>
+  {% if handling_units %}
+  <div class="table-wrap" tabindex="0" role="region" aria-label="Palety HU">
+    <table class="table">
+      <thead><tr><th>HU</th><th>pickHU</th><th>Oczekiwana zawartość</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for hu in handling_units %}
+      <tr>
+        <td><strong>Paleta {{ hu.seq }}</strong></td>
+        <td class="text-sm" style="font-family:monospace">{{ hu.code|default:hu.ref }}</td>
+        <td class="text-sm">
+          {% for it in hu.items.all %}{{ it.ref_code }}×{{ it.expected_qty|floatformat:"-2" }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        </td>
+        <td>
+          {% if hu.status == 'ok' %}<span class="badge badge-green">Zgodny</span>
+          {% elif hu.status == 'to_recheck' %}<span class="badge" style="background:var(--red-light);color:var(--red)">Do rekontroli</span>
+          {% elif hu.status == 'in_control' %}<span class="badge" style="background:#fef9c3;color:#854d0e">W kontroli</span>
+          {% else %}<span class="badge badge-gray">Zaplanowany</span>{% endif %}
+          {% if hu.verified_at %}<div class="text-sm text-muted">{{ hu.verified_at|date:"d.m H:i" }}</div>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="padding:16px;font-size:13px;color:var(--gray-500)">
+    Brak HU. Kliknij „Generuj HU z paletyzacji", aby utworzyć palety z oczekiwaną zawartością — skaner odpyta je przez API.
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script type="importmap">{"imports":{"three":"/static/ui/vendor/three.module.js","three/addons/":"/static/ui/vendor/addons/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ── Product color map ─────────────────────────────────────────────────────────
+function hexToColor(hex) {
+  return new THREE.Color(hex);
+}
+
+// ── Build pallet geometry for one pallet ─────────────────────────────────────
+function makeWoodBox(l, h, w, color) {
+  const geo = new THREE.BoxGeometry(l, h, w);
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.85, metalness: 0.0 });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  return mesh;
+}
+
+function makeEuroPallet(l, w, baseH) {
+  // Build a real-proportioned pallet whose DECK TOP is exactly at baseH, so cartons
+  // placed at y>=baseH rest on the deck (no air gap under the load).
+  const g = new THREE.Group();
+  const DECK_H = Math.max(2, baseH * 0.16);
+  const BLOCK_H = Math.max(2, baseH - 2 * DECK_H);
+  const BOARD_COL = 0xD4B896, BLK_COL = 0xB07D45, BOT_COL = 0xC8A46A;
+
+  // bottom boards (run along length, spaced across width)
+  [0, w * 0.42, -w * 0.42].forEach(z => {
+    const b = makeWoodBox(l, DECK_H, w * 0.16, BOT_COL);
+    b.position.set(0, DECK_H / 2, z); g.add(b);
+  });
+  // 9 support blocks (3x3) between decks
+  [-l * 0.42, 0, l * 0.42].forEach(x => [-w * 0.40, 0, w * 0.40].forEach(z => {
+    const blk = makeWoodBox(l * 0.15, BLOCK_H, w * 0.15, BLK_COL);
+    blk.position.set(x, DECK_H + BLOCK_H / 2, z); g.add(blk);
+  }));
+  // top deck (boards across length), top surface at baseH
+  const topY = baseH - DECK_H / 2;
+  for (let i = 0; i < 6; i++) {
+    const x = -l / 2 + l * (i + 0.5) / 6;
+    const b = makeWoodBox(l / 6 * 0.88, DECK_H, w, BOARD_COL);
+    b.position.set(x, topY, 0); g.add(b);
+  }
+  return g;
+}
+
+function makeLabelSprite(text) {
+  const cvs = document.createElement('canvas');
+  cvs.width = 160; cvs.height = 72;
+  const ctx = cvs.getContext('2d');
+  ctx.fillStyle = 'rgba(15,23,42,0.88)';
+  ctx.fillRect(0, 0, 160, 72);
+  ctx.strokeStyle = '#ffd24a'; ctx.lineWidth = 4; ctx.strokeRect(2, 2, 156, 68);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 40px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, 80, 38);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: new THREE.CanvasTexture(cvs), depthTest: false }));
+  spr.scale.set(44, 20, 1);
+  return spr;
+}
+
+// Cache one labelled texture per (ref,color) so we don't rebuild it per carton.
+const _cartonTexCache = {};
+function cartonFaceTexture(label, hexColor) {
+  const key = label + '|' + hexColor;
+  if (_cartonTexCache[key]) return _cartonTexCache[key];
+  const cvs = document.createElement('canvas');
+  cvs.width = 256; cvs.height = 160;
+  const ctx = cvs.getContext('2d');
+  const c = new THREE.Color(hexColor);
+  ctx.fillStyle = '#' + c.getHexString();
+  ctx.fillRect(0, 0, 256, 160);
+  ctx.strokeStyle = 'rgba(0,0,0,0.22)'; ctx.lineWidth = 8;
+  ctx.strokeRect(4, 4, 248, 152);
+  // readable text colour for this box colour
+  const lum = 0.299 * c.r + 0.587 * c.g + 0.114 * c.b;
+  ctx.fillStyle = lum > 0.6 ? 'rgba(40,30,10,0.92)' : 'rgba(255,255,255,0.95)';
+  let fs = 38;
+  ctx.font = 'bold ' + fs + 'px sans-serif';
+  while (ctx.measureText(label).width > 232 && fs > 14) {
+    fs -= 2; ctx.font = 'bold ' + fs + 'px sans-serif';
+  }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(label, 128, 80);
+  const tex = new THREE.CanvasTexture(cvs);
+  _cartonTexCache[key] = tex;
+  return tex;
+}
+
+function makeCartonBox(l, h, w, hexColor, label, mix) {
+  const geo = new THREE.BoxGeometry(l, h, w);
+  const c = new THREE.Color(hexColor);
+  const top = new THREE.MeshStandardMaterial({ color: c.clone().multiplyScalar(1.15), roughness: 0.8 });
+  const bot = new THREE.MeshStandardMaterial({ color: c.clone().multiplyScalar(0.78), roughness: 0.9 });
+  // Label printed on the four side faces; plain shaded top/bottom.
+  const side = label
+    // Bez napisów REF na ściankach — czysty kolor (tekst na kartonach wyglądał fatalnie).
+    ? new THREE.MeshStandardMaterial({ color: c, roughness: 0.85 })
+    : new THREE.MeshStandardMaterial({ color: c, roughness: 0.85 });
+  // BoxGeometry face order: +x, -x, +y, -y, +z, -z
+  const mats = [side, side, top, bot, side, side];
+  // Mix carton (shares a pallet with other SKUs): a constant subtle red emissive so
+  // mixed pallets stand out — static (no per-frame pulse) so the scene can idle.
+  if (mix) {
+    for (const m of mats) { m.emissive = new THREE.Color(0xff2a2a); m.emissiveIntensity = 0.22; }
+  }
+  const m = new THREE.Mesh(geo, mats);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+
+// Small red "MIX" badge that floats over a mixed pallet.
+function makeMixBadge() {
+  const cvs = document.createElement('canvas');
+  cvs.width = 128; cvs.height = 64;
+  const ctx = cvs.getContext('2d');
+  ctx.fillStyle = 'rgba(190,18,18,0.92)';
+  ctx.fillRect(0, 0, 128, 64);
+  ctx.strokeStyle = '#ffd24a'; ctx.lineWidth = 4; ctx.strokeRect(2, 2, 124, 60);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 38px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('MIX', 64, 34);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: new THREE.CanvasTexture(cvs), depthTest: false }));
+  spr.scale.set(30, 15, 1);
+  return spr;
+}
+
+// ── Render one pallet: boxes at server-computed positions (skyline packing) ───
+function buildOnePallet(palletData, palletL, palletW, data) {
+  const g = new THREE.Group();
+  const PALLET_BASE = data.pallet_base || 14; // cm
+  g.add(makeEuroPallet(palletL, palletW, PALLET_BASE));
+
+  let maxTop = PALLET_BASE;
+  for (const b of (palletData.boxes || [])) {
+    const [cL, cW, cH] = b.dims;
+    const box = makeCartonBox(cL * 0.985, cH * 0.985, cW * 0.985, b.color || '#C8A87E', b.label, b.mix);
+    box.position.set(b.pos[0], b.pos[1], b.pos[2]);   // pos = box centre, base at deck
+    g.add(box);
+    maxTop = Math.max(maxTop, b.pos[1] + cH / 2);
+  }
+  // Mark the whole mixed pallet with a floating red MIX badge.
+  if (palletData.mixed) {
+    const badge = makeMixBadge();
+    badge.position.set(0, maxTop + 22, 0);
+    g.add(badge);
+  }
+  // Empty slack pallet = the hand-stacking buffer reserved by the quote; label it clearly
+  // so it reads as spare capacity, not a packing error.
+  if (palletData.empty) {
+    const tag = makeLabelSprite('zapas');
+    tag.position.set(0, PALLET_BASE + 18, 0);
+    g.add(tag);
+  }
+  return { group: g, height: maxTop };
+}
+
+// ── Build full shipment scene ─────────────────────────────────────────────────
+function buildShipmentScene(canvas, data) {
+  if (!data) return;
+
+  const W = canvas.clientWidth || 800, H = canvas.clientHeight || 480;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  if ('outputColorSpace' in renderer && THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;
+  if ('ACESFilmicToneMapping' in THREE) { renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));   // 1.5 cap → far less GPU work on HiDPI
+  renderer.setSize(W, H, false);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x1a1a2e);
+  scene.fog = new THREE.Fog(0x1a1a2e, 600, 1200);
+
+  const camera = new THREE.PerspectiveCamera(45, W / H, 1, 2000);
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0xfff4e0, 0.35));
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x8c7e6a, 0.45));
+  const rim = new THREE.DirectionalLight(0xffffff, 0.30);
+  rim.position.set(-40, 160, -220); scene.add(rim);
+  const key = new THREE.DirectionalLight(0xfff8ee, 1.0);
+  key.castShadow = true; key.shadow.mapSize.set(2048, 2048); key.shadow.bias = -0.0006;
+  key.position.set(200, 400, 200);
+  // Frustum cienia dopasowany do sceny (cm!) — domyślne ±5 jednostek obcinało cień w całości.
+  const sc = key.shadow.camera;
+  sc.left = -500; sc.right = 500; sc.top = 500; sc.bottom = -500;
+  sc.near = 10; sc.far = 2000; sc.updateProjectionMatrix();
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0xe8f0ff, 0.30);
+  fill.position.set(-200, 100, -100);
+  scene.add(fill);
+
+  // Grid floor + niewidzialna podłoga łapiąca cienie (GridHelper to linie — cieni nie odbiera).
+  const grid = new THREE.GridHelper(800, 40, 0x334466, 0x223355);
+  scene.add(grid);
+  const shadowFloor = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000),
+    new THREE.ShadowMaterial({ opacity: 0.24 }));
+  shadowFloor.rotation.x = -Math.PI / 2;
+  shadowFloor.position.y = 0.05;
+  shadowFloor.receiveShadow = true;
+  scene.add(shadowFloor);
+
+  const pallets = data.pallets;
+  const n = pallets.length;
+  const cols = Math.ceil(Math.sqrt(n));
+  const rows = Math.ceil(n / cols);
+  const GAP = 20;
+  const stepX = data.pallet_l + GAP;
+  const stepZ = data.pallet_w + GAP;
+
+  let totalH = data.max_h_cm;
+
+  for (let i = 0; i < n; i++) {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const { group, height } = buildOnePallet(pallets[i], data.pallet_l, data.pallet_w, data);
+    const x = (col - (cols - 1) / 2) * stepX;
+    const z = (row - (rows - 1) / 2) * stepZ;
+    group.position.set(x, 0, z);
+    scene.add(group);
+
+    // Height measure: a graduated post + label showing this pallet's real height.
+    const ph = pallets[i].height_cm || height;
+    const rx = x - data.pallet_l / 2 - 7, rz = z - data.pallet_w / 2 - 7;
+    const post = new THREE.Mesh(new THREE.BoxGeometry(1.4, ph, 1.4),
+                                new THREE.MeshBasicMaterial({ color: 0xffd24a }));
+    post.position.set(rx, ph / 2, rz); scene.add(post);
+    for (let m = 50; m < ph; m += 50) {            // tick every 50 cm
+      const tick = new THREE.Mesh(new THREE.BoxGeometry(7, 0.8, 0.8),
+                                  new THREE.MeshBasicMaterial({ color: 0xffe9a6 }));
+      tick.position.set(rx + 3, m, rz); scene.add(tick);
+    }
+    const lbl = makeLabelSprite((ph / 100).toFixed(2) + ' m');
+    lbl.position.set(rx, ph + 13, rz); scene.add(lbl);
+
+    totalH = Math.max(totalH, ph);
+  }
+
+  const centerX = 0, centerZ = 0, centerY = totalH / 2;
+  const dist = Math.max(cols * stepX, rows * stepZ) * 1.4 + totalH;
+  camera.position.set(centerX + dist * 0.7, centerY + dist * 0.5, centerZ + dist * 0.7);
+  controls.target.set(centerX, centerY, centerZ);
+  controls.update();
+
+  // Keep the renderer matched to the canvas — fixes the black screen when a tab
+  // (e.g. High-bay 2,2 m) is rendered while hidden (0×0) and later shown.
+  function resizeIfNeeded() {
+    const cw = canvas.clientWidth, ch = canvas.clientHeight;
+    if (cw > 0 && ch > 0 && (canvas.width !== Math.floor(cw * renderer.getPixelRatio())
+                          || canvas.height !== Math.floor(ch * renderer.getPixelRatio()))) {
+      renderer.setSize(cw, ch, false);
+      camera.aspect = cw / ch;
+      camera.updateProjectionMatrix();
+      return true;
+    }
+    return false;
+  }
+  // Render ON DEMAND: the expensive renderer.render() runs only when the camera actually
+  // moved (controls.update() returns true while interacting/damping) or the scene is
+  // flagged dirty (resize). When idle, the loop ticks but does no GPU work — so two heavy
+  // panels side by side no longer churn the GPU every frame (fixes the laggy orbit).
+  let dirty = true;
+  controls.addEventListener('change', () => { dirty = true; });
+  function animate() {
+    // Stop (and free the WebGL context) once the canvas is detached from the DOM,
+    // so panels don't leave runaway RAF loops + live contexts behind.
+    if (!canvas.isConnected) {
+      controls.dispose();
+      renderer.dispose();
+      return;
+    }
+    requestAnimationFrame(animate);
+    if (resizeIfNeeded()) dirty = true;   // single, guarded place that re-sizes renderer/camera
+    const moving = controls.update();     // true while interacting or damping settles
+    if (moving || dirty) {
+      renderer.render(scene, camera);
+      dirty = false;
+    }
+  }
+  animate();
+  // No global 'resize' listener here: it leaked one handler per panel and divided by a
+  // 0×0 hidden panel (aspect = NaN). resizeIfNeeded() in the loop handles all sizing.
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+// Split view: build a scene for every scenario panel from its embedded JSON.
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.viz-canvas').forEach((cv) => {
+    const jsonEl = cv.parentElement.querySelector('.viz-json');
+    if (!jsonEl) return;
+    let data;
+    try { data = JSON.parse(jsonEl.textContent); } catch (e) { return; }
+    buildShipmentScene(cv, data);
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% load static %}
+{% block title %}Master data lokalizacji — {{ app_name }}{% endblock %}
+
+{% block extra_head %}
+<script src="/static/ui/vendor/htmx.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Master data lokalizacji</div>
+    <div class="page-header__sub">{{ total }} lokalizacji w aktywnej partii · filtruj, sortuj, eksportuj</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:location_master_export_xlsx' %}?{{ request.GET.urlencode }}" class="btn btn-secondary">{% icon "download" %} XLSX</a>
+    <a href="{% url 'ui:location_master_export_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-secondary" target="_blank" rel="noopener">{% icon "download" %} PDF</a>
+  </div>
+</div>
+
+<div class="card" style="padding:16px;margin-bottom:16px">
+  <form hx-get="{% url 'ui:location_master_browse' %}" hx-target="#lm-table" hx-swap="outerHTML"
+        hx-push-url="true" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+    {% for field in filter.form %}
+      <div>
+        <label for="{{ field.id_for_label }}" style="display:block;font-size:12px;font-weight:600;color:var(--gray-700)">{{ field.label }}</label>
+        {{ field }}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Filtruj</button>
+    <span class="htmx-indicator" style="color:#2563eb;font-size:12px">{% icon "hourglass" %} ładowanie…</span>
+  </form>
+</div>
+
+{% if stats %}
+<div class="card" style="padding:16px;margin-bottom:16px">
+  <div style="font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:10px">Statystyki (numpy · polars)</div>
+  <div class="stat-grid">
+    <div class="stat-box"><div class="stat-box__val">{{ stats.count }}</div><div class="stat-box__lbl">lokalizacji</div></div>
+    <div class="stat-box"><div class="stat-box__val">{{ stats.half_slots }}</div><div class="stat-box__lbl">pół-sloty (≤40 cm)</div></div>
+    <div class="stat-box"><div class="stat-box__val">{{ stats.full_slots }}</div><div class="stat-box__lbl">pełne sloty</div></div>
+    <div class="stat-box"><div class="stat-box__val">{{ stats.total_volume_m3 }}</div><div class="stat-box__lbl">suma obj. [m³]</div></div>
+    <div class="stat-box"><div class="stat-box__val">{{ stats.avg_width_mm }}</div><div class="stat-box__lbl">śr. szer. [mm]</div></div>
+    <div class="stat-box"><div class="stat-box__val">{{ stats.median_volume_m3 }}</div><div class="stat-box__lbl">mediana obj. [m³]</div></div>
+  </div>
+  {% if stats.by_type %}
+  <div style="margin-top:10px;font-size:12px;color:var(--gray-700)">
+    Wg typu:
+    {% for t, n in stats.by_type %}<span style="margin-right:10px"><b>{{ t }}</b>: {{ n }}</span>{% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% include "ui/locations_master/_table.html" %}
+{% endblock %}

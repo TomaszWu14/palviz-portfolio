@@ -1,0 +1,470 @@
+{
+ "broken_xlsx": {
+  "db": {
+   "refs": [],
+   "runs": []
+  },
+  "messages": [
+   [
+    "error",
+    "Błąd importu: File is not a zip file"
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "comma_dims": {
+  "db": {
+   "refs": [],
+   "runs": [
+    {
+     "error_message": "",
+     "kind": "ref_materials",
+     "label": "marm.xlsx",
+     "row_count": 0,
+     "status": "ok",
+     "user__username": "refmat-char"
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import zakończony: 0 nowych, 0 zaktualizowanych, 2 pominiętych wierszy."
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "empty_workbook": {
+  "db": {
+   "refs": [],
+   "runs": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik jest pusty."
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "full_create": {
+  "db": {
+   "refs": [
+    {
+     "code": "123456",
+     "ean": "",
+     "gross_kg": null,
+     "height_cm": 5.0,
+     "length_cm": 5.0,
+     "name": "Liczbowy",
+     "pieces_per_carton": 4,
+     "supplier_full": "",
+     "supplier_short": "",
+     "width_cm": 5.0
+    },
+    {
+     "code": "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL",
+     "ean": "999999999999999999999999999999",
+     "gross_kg": null,
+     "height_cm": 1.0,
+     "length_cm": 1.0,
+     "name": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+     "pieces_per_carton": 1,
+     "supplier_full": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+     "supplier_short": "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS",
+     "width_cm": 1.0
+    },
+    {
+     "code": "M1",
+     "ean": "5901234567890",
+     "gross_kg": 7.25,
+     "height_cm": 20.0,
+     "length_cm": 40.0,
+     "name": "Kubek",
+     "pieces_per_carton": 12,
+     "supplier_full": "Acme Sp. z o.o.",
+     "supplier_short": "ACME",
+     "width_cm": 30.5
+    },
+    {
+     "code": "M2",
+     "ean": "590000",
+     "gross_kg": 3.5,
+     "height_cm": 11.0,
+     "length_cm": 12.0,
+     "name": "Talerz KAR",
+     "pieces_per_carton": 24,
+     "supplier_full": "B full",
+     "supplier_short": "B",
+     "width_cm": 10.0
+    },
+    {
+     "code": "M3",
+     "ean": "",
+     "gross_kg": null,
+     "height_cm": null,
+     "length_cm": null,
+     "name": "Tylko nazwa",
+     "pieces_per_carton": null,
+     "supplier_full": "",
+     "supplier_short": "GAM",
+     "width_cm": null
+    },
+    {
+     "code": "M5",
+     "ean": "",
+     "gross_kg": null,
+     "height_cm": null,
+     "length_cm": null,
+     "name": "",
+     "pieces_per_carton": null,
+     "supplier_full": "",
+     "supplier_short": "",
+     "width_cm": null
+    },
+    {
+     "code": "M6",
+     "ean": "",
+     "gross_kg": 2.0,
+     "height_cm": 2.0,
+     "length_cm": 2.0,
+     "name": "Drugi",
+     "pieces_per_carton": 8,
+     "supplier_full": "",
+     "supplier_short": "",
+     "width_cm": 2.0
+    },
+    {
+     "code": "M7",
+     "ean": "",
+     "gross_kg": null,
+     "height_cm": null,
+     "length_cm": null,
+     "name": "Małe litery",
+     "pieces_per_carton": null,
+     "supplier_full": "",
+     "supplier_short": "",
+     "width_cm": null
+    }
+   ],
+   "runs": [
+    {
+     "error_message": "",
+     "kind": "ref_materials",
+     "label": "marm.xlsx",
+     "row_count": 8,
+     "status": "ok",
+     "user__username": "refmat-char"
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import zakończony: 8 nowych, 0 zaktualizowanych, 1 pominiętych wierszy."
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "header_only": {
+  "db": {
+   "refs": [],
+   "runs": [
+    {
+     "error_message": "",
+     "kind": "ref_materials",
+     "label": "marm.xlsx",
+     "row_count": 0,
+     "status": "ok",
+     "user__username": "refmat-char"
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import zakończony: 0 nowych, 0 zaktualizowanych, 0 pominiętych wierszy."
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "nazwa_space": {
+  "db": {
+   "refs": [
+    {
+     "code": "N1",
+     "ean": "",
+     "gross_kg": null,
+     "height_cm": 1.0,
+     "length_cm": 1.0,
+     "name": "X",
+     "pieces_per_carton": 2,
+     "supplier_full": "Pełna nazwa",
+     "supplier_short": "",
+     "width_cm": 1.0
+    }
+   ],
+   "runs": [
+    {
+     "error_message": "",
+     "kind": "ref_materials",
+     "label": "marm.xlsx",
+     "row_count": 1,
+     "status": "ok",
+     "user__username": "refmat-char"
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import zakończony: 1 nowych, 0 zaktualizowanych, 0 pominiętych wierszy."
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "no_file": {
+  "db": {
+   "refs": [],
+   "runs": []
+  },
+  "messages": [
+   [
+    "error",
+    "Nie wybrano pliku."
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "positional": {
+  "db": {
+   "refs": [
+    {
+     "code": "P1",
+     "ean": "111",
+     "gross_kg": 4.0,
+     "height_cm": 2.0,
+     "length_cm": 3.0,
+     "name": "Poz",
+     "pieces_per_carton": 5,
+     "supplier_full": "F",
+     "supplier_short": "S",
+     "width_cm": 1.0
+    }
+   ],
+   "runs": [
+    {
+     "error_message": "",
+     "kind": "ref_materials",
+     "label": "marm.xlsx",
+     "row_count": 1,
+     "status": "ok",
+     "user__username": "refmat-char"
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import zakończony: 1 nowych, 0 zaktualizowanych, 0 pominiętych wierszy."
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "record_fail": {
+  "db": {
+   "refs": [
+    {
+     "code": "I1",
+     "ean": "",
+     "gross_kg": null,
+     "height_cm": 1.0,
+     "length_cm": 1.0,
+     "name": "Zapisany",
+     "pieces_per_carton": 1,
+     "supplier_full": "",
+     "supplier_short": "",
+     "width_cm": 1.0
+    }
+   ],
+   "runs": []
+  },
+  "messages": [
+   [
+    "success",
+    "Import zakończony: 1 nowych, 0 zaktualizowanych, 0 pominiętych wierszy."
+   ],
+   [
+    "error",
+    "Błąd importu: log padł"
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "reordered": {
+  "db": {
+   "refs": [
+    {
+     "code": "R1",
+     "ean": "590111",
+     "gross_kg": 1.5,
+     "height_cm": 12.0,
+     "length_cm": 13.0,
+     "name": "Przestawione",
+     "pieces_per_carton": 10,
+     "supplier_full": "FULL",
+     "supplier_short": "SH",
+     "width_cm": 11.0
+    },
+    {
+     "code": "R2",
+     "ean": "",
+     "gross_kg": null,
+     "height_cm": null,
+     "length_cm": null,
+     "name": "Tylko ST",
+     "pieces_per_carton": null,
+     "supplier_full": "Y",
+     "supplier_short": "X",
+     "width_cm": null
+    }
+   ],
+   "runs": [
+    {
+     "error_message": "",
+     "kind": "ref_materials",
+     "label": "marm.xlsx",
+     "row_count": 2,
+     "status": "ok",
+     "user__username": "refmat-char"
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import zakończony: 2 nowych, 0 zaktualizowanych, 0 pominiętych wierszy."
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "rollback": {
+  "db": {
+   "refs": [],
+   "runs": []
+  },
+  "messages": [
+   [
+    "error",
+    "Błąd importu: awaria"
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "short_header": {
+  "db": {
+   "refs": [],
+   "runs": [
+    {
+     "error_message": "",
+     "kind": "ref_materials",
+     "label": "marm.xlsx",
+     "row_count": 0,
+     "status": "ok",
+     "user__username": "refmat-char"
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import zakończony: 0 nowych, 0 zaktualizowanych, 3 pominiętych wierszy."
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "too_large": {
+  "db": {
+   "refs": [],
+   "runs": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik zbyt duży (max 20 MB)."
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ },
+ "update": {
+  "db": {
+   "refs": [
+    {
+     "code": "U1",
+     "ean": "",
+     "gross_kg": null,
+     "height_cm": null,
+     "length_cm": 6.0,
+     "name": "Nowa",
+     "pieces_per_carton": 3,
+     "supplier_full": "",
+     "supplier_short": "",
+     "width_cm": 4.0
+    },
+    {
+     "code": "U2",
+     "ean": "KEEP",
+     "gross_kg": null,
+     "height_cm": null,
+     "length_cm": null,
+     "name": "Nowa 2",
+     "pieces_per_carton": 7,
+     "supplier_full": "",
+     "supplier_short": "NS",
+     "width_cm": 50.0
+    },
+    {
+     "code": "U3",
+     "ean": "",
+     "gross_kg": null,
+     "height_cm": null,
+     "length_cm": null,
+     "name": "Nietknięta",
+     "pieces_per_carton": null,
+     "supplier_full": "",
+     "supplier_short": "",
+     "width_cm": 1.0
+    },
+    {
+     "code": "U4",
+     "ean": "",
+     "gross_kg": null,
+     "height_cm": 1.0,
+     "length_cm": 1.0,
+     "name": "Nowy",
+     "pieces_per_carton": 1,
+     "supplier_full": "",
+     "supplier_short": "",
+     "width_cm": 1.0
+    }
+   ],
+   "runs": [
+    {
+     "error_message": "",
+     "kind": "ref_materials",
+     "label": "aktualizacja.xlsx",
+     "row_count": 3,
+     "status": "ok",
+     "user__username": "refmat-char"
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import zakończony: 1 nowych, 2 zaktualizowanych, 0 pominiętych wierszy."
+   ]
+  ],
+  "redirect": "planner_ref_materials"
+ }
+}

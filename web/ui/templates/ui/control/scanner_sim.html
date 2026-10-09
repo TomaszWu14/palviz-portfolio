@@ -1,0 +1,134 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Symulator skanera — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:hu_control_hub' %}">Kontrola HU</a>
+  <span class="breadcrumb__sep">›</span><span>Symulator skanera</span>
+</nav>
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{% icon "scan-barcode" %} Symulator skanera</div>
+    <div class="page-header__sub">Podgląd modułów PWA (Kontrola HU, Hierarchia opakowań) w ramce urządzenia — presety terminali albo własne wymiary i przekątna</div>
+  </div>
+</div>
+
+<div class="card" style="padding:14px 18px;margin-bottom:14px;display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end">
+  <div class="form-group" style="min-width:220px">
+    <label>Moduł / ekran</label>
+    <select aria-label="Moduł / ekran" id="sim-target">
+      {% for name, url in targets %}<option value="{{ url }}">{{ name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="form-group" style="min-width:260px">
+    <label>Urządzenie (preset)</label>
+    <select aria-label="Urządzenie (preset)" id="sim-preset">
+      {# Kolejne terminale dodajemy ręcznie (parametry z internetu). Pion: ↻ Obróć. #}
+      <option value="800x480x4.0">Zebra MC330L / MC3300ax — 4.0" 800×480</option>
+      <option value="custom">— własne wymiary —</option>
+    </select>
+  </div>
+  <div class="form-group" style="width:110px"><label>Szer. [px]</label>
+    <input aria-label="Szer. [px]" id="sim-w" type="number" min="240" max="2400" value="800"></div>
+  <div class="form-group" style="width:110px"><label>Wys. [px]</label>
+    <input aria-label="Wys. [px]" id="sim-h" type="number" min="240" max="2400" value="480"></div>
+  <div class="form-group" style="width:120px"><label>Przekątna [cale]</label>
+    <input aria-label="Przekątna [cale]" id="sim-d" type="number" min="2" max="12" step="0.1" value="4.0"></div>
+  <div class="form-group" style="width:130px"><label>DPI monitora</label>
+    <input id="sim-dpi" type="number" min="60" max="400" step="1" value="96"
+           title="Kalibracja: zmierz linijką rzeczywistą szerokość ekranu symulatora i dobierz DPI, aż zgadza się z realnym terminalem"></div>
+  <div class="form-group" style="width:140px"><label>Skala podglądu</label>
+    <select aria-label="Skala podglądu" id="sim-scale">
+      <option value="physical">1:1 fizycznie (cale)</option>
+      <option value="1">1:1 piksele</option>
+      <option value="0.75">75%</option>
+      <option value="0.5">50%</option>
+    </select></div>
+  <button type="button" class="btn btn-ghost" onclick="simRotate()">{% icon "refresh-cw" %} Obróć</button>
+  <button type="button" class="btn btn-primary" onclick="simApply()">Zastosuj</button>
+  <span id="sim-info" class="help-text" style="align-self:center"></span>
+</div>
+
+<div style="display:flex;justify-content:center;padding:18px 0">
+  <div id="sim-bezel" style="background:#111827;border-radius:22px;padding:26px 14px 34px;box-shadow:0 18px 50px rgba(0,0,0,.45);position:relative">
+    <div style="position:absolute;top:9px;left:50%;transform:translateX(-50%);width:56px;height:7px;border-radius:4px;background:#374151"></div>
+    <iframe id="sim-frame" title="Podgląd ekranu skanera" src="{{ targets.0.1 }}" style="border:0;background:#fff;border-radius:10px;display:block"></iframe>
+    <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:110px;height:9px;border-radius:5px;background:#374151"></div>
+    <div id="sim-badge" style="position:absolute;top:-12px;right:14px;background:#0f766e;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px"></div>
+  </div>
+</div>
+
+<div class="alert alert-info" style="max-width:760px;margin:0 auto">
+  {% icon "lightbulb" %} Tryb „1:1 fizycznie" skaluje podgląd wg <b>DPI monitora</b> (pole obok) — ekran symulatora
+  ma wtedy realną wielkość wyświetlacza terminala. Domyślne 96 dpi prawie nigdy nie jest
+  dokładne: zmierz linijką szerokość ramki i dobierz DPI, aż zgadza się z rzeczywistym
+  terminalem (wartość zapisuje się w przeglądarce). Iframe zawsze renderuje dokładnie tyle
+  pikseli CSS, ile ma urządzenie, więc media-queries skanera (np. tryb kompaktowy MC33xx
+  ≤540px wys.) zachowują się identycznie jak na sprzęcie.
+</div>
+
+<script>
+// DPI monitora — kalibracja trybu „1:1 fizycznie". Zapisywany w localStorage, bo zależy
+// od konkretnego ekranu użytkownika (założenie 96 dpi prawie nigdy nie jest prawdziwe).
+// tuning: dokładniejsza kalibracja = pokazać linijkę o znanej szerokości (karta 85,6 mm)
+// i dobrać DPI, aż zmierzona linijką szerokość się zgadza.
+const DPI_KEY = 'sim_monitor_dpi';
+function simDpi() {
+  const v = +document.getElementById('sim-dpi').value;
+  return (v >= 60 && v <= 400) ? v : 96;
+}
+function simDims() {
+  return { w: +document.getElementById('sim-w').value || 800,
+           h: +document.getElementById('sim-h').value || 480,
+           d: +document.getElementById('sim-d').value || 4.0 };
+}
+function simApply() {
+  const { w, h, d } = simDims();
+  const f = document.getElementById('sim-frame');
+  const scale = document.getElementById('sim-scale').value;
+  const dpi = simDpi();
+  try { localStorage.setItem(DPI_KEY, dpi); } catch (e) {}
+  // Iframe zawsze renderuje w pikselach urządzenia (media queries jak na sprzęcie)…
+  f.width = w; f.height = h;
+  f.style.width = w + 'px'; f.style.height = h + 'px';
+  let cssScale = 1;
+  if (scale === 'physical') {
+    // …a wyświetlamy przeskalowane tak, by przekątna miała zadaną liczbę cali,
+    // wg skalibrowanego DPI monitora (dpi css-px = 1 cal).
+    const diagPx = Math.hypot(w, h);
+    cssScale = (d * dpi) / diagPx;
+  } else { cssScale = +scale; }
+  f.style.transformOrigin = 'top left';
+  f.style.transform = 'scale(' + cssScale + ')';
+  // Bezel dopasowany do przeskalowanego iframe'a
+  f.parentElement.style.width  = (w * cssScale + 28) + 'px';
+  f.parentElement.style.height = (h * cssScale + 60) + 'px';
+  const ppi = Math.round(Math.hypot(w, h) / d);
+  document.getElementById('sim-badge').textContent = w + '×' + h + ' · ' + d + '" · ' + ppi + ' ppi';
+  document.getElementById('sim-info').textContent =
+    'Fizycznie: ' + (w / ppi * 2.54).toFixed(1) + ' × ' + (h / ppi * 2.54).toFixed(1) + ' cm';
+  const url = document.getElementById('sim-target').value;
+  if (f.getAttribute('src') !== url) f.src = url;
+}
+function simRotate() {
+  const w = document.getElementById('sim-w'), h = document.getElementById('sim-h');
+  [w.value, h.value] = [h.value, w.value];
+  simApply();
+}
+document.getElementById('sim-preset').addEventListener('change', function () {
+  if (this.value === 'custom') return;
+  let [w, h, d] = this.value.replace('l', '').split('x');
+  if (this.value.endsWith('l')) [w, h] = [h, w];      // wariant landscape presetu
+  document.getElementById('sim-w').value = w;
+  document.getElementById('sim-h').value = h;
+  document.getElementById('sim-d').value = d;
+  simApply();
+});
+document.getElementById('sim-target').addEventListener('change', simApply);
+document.getElementById('sim-scale').addEventListener('change', simApply);
+document.getElementById('sim-dpi').addEventListener('change', simApply);
+try { const saved = localStorage.getItem(DPI_KEY);
+      if (saved) document.getElementById('sim-dpi').value = saved; } catch (e) {}
+simApply();
+</script>
+{% endblock %}

@@ -1,0 +1,102 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% load static %}
+{% block title %}{{ rec.sku }} {{ rec.variant }} — {{ app_name }}{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'ui/vendor/htmx.min.js' %}"></script>
+<script src="{% static 'ui/js/plotly.min.js' %}"></script>
+<script type="importmap">{ "imports": { "three": "/static/ui/vendor/three.module.js" } }</script>
+<script type="module">
+  // Expose the realistic pallet renderer so the HTMX-injected panel can call it.
+  import { renderPalVizLevel } from "{% static 'ui/js/palviz-three.js' %}";
+  window.PalViz3D = renderPalVizLevel;
+  window.dispatchEvent(new Event("palviz3d-ready"));
+</script>
+<style>
+  .pd-thumbs { display:flex; flex-wrap:wrap; gap:8px; }
+  .pd-thumb { border:1px solid var(--gray-200); border-radius:10px; padding:6px; cursor:pointer;
+              background:var(--surface); width:240px; }
+  .pd-thumb:hover { border-color:var(--blue); background:var(--blue-light); }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_calc_index' %}">Paletyzacja</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:saved_list' %}">Zapisane</a>
+  {% if rec.batch %}<span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:batch_detail' rec.batch.id %}">Batch #{{ rec.batch.id }}</a>{% endif %}
+  <span class="breadcrumb__sep">›</span>
+  <span>{{ rec.sku }}:{{ rec.variant }}</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{{ rec.sku }}:{{ rec.variant }}</div>
+    <div class="page-header__sub">
+      Karton {{ rec.carton_l }}×{{ rec.carton_w }}×{{ rec.carton_h }} cm ·
+      Paleta {{ meta.length_cm }}×{{ meta.width_cm }}, max {{ meta.max_height_total_cm }} cm / {{ meta.max_weight_kg }} kg
+    </div>
+  </div>
+  <div class="page-header__actions" style="align-items:center">
+    <label class="text-sm text-muted" style="display:flex;align-items:center;gap:6px">Warstwy 3D:
+      <input id="render_layers" name="render_layers" type="number" value="3" min="1" max="20"
+             style="width:70px;height:34px;border:1px solid var(--gray-300);border-radius:6px;padding:0 8px">
+    </label>
+    <a href="{% url 'ui:export_excel' rec.id %}" class="btn btn-secondary">{% icon "download" %} Excel</a>
+  </div>
+</div>
+
+<div
+  hx-get="{% url 'ui:pallet_panel' rec.id %}?layout={{ selected }}&render_layers=3"
+  hx-trigger="load"
+  hx-target="#panel"
+  hx-swap="innerHTML"
+></div>
+
+<div id="panel"></div>
+
+<div class="card" style="margin-top:12px;padding:12px">
+  <h3 style="margin:0 0 8px 0;font-size:15px">Miniatury TOP 15</h3>
+  <div class="pd-thumbs">
+    {% for name, svg in thumbs %}
+      <div class="pd-thumb"
+           hx-get="{% url 'ui:pallet_panel' rec.id %}?layout={{ name }}"
+           hx-target="#panel"
+           hx-swap="innerHTML"
+           hx-include="[name='render_layers']">
+        <div class="text-muted" style="font-weight:800;font-size:11px">{{ name }}</div>
+        {{ svg }}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function renderPlots() {
+    ['fig-pallet','fig-layer','fig-carton'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      var fig = JSON.parse(el.textContent);
+      Plotly.react(id.replace('fig-', 'plot-'), fig.data, fig.layout);
+    });
+  }
+  document.body.addEventListener("htmx:afterSwap", function(evt) {
+    if (evt.target && (evt.target.id === "panel" || evt.target.id === "panel-target")) {
+      renderPlots();
+    }
+  });
+  document.body.addEventListener("htmx:configRequest", function(evt) {
+    var rl = document.getElementById("render_layers");
+    if (rl && evt.detail.path && evt.detail.path.includes("/panel/")) {
+      var url = new URL(evt.detail.path, window.location.origin);
+      url.searchParams.set("render_layers", rl.value || "3");
+      evt.detail.path = url.pathname + "?" + url.searchParams.toString();
+    }
+  });
+</script>
+{% endblock %}

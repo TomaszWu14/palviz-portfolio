@@ -1,0 +1,28 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Wątek — {{ app_name }}{% endblock %}
+{% block content %}
+<div style="max-width:640px;margin:0 auto">
+  <a href="{% url 'ui:messages_inbox' %}" style="font-size:13px">‹ Wiadomości</a>
+  <h1 class="page-header__title" style="margin:8px 0">{{ thread.subject|default:"Wątek" }}</h1>
+  {% if thread.url %}<a href="{{ thread.url }}" class="card" style="display:block;margin-bottom:10px;font-size:13px">{% icon "link" %} Otwórz kontekst</a>{% endif %}
+  <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px">
+    Uczestnicy: {% for p in thread.participants.all %}{{ p.get_full_name|default:p.username }}{% if not forloop.last %}, {% endif %}{% endfor %}
+  </div>
+
+  {% for m in msgs %}
+  <div class="card" style="margin-bottom:8px">
+    <div style="font-size:12px;color:var(--gray-500);font-weight:700">
+      {% if m.sender %}{{ m.sender.get_full_name|default:m.sender.username }}{% else %}system{% endif %} · {{ m.created_at|date:"d.m H:i" }}</div>
+    <div style="white-space:pre-wrap;margin-top:2px">{{ m.body }}</div>
+  </div>
+  {% endfor %}
+
+  <form method="post" class="card" style="display:flex;flex-direction:column;gap:8px;margin-top:6px">
+    {% csrf_token %}
+    <textarea name="body" required rows="3" maxlength="500" placeholder="Odpowiedz…"
+              style="width:100%;padding:12px;font-size:16px;border:1px solid var(--gray-300);border-radius:8px;box-sizing:border-box"></textarea>
+    <button type="submit" class="btn btn-primary" style="padding:12px;font-weight:800">Wyślij odpowiedź</button>
+  </form>
+</div>
+{% endblock %}

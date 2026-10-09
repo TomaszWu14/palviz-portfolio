@@ -1,0 +1,75 @@
+{% extends "ui/base.html" %}
+{% block title %}Do uzupełnienia — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:data_center' %}">Data Center</a> › <span>Do uzupełnienia</span></nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Master data — do uzupełnienia</div>
+    <div class="page-header__sub">Braki, które blokują obliczenia lub utrudniają identyfikację</div>
+  </div>
+</div>
+
+{% if ok %}
+<div class="card"><div class="empty-state" style="padding:30px">
+  <div class="empty-state__title">Wszystko uzupełnione</div>
+  <div class="empty-state__desc">Brak produktów i opakowań wymagających uzupełnienia.</div>
+</div></div>
+{% endif %}
+
+{% for g in groups %}
+{% if g.items %}
+<div class="card" style="margin-bottom:14px">
+  <div class="card-header" style="justify-content:flex-start">
+    <span class="card-header__title">{{ g.label }}</span>
+    <span class="badge badge-red">{{ g.items|length }}</span>
+    <span class="text-sm text-muted" style="margin-left:auto">{{ g.hint }}</span>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <tbody>
+      {% for it in g.items %}
+        <tr>
+          <td>
+            {% if g.kind == 'product' %}<strong>{{ it.code }}</strong> — {{ it.name }}
+            {% else %}<strong>{{ it.name }}</strong> <span class="text-sm text-muted">({{ it.length_cm }}×{{ it.width_cm }}×{{ it.height_cm }} cm, {{ it.unit_weight_kg }} kg)</span>{% endif %}
+          </td>
+          <td style="text-align:right"><a class="btn btn-ghost btn-sm" href="{% url g.url it.pk %}">Uzupełnij →</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% if dup_ean %}
+<div class="card" style="margin-bottom:14px">
+  <div class="card-header" style="justify-content:flex-start">
+    <span class="card-header__title">Zduplikowane kody EAN</span>
+    <span class="badge badge-yellow">{{ dup_ean|length }}</span>
+    <span class="text-sm text-muted" style="margin-left:auto">Ten sam kod kreskowy przypisany do wielu indeksów — ryzyko błędnej identyfikacji przy skanowaniu.</span>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <tbody>
+      {% for d in dup_ean %}
+        <tr>
+          <td>
+            <strong style="font-family:'JetBrains Mono',monospace">{{ d.ean }}</strong>
+            <div class="text-sm text-muted" style="margin-top:4px">
+              {% for p in d.products %}
+                <a href="{% url 'ui:planner_product_edit' p.pk %}">{{ p.code }}</a> — {{ p.name }}{% if not forloop.last %} · {% endif %}
+              {% endfor %}
+            </div>
+          </td>
+          <td style="text-align:right"><span class="badge badge-red">{{ d.products|length }} indeksy</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

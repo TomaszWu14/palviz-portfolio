@@ -1,0 +1,192 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}{% if instance %}Edytuj{% else %}Nowa{% endif %} przesyłka — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_shipments' %}">Wysyłki</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if instance %}Edytuj: {{ instance.name }}{% else %}Nowa przesyłka{% endif %}</span>
+</nav>
+
+<div class="page-header">
+  <div class="page-header__title">{% if instance %}Edytuj przesyłkę{% else %}Nowa przesyłka{% endif %}</div>
+</div>
+
+<form method="post" enctype="multipart/form-data" id="shipment-form">
+{% csrf_token %}
+
+<div style="display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start">
+
+  <!-- Left: header + lines -->
+  <div>
+    <!-- Header card -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 80px 1fr;gap:12px;align-items:end">
+          <div class="form-group" style="margin:0">
+            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>{{ form.name }}
+          </div>
+          <div class="form-group" style="margin:0">
+            <label for="{{ form.destination_country.id_for_label }}">{{ form.destination_country.label }}</label>{{ form.destination_country }}
+          </div>
+          <div class="form-group" style="margin:0">
+            <label for="{{ form.destination_city.id_for_label }}">{{ form.destination_city.label }}</label>{{ form.destination_city }}
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 140px;gap:12px;margin-top:10px;align-items:end">
+          <div class="form-group" style="margin:0">
+            <label for="{{ form.customer.id_for_label }}">{{ form.customer.label }}</label>{{ form.customer }}
+            <span class="help-text">Wymagania klienta (wysokość palety, fumigacja) zastosują się automatycznie. <a href="{% url 'ui:planner_customers' %}" target="_blank" rel="noopener">Baza klientów</a></span>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label for="shipment-status-ro">Status</label>
+            <input type="text" id="shipment-status-ro" class="form-control" readonly disabled
+                   value="{% if instance %}{{ instance.get_status_display }}{% else %}Robocze{% endif %}"
+                   title="Ustawiany automatycznie: Zatwierdzone po wyborze oferty spedycji, Wysłane po potwierdzeniu odbioru przez kierowcę.">
+            <span class="help-text">Ustawiany automatycznie</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:10px">
+          <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>{{ form.notes }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Lines table -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--gray-100)">
+        <strong style="font-size:14px">Pozycje przesyłki</strong>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addLine()">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14m-7-7h14"/></svg>
+          Dodaj pozycję
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table class="table" id="lines-table">
+          <thead>
+            <tr>
+              <th style="width:40%">Produkt</th>
+              <th style="width:100px">Ilość</th>
+              <th style="width:110px">Jednostka</th>
+              <th>Uwagi</th>
+              <th style="width:36px"></th>
+            </tr>
+          </thead>
+          <tbody id="lines-body">
+          {% for line in existing_lines %}
+          <tr class="line-row">
+            <td>
+              <select aria-label="Produkt" name="line_product" class="form-control form-control--sm">
+                <option value="">— wybierz —</option>
+                {% for p in products %}
+                <option value="{{ p.pk }}" {% if p.pk == line.product_id %}selected{% endif %}>{{ p.code }} — {{ p.name|truncatechars:40 }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td><input aria-label="Ilość" type="number" name="line_quantity" class="form-control form-control--sm" step="0.001" min="0.001" value="{{ line.quantity }}"></td>
+            <td>
+              <select aria-label="Jednostka" name="line_unit" class="form-control form-control--sm">
+                <option value="szt" {% if line.unit == 'szt' %}selected{% endif %}>Sztuki</option>
+                <option value="kar" {% if line.unit == 'kar' %}selected{% endif %}>Kartony</option>
+                <option value="pal" {% if line.unit == 'pal' %}selected{% endif %}>Palety</option>
+              </select>
+            </td>
+            <td><input type="text" name="line_notes" class="form-control form-control--sm" value="{{ line.notes }}" placeholder="opcjonalnie"></td>
+            <td><button type="button" class="btn btn-ghost btn-sm btn-icon" style="color:var(--red)" onclick="this.closest('tr').remove()">{% icon "x" label="Usuń pozycję" cls="icon--em" %}</button></td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:8px 16px;font-size:12px;color:var(--gray-400)">
+        Puste wiersze (bez produktu) zostaną zignorowane przy zapisie.
+      </div>
+    </div>
+
+    <!-- Excel import -->
+    <div class="card" style="margin-top:14px;background:var(--gray-50);border-color:var(--gray-200)">
+      <div class="card-body">
+        <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
+          Import z Excel / CSV
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input aria-label="Plik z pozycjami (Excel / CSV)" type="file" name="excel_file" accept=".xlsx,.xls,.csv" class="form-control" style="max-width:340px">
+          <span style="font-size:12px;color:var(--gray-400)">Kolumny: Kod, Ilość, Jednostka (opcjonalnie)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: summary preview -->
+  <div style="position:sticky;top:16px">
+    <div class="card" style="background:var(--green-light);border-color:var(--gray-200)">
+      <div class="card-body">
+        <div style="font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Podgląd ładunku</div>
+        <div style="font-size:13px;color:var(--green)">Zapisz przesyłkę aby zobaczyć wyniki kalkulacji, wizualizację 3D i porównanie cenników przewoźników.</div>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+          <button type="submit" class="btn btn-primary">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Zapisz i oblicz
+          </button>
+          <a href="{% url 'ui:planner_shipments' %}" class="btn btn-secondary">Anuluj</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;background:var(--blue-light);border-color:var(--gray-200)">
+      <div class="card-body" style="font-size:12px;color:var(--blue-mid)">
+        <strong>Obsługiwane jednostki:</strong>
+        <ul style="margin:6px 0 0 16px;padding:0">
+          <li><strong>szt</strong> — sztuki (obliczone przez pcs_per_carton)</li>
+          <li><strong>kar</strong> — kartony (domyślne)</li>
+          <li><strong>pal</strong> — pełne palety (obliczone przez cpp)</li>
+        </ul>
+        <div style="margin-top:8px">Import Excel: nagłówek w wierszu 1, kolumny Kod / Ilość / Jednostka</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</form>
+
+<template id="line-template">
+  <tr class="line-row">
+    <td>
+      <select aria-label="Produkt" name="line_product" class="form-control form-control--sm">
+        <option value="">— wybierz produkt —</option>
+        {% for p in products %}
+        <option value="{{ p.pk }}">{{ p.code }} — {{ p.name|truncatechars:40 }}</option>
+        {% endfor %}
+      </select>
+    </td>
+    <td><input aria-label="Ilość" type="number" name="line_quantity" class="form-control form-control--sm" step="1" min="0.001" value="1"></td>
+    <td>
+      <select aria-label="Jednostka" name="line_unit" class="form-control form-control--sm">
+        <option value="szt">Sztuki</option>
+        <option value="kar" selected>Kartony</option>
+        <option value="pal">Palety</option>
+      </select>
+    </td>
+    <td><input type="text" name="line_notes" class="form-control form-control--sm" placeholder="opcjonalnie"></td>
+    <td><button type="button" class="btn btn-ghost btn-sm btn-icon" style="color:var(--red)" onclick="this.closest('tr').remove()">{% icon "x" label="Usuń pozycję" cls="icon--em" %}</button></td>
+  </tr>
+</template>
+
+<script>
+function addLine() {
+  const tpl = document.getElementById('line-template');
+  const row = tpl.content.cloneNode(true);
+  document.getElementById('lines-body').appendChild(row);
+  const tbody = document.getElementById('lines-body');
+  const lastRow = tbody.lastElementChild;
+  lastRow.querySelector('select[name="line_product"]').focus();
+}
+
+// Add one empty row if no existing lines
+{% if not existing_lines %}
+document.addEventListener('DOMContentLoaded', addLine);
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,55 @@
+# Testowy PostgreSQL 17 — ta sama wersja główna co produkcja (Coolify, postgres:17).
+# Osobna baza `palviz_test` na 127.0.0.1:55433 (nie koliduje z lokalnym 5432 ani z CI 55432),
+# dane w tmpfs (ulotne, szybkie), migracje + seed danych testowych na starcie.
+#
+#   make test-db-up                                  # baza + migrate + seed_testdata
+#   make test-pg                                     # pełny zestaw testów na tej bazie
+#   docker compose -f docker-compose.test.yml down -v
+#
+# Testy Django (manage.py test) same tworzą bazę `test_palviz_test` obok — `palviz_test`
+# z migracjami i seedem służy do ręcznego klikania / E2E (etap 4).
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: palviz
+      POSTGRES_PASSWORD: palviz
+      POSTGRES_DB: palviz_test
+    ports:
+      - "127.0.0.1:55433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U palviz -d palviz_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Jednorazowo: migracje + seed. Czysty Python 3.11 (jak produkcja) + kod z working tree —
+  # bez budowania obrazu produkcyjnego; pip z wolumenem cache (drugi start: sekundy).
+  migrate:
+    image: python:3.11-slim-bookworm
+    working_dir: /app
+    environment:
+      DATABASE_URL: postgresql://palviz:palviz@db:5432/palviz_test
+      DJANGO_DEBUG: "true"
+      DJANGO_SECRET_KEY: test-only-secret
+      DJANGO_ALLOWED_HOSTS: "*"
+      PYTHONPATH: /app/web:/app
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ./web:/app/web:ro
+      - ./palletizer:/app/palletizer:ro
+      - ./requirements.txt:/app/requirements.txt:ro
+      - ./requirements-test.txt:/app/requirements-test.txt:ro
+      - pip-cache:/root/.cache/pip
+    command: >
+      sh -c "pip install -q --root-user-action=ignore -r requirements-test.txt
+      && python web/manage.py migrate --noinput
+      && python web/manage.py seed_testdata"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pip-cache:

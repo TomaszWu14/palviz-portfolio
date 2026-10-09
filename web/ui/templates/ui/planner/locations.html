@@ -1,0 +1,137 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Lokalizacje magazynowe — {{ app_name }}{% endblock %}
+{% block nav_locations %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Lokalizacje magazynowe</span>
+</nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#0d9488;--pcbg:#f0fdfa">
+    <div class="panel-head__chip">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </div>
+    <div>
+      <div class="page-header__title">Typy lokalizacji magazynowych</div>
+      <div class="page-header__sub">Definiuj wymiary miejsc paletowych — szerokość, głębokość, wysokość, marginesy</div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:planner_location_fit_all' %}" class="btn btn-secondary">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Przymierz do lokalizacji
+    </a>
+    {% if can_write_products %}<a href="{% url 'ui:planner_location_new' %}" class="btn btn-primary">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14m-7-7h14"/></svg>
+      Nowa lokalizacja
+    </a>{% endif %}
+  </div>
+</div>
+
+<div class="card card--accent" style="--pc:#0d9488">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nazwa</th>
+          <th style="width:120px">Klasa</th>
+          <th style="width:55px">Paleta</th>
+          <th>Szerokość [cm]</th>
+          <th>Głębokość [cm]</th>
+          <th>Wys. całkowita [cm]</th>
+          <th>Wys. użytk. [cm]</th>
+          <th>Max [kg]</th>
+          <th>Obj. [m³]</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for loc in locations %}
+      <tr>
+        <td>
+          <div class="font-semibold">{{ loc.name }}</div>
+          {% if loc.notes %}<div class="text-sm text-muted">{{ loc.notes|truncatechars:40 }}</div>{% endif %}
+        </td>
+        <td>
+          <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;
+            {% if loc.location_class == 'pallet_full' %}background:var(--blue-light);color:var(--blue-mid)
+            {% elif loc.location_class == 'pallet_half' %}background:rgba(139,92,246,.18);color:#c4b5fd
+            {% elif loc.location_class == 'floor' %}background:var(--yellow-light);color:var(--yellow-dark)
+            {% elif loc.location_class == 'shelf' %}background:var(--green-light);color:var(--green)
+            {% else %}background:var(--gray-100);color:var(--gray-500){% endif %}">
+            {{ loc.get_location_class_display }}
+          </span>
+        </td>
+        <td style="text-align:center">
+          {% if loc.is_pallet_location %}
+          <span title="Paletowa" style="font-size:16px">{% icon "construction" label="Paletowa" cls="icon--em" %}</span>
+          {% else %}
+          <span title="Nieparetowa / luzem" style="font-size:16px">{% icon "package" label="Niepaletowa / luzem" cls="icon--em" %}</span>
+          {% endif %}
+        </td>
+        <td><strong>{{ loc.width_cm }}</strong></td>
+        <td>{{ loc.depth_cm }}</td>
+        <td>
+          {{ loc.total_height_cm }}
+          <div class="text-sm text-muted">użytk: {{ loc.usable_height_cm }}</div>
+        </td>
+        <td><strong style="color:#1a56db">{{ loc.usable_height_cm }}</strong></td>
+        <td>{% if loc.max_load_kg %}<strong>{{ loc.max_load_kg|floatformat:0 }}</strong>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+        <td><strong>{{ loc.volume_m3 }}</strong></td>
+        <td>
+          {% if loc.is_active %}
+          <span class="badge badge-green">Aktywna</span>
+          {% else %}
+          <span class="badge badge-gray">Nieaktywna</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="actions">
+            <a href="{% url 'ui:planner_location_simulate' loc.pk %}" class="btn btn-primary btn-sm" title="Symuluj dopasowanie kartonu">
+              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+              Symuluj
+            </a>
+            {% if can_write_products %}<a href="{% url 'ui:planner_location_edit' loc.pk %}" class="btn btn-ghost btn-sm btn-icon" title="Edytuj">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </a>{% endif %}
+            {% if can_write_products %}<form method="post" action="{% url 'ui:planner_location_delete' loc.pk %}" onsubmit="return confirm('Usunąć lokalizację „{{ loc.name }}"?')">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm btn-icon" style="color:var(--red)" title="Usuń">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+              </button>
+            </form>{% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="11">
+          <div class="empty-state">
+            <div class="empty-state__icon">{% icon "factory" cls="icon--em" %}</div>
+            <div class="empty-state__title">Brak zdefiniowanych lokalizacji</div>
+            <div class="empty-state__desc">{% if can_write_products %}<a href="{% url 'ui:planner_location_new' %}">Dodaj pierwszą lokalizację</a>{% endif %}</div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px;background:var(--blue-light);border-color:#bfdbfe">
+  <div style="display:flex;gap:12px;align-items:flex-start">
+    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#1a56db" stroke-width="2" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+    <div style="font-size:13px;color:var(--blue-mid)">
+      <strong>Jak obliczana jest wysokość użytkowa:</strong><br>
+      Wys. użytk. = Wys. całkowita − Wys. palety − Margines manipulacji<br>
+      Przykład: 230 cm − 15 cm − 20 cm = <strong>195 cm</strong> dostępnych dla towaru.
+    </div>
+  </div>
+</div>
+{% endblock %}

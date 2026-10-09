@@ -1,0 +1,102 @@
+# Uruchomienie lokalne / „produkcyjno-podobne” (docker compose up --build).
+# PRODUKCJA NIE używa tego pliku: Coolify buduje z Dockerfile jako jeden kontener
+# (docs/celery-coolify.md). Limity CPU/RAM i rotacja logów poniżej działają tylko tutaj —
+# na prod ustawia się je w Coolify/VPS (docs/deploy-hardening-audit.md, V8; audyt BUILD-004).
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    # Cap resources so a runaway task/OOM can't starve the host; rotate container logs
+    # so stdout can't fill the disk over time.
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1536M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    ports:
+      # Tylko localhost (audyt SEC-015 / T1): lokalny „production-like” — prod stawia Coolify
+      # z Dockerfile i łączy się siecią dockera, więc 0.0.0.0 nie jest potrzebne.
+      - "127.0.0.1:8000:8000"
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_DEBUG: "false"
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
+      # Managed PostgreSQL: set DATABASE_URL=postgresql://user:pass@host:5432/palviz?sslmode=require
+      # When empty the app falls back to the SQLite volume below.
+      # Dev z lokalnym Postgresem z tego pliku (profil `pg`, patrz niżej):
+      #   DATABASE_URL=postgresql://palviz:palviz@postgres:5432/palviz
+      DATABASE_URL: ${DATABASE_URL:-}
+      # SQLite w KATALOGU-wolumenie (nie w /app/web) — montowanie wolumenu na ścieżce
+      # PLIKU tworzy katalog i psuje bazę; katalog /app/data przeżywa każdy deploy.
+      DB_PATH: /app/data/db.sqlite3
+      CELERY_BROKER_URL: redis://redis:6379/0
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    volumes:
+      - palviz_db:/app/data
+      - palviz_media:/app/web/media
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Opcjonalny Postgres dla DEV — pod profilem `pg`, więc domyślne `docker compose up`
+  # go NIE startuje (prod/dev nadal jedzie na SQLite z wolumenu wyżej). Włącz świadomie:
+  #   docker compose --profile pg up
+  # i ustaw w .env: DATABASE_URL=postgresql://palviz:palviz@postgres:5432/palviz
+  # Przełączenie PROD na Postgres = osobna decyzja, patrz docs/postgres-switch.md.
+  # postgres:17 = wersja produkcji (Coolify). Stary wolumen palviz_pg z 16 nie wstanie na 17:
+  # `docker compose --profile pg down -v` (albo pg_dump → restore), jeśli masz tam dane.
+  postgres:
+    image: postgres:17-alpine
+    profiles: ["pg"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: palviz
+      POSTGRES_PASSWORD: palviz
+      POSTGRES_DB: palviz
+    ports:
+      # Tylko loopback (jak 8000): hasło „palviz” nie może wisieć na 0.0.0.0, gdyby profil
+      # `pg` odpalono na serwerze. Kontenery łączą się po nazwie `postgres`, host przez localhost.
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U palviz -d palviz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - palviz_pg:/var/lib/postgresql/data
+
+volumes:
+  palviz_db:
+  palviz_media:
+  palviz_pg:

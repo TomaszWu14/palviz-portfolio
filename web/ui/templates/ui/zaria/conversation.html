@@ -1,0 +1,380 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% load i18n %}
+{% block title %}{{ conversation.title|default:"ZARIA" }} — {{ app_name }}{% endblock %}
+{% block extra_head %}{% include "ui/zaria/_head.html" %}{% endblock %}
+{% block content %}
+<div class="zaria" data-side="closed" data-ctx="closed">
+  {% include "ui/zaria/_sidebar.html" %}
+
+  <section class="z-main">
+    <div class="z-head">
+      <button type="button" class="btn btn-ghost btn-sm z-drawerbtn" onclick="zariaDrawer('side')" aria-label="{% trans 'Menu rozmów' %}">{% icon "menu" cls="icon--em" %}</button>
+      <div style="min-width:0;flex:1">
+        <div class="z-head__title">{{ conversation.title|default:_("Nowa rozmowa") }}</div>
+        <div class="z-head__meta z-num">{{ conversation.model.display_name|default:_("Auto — dobierany do pytania") }}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center" data-action-url="{% url 'ui:zaria_conv_action' conversation.pk %}">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaConvAction('save',this)" aria-pressed="{{ conversation.is_saved|yesno:'true,false' }}" title="{% trans 'Zapisz wątek' %}">{% if conversation.is_saved %}{% icon "star" %}{% else %}{% icon "star" %}{% endif %}</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaConvAction('pin',this)" aria-pressed="{{ conversation.pinned|yesno:'true,false' }}">{% if conversation.pinned %}{% trans "Odepnij" %}{% else %}{% trans "Przypnij" %}{% endif %}</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaConvRename()">{% trans "Zmień nazwę" %}</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaConvDelete()">{% trans "Usuń" %}</button>
+        <button type="button" class="btn btn-ghost btn-sm z-ctxtoggle" onclick="zariaDrawer('ctx')" aria-label="{% trans 'Szczegóły' %}">ⓘ</button>
+      </div>
+    </div>
+    {% if retention_warning is not None %}
+    <div class="card" style="margin:12px 18px 0;padding:10px 14px;border-left:4px solid var(--yellow);font-size:13px">
+      {% blocktrans count days=retention_warning %}Ten niezapisany wątek zostanie usunięty za {{ days }} dzień. Zapisz go, aby zachować.{% plural %}Ten niezapisany wątek zostanie usunięty za {{ days }} dni. Zapisz go, aby zachować.{% endblocktrans %}
+    </div>
+    {% endif %}
+
+    {% if needs_privacy_notice %}
+    <div class="z-scroll">
+      <div class="card" style="padding:16px;border-left:4px solid var(--yellow)">
+        <div style="font-weight:700;margin-bottom:6px">{% trans "Informacja RODO" %}</div>
+        <div style="font-size:13px;color:var(--gray-700);white-space:pre-wrap">{{ rodo_notice }}</div>
+        <form method="post" action="{% url 'ui:zaria_accept_privacy' conversation.pk %}" style="margin-top:10px">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary">{% trans "Rozumiem, kontynuuj" %}</button>
+        </form>
+      </div>
+    </div>
+    {% elif conversation.compare_mode %}
+    {# Tryb porównania: system pokazuje odpowiedzi OBU modeli, operator ocenia i wybiera. #}
+    <div class="z-scroll" id="z-scroll"
+         data-start="{% url 'ui:zaria_compare_start' conversation.pk %}"
+         data-stream="{% url 'ui:zaria_compare_stream' conversation.pk %}"
+         data-pick="{% url 'ui:zaria_compare_pick' conversation.pk %}"
+         data-name-a="{{ conversation.model.display_name }}" data-name-b="{{ conversation.model_b.display_name }}">
+      {% for t in compare_turns %}
+      <div class="z-bubble z-bubble--user z-cmp-user">{{ t.user.content }}</div>
+      <div class="z-cmptabs">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaCmpTab(this,'a')">A</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaCmpTab(this,'b')">B</button>
+      </div>
+      <div class="z-cmp" data-tab="a">
+        {% for side, m, name in t.cols %}
+        <div class="z-col z-col--{{ side }}{% if m.rejected %} z-col--rejected{% elif m and m.variant == side %}{% endif %}">
+          <div class="z-col__head">{{ name }} <span class="z-badge">{{ side|upper }}</span></div>
+          <div class="z-col__body">{% if m.error %}<span class="z-bubble--err">{{ m.error }}</span>{% else %}{{ m.content }}{% endif %}</div>
+          {% if m and not m.error %}<div class="z-col__meta">{{ m.prompt_tokens }}+{{ m.completion_tokens }} {% trans "tokenów" %} · {{ m.cost_pln }} PLN{% if m.latency_ms %} · {{ m.latency_ms }} ms{% endif %}</div>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+    <div class="z-compose">
+      <form id="z-cmpform" class="z-compose__row">
+        {% csrf_token %}
+        <textarea name="content" id="zaria-input" rows="1" placeholder="{% trans 'Zadaj pytanie obu modelom…' %}" required></textarea>
+        <button type="submit" class="btn btn-primary" id="z-send">{% trans "Wyślij do obu" %}</button>
+        <button type="button" class="btn btn-secondary" id="z-stop" hidden>{% trans "Zatrzymaj generowanie" %}</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="z-scroll" id="z-scroll">
+      {% for m in msgs %}
+        {% if m.role == 'user' %}
+        <div class="z-bubble z-bubble--user">{{ m.content }}</div>
+        {% elif m.role == 'assistant' and not m.rejected %}
+        <div class="z-bubble z-bubble--ai">
+          {% if m.error %}<div class="z-bubble--err">{% trans "Błąd" %}: {{ m.error }}</div>
+          {% else %}{{ m.content }}
+          <div class="z-bubble__meta">{{ m.prompt_tokens }}+{{ m.completion_tokens }} {% trans "tokenów" %} · {{ m.cost_pln }} PLN{% if m.latency_ms %} · {{ m.latency_ms }} ms{% endif %}{% if m.has_table %} · <a href="{% url 'ui:zaria_msg_xlsx' m.pk %}" style="font-weight:700">{% icon "inbox" %} {% trans "Pobierz XLSX" %}</a>{% endif %}</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      {% empty %}
+        <div class="z-empty" style="margin:auto">{% trans "Napisz pierwszą wiadomość poniżej." %}</div>
+      {% endfor %}
+    </div>
+
+    <div class="z-compose">
+      <div class="z-quick">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaTpl(this)" data-tpl="{% trans 'Napisz uprzejmy e-mail do przewoźnika w sprawie: ' %}">{% trans "E-mail do przewoźnika" %}</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaTpl(this)" data-tpl="{% trans 'Przetłumacz na język angielski, zachowując rzeczowy ton: ' %}">{% trans "Tłumacz EN" %}</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaTpl(this)" data-tpl="{% trans 'Streść poniższy tekst w 5 punktach: ' %}">{% trans "Streszczenie" %}</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaTpl(this)" data-tpl="{% trans 'Popraw styl, gramatykę i interpunkcję poniższego tekstu (po polsku): ' %}">{% trans "Korekta" %}</button>
+      </div>
+      {# Sugestie promptów pojawiające się po dodaniu arkusza Excel #}
+      <div class="z-quick" id="z-excel-tips" hidden>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaTpl(this)" data-tpl="{% trans 'Zrób audyt załączonego arkusza: wskaż błędy, braki, niespójności i podejrzane wartości.' %}">{% icon "chart-column" %} {% trans "Audyt pliku" %}</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaTpl(this)" data-tpl="{% trans 'Przygotuj zwięzły raport z załączonego arkusza: kluczowe liczby, trendy i wnioski w punktach.' %}">{% icon "trending-up" %} {% trans "Przygotuj raport" %}</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="zariaTpl(this)" data-tpl="{% trans 'Zasugeruj usprawnienia dla danych/procesu z załączonego arkusza — konkretne, wykonalne kroki.' %}">{% icon "lightbulb" %} {% trans "Zasugeruj usprawnienia" %}</button>
+      </div>
+      <form method="post" action="{% url 'ui:zaria_send_message' conversation.pk %}" id="z-sendform" class="z-compose__row" enctype="multipart/form-data">
+        {% csrf_token %}
+        <button type="button" class="btn btn-ghost" id="z-attach" title="{% trans 'Dodaj plik (PDF, obraz, Excel, Word)' %}">{% icon "paperclip" cls="icon--em" %}</button>
+        <input type="file" id="z-files" name="files" multiple hidden accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.xlsx,.xls,.docx">
+        <textarea name="content" id="zaria-input" rows="1" placeholder="{% trans 'Napisz wiadomość…' %}"></textarea>
+        <button type="submit" class="btn btn-primary" id="z-send">{% trans "Wyślij" %}</button>
+        <button type="button" class="btn btn-secondary" id="z-stop" hidden>{% trans "Zatrzymaj generowanie" %}</button>
+      </form>
+      <div id="z-attach-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+      <div id="z-pii-hint" hidden style="margin-top:8px;font-size:12px;color:var(--yellow-dark)">{% trans "Wykryto dane osobowe (PESEL/NIP/nr konta). Dla treści wrażliwych rozważ model lokalny." %}</div>
+      <div id="z-stream-url" data-url="{% url 'ui:zaria_send_stream' conversation.pk %}" hidden></div>
+    </div>
+    {% endif %}
+  </section>
+
+  {# Panel kontekstu #}
+  <aside class="z-ctx">
+    <div>
+      <div class="z-ctx__h">{% trans "Model" %}</div>
+      <div style="margin-top:6px"><span class="z-badge">{{ conversation.model.display_name|default:_("Auto") }}</span></div>
+    </div>
+    <div class="z-silver"></div>
+    <div>
+      <div class="z-ctx__h">{% trans "Zużycie w tym miesiącu" %}</div>
+      {% if budget %}
+      <div class="z-usage__bar">
+        <div class="z-usage__fill{% if usage_pct >= 90 %} z-usage__fill--crit{% elif usage_pct >= 75 %} z-usage__fill--warn{% endif %}"
+             style="width:{{ usage_pct }}%" title="{{ month_spend }} / {{ budget }} PLN"></div>
+      </div>
+      <div class="z-usage__cap">{{ month_spend }} / {{ budget }} PLN · {{ usage_pct }}%</div>
+      {% else %}
+      <div class="z-usage__cap" style="margin-top:6px">{{ month_spend }} PLN · {% trans "bez limitu" %}</div>
+      {% endif %}
+    </div>
+    <div class="z-silver"></div>
+    <div>
+      <div class="z-ctx__h">{% trans "Udostępnij" %}</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+        <a href="{% url 'ui:zaria_mail' conversation.pk %}" class="btn btn-secondary btn-sm">{% trans "Wyślij mailem" %}</a>
+        <a href="{% url 'ui:zaria_export' conversation.pk 'md' %}" class="btn btn-ghost btn-sm">{% trans "Eksport Markdown" %}</a>
+        <a href="{% url 'ui:zaria_export' conversation.pk 'pdf' %}" class="btn btn-ghost btn-sm">{% trans "Eksport PDF" %}</a>
+      </div>
+    </div>
+    <div class="z-silver"></div>
+    <div>
+      <div class="z-ctx__h">{% trans "Załączniki" %}</div>
+      <div style="font-size:12px;color:var(--gray-500);margin-top:6px">{% trans "Wkrótce — PDF i obrazy dla modeli, które je obsługują." %}</div>
+    </div>
+  </aside>
+  <div class="z-overlay" onclick="zariaDrawer('ctx')"></div>
+</div>
+
+<script>
+  function zariaTpl(btn){
+    var t = document.getElementById('zaria-input'); if(!t) return;
+    t.value = btn.getAttribute('data-tpl'); t.focus();
+    t.setSelectionRange(t.value.length, t.value.length); zariaGrow(t);
+  }
+  function zariaGrow(t){ t.style.height='auto'; t.style.height=Math.min(t.scrollHeight,180)+'px'; }
+  (function(){
+    var t = document.getElementById('zaria-input');
+    var form = document.getElementById('z-sendform');
+    var scroll = document.getElementById('z-scroll');
+    var sendBtn = document.getElementById('z-send');
+    var stopBtn = document.getElementById('z-stop');
+    var urlEl = document.getElementById('z-stream-url');
+    if(scroll) scroll.scrollTop = scroll.scrollHeight;
+    if(!t || !form) return;
+    try { var seed = sessionStorage.getItem('zaria-seed'); if(seed){ t.value=seed; sessionStorage.removeItem('zaria-seed'); t.focus(); } } catch(e){}
+    zariaGrow(t);
+    var piiHint = document.getElementById('z-pii-hint');
+    var piiRe = /\b\d{11}\b|\b\d{10}\b|\b\d{26}\b/;   // PESEL / NIP / nr konta (nieblokujące)
+    t.addEventListener('input', function(){ zariaGrow(t); if(piiHint) piiHint.hidden = !piiRe.test(t.value); });
+
+    // Fetch-streaming (ReadableStream) wymaga wsparcia przeglądarki. Bez niego zostaje
+    // zwykły POST z przeładowaniem (progressive enhancement — form action = send/).
+    var canStream = !!(window.fetch && window.ReadableStream && window.TextDecoder && urlEl);
+    var streamUrl = urlEl ? urlEl.getAttribute('data-url') : null;
+    var controller = null;
+
+    t.addEventListener('keydown', function(e){
+      if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); if(t.value.trim() || hasFiles()) form.requestSubmit(); }
+    });
+
+    function csrf(){ var m=document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/); return m?m[1]:''; }
+    function bubble(cls, text){ var d=document.createElement('div'); d.className='z-bubble '+cls; d.textContent=text||''; scroll.appendChild(d); return d; }
+    function setBusy(on){ sendBtn.disabled=on; sendBtn.hidden=on; stopBtn.hidden=!on; t.disabled=on; }
+
+    var fileInput = document.getElementById('z-files');
+    var attachBtn = document.getElementById('z-attach');
+    var attachList = document.getElementById('z-attach-list');
+    var excelTips = document.getElementById('z-excel-tips');
+    function hasFiles(){ return fileInput && fileInput.files && fileInput.files.length > 0; }
+    function renderAttach(){
+      if(!attachList) return;
+      attachList.innerHTML='';
+      var xlsx=false;
+      if(hasFiles()){ for(var i=0;i<fileInput.files.length;i++){ var n=fileInput.files[i].name;
+        if(/\.(xlsx|xls)$/i.test(n)) xlsx=true;
+        var chip=document.createElement('span'); chip.className='z-badge';
+        chip.style.cssText='display:inline-flex;align-items:center;gap:6px;background:var(--gray-100);color:var(--gray-700);font-size:12px;padding:3px 9px;border-radius:999px';
+        chip.textContent='📎 '+n; attachList.appendChild(chip); } }
+      if(excelTips) excelTips.hidden = !xlsx;
+    }
+    function clearAttach(){ if(fileInput) fileInput.value=''; renderAttach(); }
+    if(attachBtn && fileInput){ attachBtn.addEventListener('click', function(){ fileInput.click(); }); fileInput.addEventListener('change', renderAttach); }
+
+    async function stream(text){
+      setBusy(true);
+      bubble('z-bubble--user', text + (hasFiles()?'  📎 '+fileInput.files.length+' {% trans "plik(i)" %}':''));
+      var typing=document.createElement('div'); typing.className='z-typing'; typing.textContent='{% trans "ZARIA odpowiada" %}';
+      scroll.appendChild(typing); scroll.scrollTop=scroll.scrollHeight;
+      controller = new AbortController();
+      var ai=null, buf='';
+      try {
+        var fd=new FormData(); fd.set('content', text);
+        if(hasFiles()){ for(var fi=0;fi<fileInput.files.length;fi++) fd.append('files', fileInput.files[fi]); }
+        var resp = await fetch(streamUrl, {method:'POST', signal:controller.signal,
+          headers:{'X-CSRFToken':csrf()}, body:fd});   // bez Content-Type — przeglądarka ustawi boundary
+        if(!resp.ok){ var j={}; try{ j=await resp.json(); }catch(e){}
+          typing.remove(); bubble('z-bubble--ai z-bubble--err', (j.error||'{% trans "Błąd usługi AI." %}')); setBusy(false); return; }
+        var reader=resp.body.getReader(), dec=new TextDecoder(), acc='';
+        while(true){
+          var r=await reader.read(); if(r.done) break;
+          acc += dec.decode(r.value, {stream:true});
+          var parts=acc.split('\n\n'); acc=parts.pop();
+          for(var i=0;i<parts.length;i++){
+            var line=parts[i].trim(); if(line.indexOf('data:')!==0) continue;
+            var ev; try{ ev=JSON.parse(line.slice(5).trim()); }catch(e){ continue; }
+            if(ev.warning){ var w=document.createElement('div'); w.className='z-bubble';
+              w.style.cssText='align-self:center;max-width:90%;background:var(--yellow-light);color:var(--yellow-dark);font-size:13px;border:1px solid var(--yellow)';
+              w.textContent='⚠ '+ev.warning; if(typing.parentNode) scroll.insertBefore(w, typing); else scroll.appendChild(w); scroll.scrollTop=scroll.scrollHeight; }
+            else if(ev.delta){ if(!ai){ typing.remove(); ai=bubble('z-bubble--ai',''); } buf+=ev.delta; ai.textContent=buf; scroll.scrollTop=scroll.scrollHeight; }
+            else if(ev.error){ if(typing.parentNode) typing.remove(); if(!ai) ai=bubble('z-bubble--ai z-bubble--err',''); ai.textContent=(ai.textContent||'')+'\n'+ev.error; }
+            else if(ev.done){ if(ai){ var meta=document.createElement('div'); meta.className='z-bubble__meta';
+                meta.textContent=ev.prompt_tokens+'+'+ev.completion_tokens+' {% trans "tokenów" %} · '+ev.cost_pln+' PLN · '+ev.latency_ms+' ms'; ai.appendChild(meta); } }
+          }
+        }
+      } catch(e){
+        if(typing.parentNode) typing.remove();
+        if(e.name!=='AbortError'){ bubble('z-bubble--ai z-bubble--err', '{% trans "Błąd połączenia." %}'); }
+      } finally { setBusy(false); controller=null; }
+    }
+
+    stopBtn.addEventListener('click', function(){ if(controller) controller.abort(); });
+
+    form.addEventListener('submit', function(e){
+      var text=t.value.trim(); if(!text && !hasFiles()) { e.preventDefault(); return; }
+      if(!canStream) return;               // fallback: zwykły POST z przeładowaniem
+      e.preventDefault();
+      t.value=''; zariaGrow(t);
+      stream(text);
+      clearAttach();
+    });
+  })();
+
+  // ── Akcje na wątku: zapis / przypięcie / zmiana nazwy / usunięcie ──
+  (function(){
+    var box = document.querySelector('[data-action-url]');
+    if(!box) return;
+    var url = box.getAttribute('data-action-url');
+    function csrf(){ var m=document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/); return m?m[1]:''; }
+    function post(params){
+      var body=new URLSearchParams(params);
+      return fetch(url,{method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
+        .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r; })
+        .catch(function(e){
+          if(window.gvToast) gvToast('{% trans "Nie udało się wykonać akcji — sprawdź połączenie i spróbuj ponownie." %}',{type:'danger'});
+          throw e;
+        });
+    }
+    window.zariaConvAction=function(action,btn){
+      post({action:action}).then(function(r){return r.json();}).then(function(d){
+        if(action==='save'){ btn.textContent=d.is_saved?'★':'☆'; btn.setAttribute('aria-pressed', d.is_saved); }
+        if(action==='pin'){ btn.textContent=d.pinned?'{% trans "Odepnij" %}':'{% trans "Przypnij" %}'; }
+      });
+    };
+    window.zariaConvRename=function(){
+      var t=prompt('{% trans "Nowa nazwa wątku:" %}'); if(t===null) return;
+      post({action:'rename',title:t}).then(function(){ location.reload(); });
+    };
+    window.zariaConvDelete=function(){
+      if(!confirm('{% trans "Usunąć ten wątek? Tej operacji nie można cofnąć." %}')) return;
+      post({action:'delete'}).then(function(){ window.location='{% url 'ui:zaria_home' %}'; });
+    };
+  })();
+
+  // ── Tryb porównania: jedno pole → dwa równoległe strumienie (A i B) ──
+  function zariaCmpTab(btn, tab){
+    var cmp = btn.closest('.z-cmptabs').nextElementSibling;
+    if(cmp && cmp.classList.contains('z-cmp')) cmp.setAttribute('data-tab', tab);
+  }
+  (function(){
+    var scroll = document.getElementById('z-scroll');
+    var form = document.getElementById('z-cmpform');
+    if(!form || !scroll) return;
+    var t = document.getElementById('zaria-input');
+    var sendBtn = document.getElementById('z-send'), stopBtn = document.getElementById('z-stop');
+    var startUrl = scroll.getAttribute('data-start'), streamUrl = scroll.getAttribute('data-stream');
+    var pickUrl = scroll.getAttribute('data-pick');
+    var nameA = scroll.getAttribute('data-name-a'), nameB = scroll.getAttribute('data-name-b');
+    var controllers = [];
+    scroll.scrollTop = scroll.scrollHeight; zariaGrow(t);
+    t.addEventListener('input', function(){ zariaGrow(t); });
+    t.addEventListener('keydown', function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
+    function csrf(){ var m=document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/); return m?m[1]:''; }
+    function setBusy(on){ sendBtn.disabled=on; sendBtn.hidden=on; stopBtn.hidden=!on; t.disabled=on; }
+
+    function col(side, name){
+      var c=document.createElement('div'); c.className='z-col z-col--'+side;
+      c.innerHTML='<div class="z-col__head"></div><div class="z-col__body"></div><div class="z-col__meta"></div>'
+        +'<div class="z-col__actions"></div>';
+      c.querySelector('.z-col__head').textContent=name+' ';
+      var b=document.createElement('span'); b.className='z-badge'; b.textContent=side.toUpperCase();
+      c.querySelector('.z-col__head').appendChild(b);
+      return c;
+    }
+    async function streamSide(group, side, bodyEl){
+      var ctrl=new AbortController(); controllers.push(ctrl);
+      var body=new URLSearchParams(); body.set('group',group); body.set('side',side);
+      var resp=await fetch(streamUrl,{method:'POST',signal:ctrl.signal,
+        headers:{'X-CSRFToken':csrf(),'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()});
+      if(!resp.ok){ var j={}; try{ j=await resp.json(); }catch(e){} bodyEl.textContent=(j.error||'{% trans "Błąd usługi AI." %}'); bodyEl.classList.add('z-bubble--err'); return null; }
+      var reader=resp.body.getReader(), dec=new TextDecoder(), acc='', buf='', meta=null;
+      while(true){ var r=await reader.read(); if(r.done) break;
+        acc+=dec.decode(r.value,{stream:true}); var parts=acc.split('\n\n'); acc=parts.pop();
+        for(var i=0;i<parts.length;i++){ var line=parts[i].trim(); if(line.indexOf('data:')!==0) continue;
+          var ev; try{ ev=JSON.parse(line.slice(5).trim()); }catch(e){ continue; }
+          if(ev.delta){ buf+=ev.delta; bodyEl.textContent=buf; scroll.scrollTop=scroll.scrollHeight; }
+          else if(ev.error){ bodyEl.textContent+='\n'+ev.error; bodyEl.classList.add('z-bubble--err'); }
+          else if(ev.done){ meta=ev; }
+        }
+      }
+      return meta;
+    }
+    async function go(text){
+      setBusy(true);
+      var r=await fetch(startUrl,{method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/x-www-form-urlencoded'},
+        body:new URLSearchParams({content:text}).toString()});
+      if(!r.ok){ var j={}; try{ j=await r.json(); }catch(e){} alert(j.error||'{% trans "Błąd usługi AI." %}'); setBusy(false); return; }
+      var d=await r.json();
+      var u=document.createElement('div'); u.className='z-bubble z-bubble--user z-cmp-user'; u.textContent=text; scroll.appendChild(u);
+      var tabs=document.createElement('div'); tabs.className='z-cmptabs';
+      tabs.innerHTML='<button type="button" class="btn btn-ghost btn-sm">A</button><button type="button" class="btn btn-ghost btn-sm">B</button>';
+      tabs.children[0].onclick=function(){ wrap.setAttribute('data-tab','a'); };
+      tabs.children[1].onclick=function(){ wrap.setAttribute('data-tab','b'); };
+      var wrap=document.createElement('div'); wrap.className='z-cmp'; wrap.setAttribute('data-tab','a');
+      var ca=col('a', d.a.name), cb=col('b', d.b.name);
+      wrap.appendChild(ca); wrap.appendChild(cb); scroll.appendChild(tabs); scroll.appendChild(wrap);
+      scroll.scrollTop=scroll.scrollHeight;
+      controllers=[];
+      var results=await Promise.all([
+        streamSide(d.group,'a',ca.querySelector('.z-col__body')),
+        streamSide(d.group,'b',cb.querySelector('.z-col__body'))]);
+      [['a',ca,d.a],['b',cb,d.b]].forEach(function(x, idx){
+        var side=x[0], colEl=x[1], info=x[2], meta=results[idx];
+        if(meta){ colEl.querySelector('.z-col__meta').textContent=meta.prompt_tokens+'+'+meta.completion_tokens+' {% trans "tokenów" %} · '+(info.local?'0 zł — {% trans "zasób własny" %}':meta.cost_pln+' PLN')+' · '+meta.latency_ms+' ms'; }
+        var act=colEl.querySelector('.z-col__actions');
+        var copy=document.createElement('button'); copy.type='button'; copy.className='btn btn-ghost btn-sm'; copy.textContent='{% trans "Kopiuj" %}';
+        copy.onclick=function(){ navigator.clipboard && navigator.clipboard.writeText(colEl.querySelector('.z-col__body').textContent); };
+        var pick=document.createElement('button'); pick.type='button'; pick.className='btn btn-primary btn-sm'; pick.textContent='{% trans "Wybierz tę odpowiedź" %}';
+        pick.onclick=function(){ choose(d.group, side); };
+        act.appendChild(copy); act.appendChild(pick);
+      });
+      setBusy(false);
+    }
+    async function choose(group, side){
+      await fetch(pickUrl,{method:'POST',headers:{'X-CSRFToken':csrf(),'Content-Type':'application/x-www-form-urlencoded'},
+        body:new URLSearchParams({group:group,side:side}).toString()});
+      location.reload();   // po wyborze wątek kontynuuje wybranym modelem (koniec porównania)
+    }
+    stopBtn.addEventListener('click', function(){ controllers.forEach(function(c){ c.abort(); }); });
+    form.addEventListener('submit', function(e){ e.preventDefault(); var text=t.value.trim(); if(!text) return; t.value=''; zariaGrow(t); go(text); });
+  })();
+</script>
+{% endblock %}

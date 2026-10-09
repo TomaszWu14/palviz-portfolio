@@ -1,0 +1,381 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% block title %}Kalkulator — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<script defer src="{% static 'ui/js/plotly.min.js' %}"></script>
+<script src="{% static 'ui/vendor/htmx.min.js' %}"></script>
+<script type="importmap">{ "imports": { "three": "/static/ui/vendor/three.module.js" } }</script>
+<script type="module">
+  // Expose the realistic pallet renderer globally so HTMX-injected result panels
+  // (plain inline scripts) can call it; signal readiness for panels swapped before load.
+  import { renderPalVizLevel } from "/static/ui/js/palviz-three.js";
+  window.PalViz3D = renderPalVizLevel;
+  window.dispatchEvent(new Event("palviz3d-ready"));
+</script>
+<style>
+  /* Kalkulator ma dużo treści (parametry + paleta + lokalizacje) — wypełnij szerokość ekranu */
+  .container { max-width: none; }
+  .calc-layout { display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start; }
+  @media(max-width:1000px){ .calc-layout{ grid-template-columns:1fr; } }
+
+  .params-panel { position:sticky; top:72px; }
+  .tab-bar { display:flex; gap:0; border-bottom:2px solid var(--gray-200); margin-bottom:16px; }
+  .tab-btn { padding:8px 16px; font-size:13px; font-weight:500; cursor:pointer; background:none; border:none; color:var(--gray-500); border-bottom:2px solid transparent; margin-bottom:-2px; transition:color .15s,border-color .15s; }
+  .tab-btn.active { color:var(--blue-mid); border-bottom-color:var(--blue); }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .slider-group { display:flex; flex-direction:column; gap:3px; }
+  .slider-row { display:flex; align-items:center; gap:8px; }
+  .slider-row input[type=range] { flex:1; accent-color:var(--blue); cursor:pointer; }
+  .slider-val { font-size:13px; font-weight:600; color:var(--blue-mid); min-width:38px; text-align:right; }
+  .slider-val input[type=number] {
+    width:60px; padding:3px 6px; font-size:12px; font-weight:600; color:var(--blue-mid);
+    border:1px solid var(--gray-300); border-radius:4px; text-align:center;
+  }
+
+  #result-area { min-height:200px; }
+  .result-placeholder {
+    display:flex; align-items:center; justify-content:center;
+    height:280px; background:var(--surface); border:2px dashed var(--gray-200); border-radius:var(--radius);
+    color:var(--gray-400); font-size:14px; flex-direction:column; gap:8px;
+  }
+  .htmx-request #loading-indicator { display:flex !important; }
+  #loading-indicator { display:none; align-items:center; justify-content:center; gap:10px; padding:20px; color:var(--gray-500); font-size:13px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Kalkulator</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Kalkulator paletyzacji</div>
+    <div class="page-header__sub">Zmieniaj parametry — wyniki aktualizują się automatycznie. Każdy wynik jest automatycznie zapisywany.</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:planner_location_fit_all' %}" class="btn btn-secondary">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Przymierz do lokalizacji
+    </a>
+    <a href="{% url 'ui:saved_list' %}" class="btn btn-secondary">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Moje zapisy
+    </a>
+  </div>
+</div>
+
+<div class="calc-layout">
+
+  <!-- ── Left panel: parameters ─────────────────────────────────────────── -->
+  <div class="params-panel">
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="showTab('manual')">Ręcznie</button>
+      <button class="tab-btn" onclick="showTab('csv')">Z pliku CSV</button>
+    </div>
+
+    <!-- Manual form -->
+    <div id="tab-manual" class="tab-panel active">
+      {# „Przelicz” = submit: jawny hx-trigger zastępuje domyślny trigger formularza, #}
+      {# więc „submit” musi być na liście. method/action = pełny POST bez JS (token CSRF w body, nie w URL). #}
+      <form id="manual-form" method="post" action="{% url 'ui:calculate' %}"
+            hx-post="{% url 'ui:calculate' %}"
+            hx-target="#result-area"
+            hx-indicator="#loading-indicator"
+            hx-trigger="submit, change delay:500ms, input delay:700ms">
+        {% csrf_token %}
+
+        <!-- Paleta -->
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-header" style="padding:10px 14px"><span class="card-header__title" style="font-size:12px">Paleta</span></div>
+          <div class="card-body" style="padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+            <div style="font-size:13px;color:var(--gray-500);padding:4px 0">
+              <strong style="color:var(--gray-900)">Paleta Euro</strong> — 120×80 cm
+              <input type="hidden" name="pallet" value="EU">
+            </div>
+            <div class="slider-group">
+              <label for="{{ manual_form.location.id_for_label }}">{{ manual_form.location.label }}</label>
+              {{ manual_form.location }}
+              {{ manual_form.location_heights|json_script:"loc_heights" }}
+            </div>
+            <div class="slider-group">
+              <label for="sl_maxh">{{ manual_form.max_height_total.label }}</label>
+              <div class="slider-row">
+                <input type="range" id="sl_maxh" name="_sl_maxh" min="100" max="400" value="215"
+                       oninput="syncSlider(this,'max_height_total','lbl_maxh')">
+                <div class="slider-val"><input type="number" id="lbl_maxh" aria-label="{{ manual_form.max_height_total.label }} — wartość" value="215" min="50" max="400"
+                       oninput="syncNum(this,'sl_maxh','max_height_total')"> cm</div>
+              </div>
+              <input type="hidden" name="max_height_total" id="max_height_total" value="215">
+            </div>
+            <div class="slider-group">
+              <label for="sl_maxw">{{ manual_form.max_weight.label }}</label>
+              <div class="slider-row">
+                <input type="range" id="sl_maxw" name="_sl_maxw" min="100" max="3000" step="50" value="1000"
+                       oninput="syncSlider(this,'max_weight','lbl_maxw')">
+                <div class="slider-val"><input type="number" id="lbl_maxw" aria-label="{{ manual_form.max_weight.label }} — wartość" value="1000" min="1" max="5000"
+                       oninput="syncNum(this,'sl_maxw','max_weight')"> kg</div>
+              </div>
+              <input type="hidden" name="max_weight" id="max_weight" value="1000">
+            </div>
+          </div>
+        </div>
+
+        <!-- Karton -->
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-header" style="padding:10px 14px"><span class="card-header__title" style="font-size:12px">Karton</span></div>
+          <div class="card-body" style="padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+            <div class="form-group">
+              <label for="{{ manual_form.sku.id_for_label }}">{{ manual_form.sku.label }}</label>
+              {{ manual_form.sku }}
+            </div>
+            <div class="slider-group">
+              <label for="sl_l">Długość L [cm]</label>
+              <div class="slider-row">
+                <input type="range" id="sl_l" name="_sl_l" min="5" max="200" value="40"
+                       oninput="syncSlider(this,'carton_l','lbl_l')">
+                <div class="slider-val"><input type="number" id="lbl_l" aria-label="Długość L [cm] — wartość" value="40" min="1" max="200"
+                       oninput="syncNum(this,'sl_l','carton_l')"> cm</div>
+              </div>
+              <input type="hidden" name="carton_l" id="carton_l" value="40">
+            </div>
+            <div class="slider-group">
+              <label for="sl_w">Szerokość W [cm]</label>
+              <div class="slider-row">
+                <input type="range" id="sl_w" name="_sl_w" min="5" max="150" value="30"
+                       oninput="syncSlider(this,'carton_w','lbl_w')">
+                <div class="slider-val"><input type="number" id="lbl_w" aria-label="Szerokość W [cm] — wartość" value="30" min="1" max="150"
+                       oninput="syncNum(this,'sl_w','carton_w')"> cm</div>
+              </div>
+              <input type="hidden" name="carton_w" id="carton_w" value="30">
+            </div>
+            <div class="slider-group">
+              <label for="sl_h">Wysokość H [cm]</label>
+              <div class="slider-row">
+                <input type="range" id="sl_h" name="_sl_h" min="5" max="150" value="25"
+                       oninput="syncSlider(this,'carton_h','lbl_h')">
+                <div class="slider-val"><input type="number" id="lbl_h" aria-label="Wysokość H [cm] — wartość" value="25" min="1" max="150"
+                       oninput="syncNum(this,'sl_h','carton_h')"> cm</div>
+              </div>
+              <input type="hidden" name="carton_h" id="carton_h" value="25">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div class="form-group">
+                <label for="{{ manual_form.unit_weight.id_for_label }}">{{ manual_form.unit_weight.label }}</label>
+                {{ manual_form.unit_weight }}
+              </div>
+              <div class="form-group">
+                <label for="{{ manual_form.pcs_per_carton.id_for_label }}">{{ manual_form.pcs_per_carton.label }}</label>
+                {{ manual_form.pcs_per_carton }}
+              </div>
+              <div class="form-group">
+                <label for="{{ manual_form.demand_pcs.id_for_label }}">{{ manual_form.demand_pcs.label }}</label>
+                {{ manual_form.demand_pcs }}
+              </div>
+              <div class="form-group">
+                <label for="{{ manual_form.carton_tare.id_for_label }}">{{ manual_form.carton_tare.label }}</label>
+                {{ manual_form.carton_tare }}
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="{{ manual_form.render_layers.id_for_label }}">{{ manual_form.render_layers.label }}</label>
+              {{ manual_form.render_layers }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Przymierz do lokalizacji (inline, wiele lokalizacji) -->
+        {% if fit_locations %}
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-header" style="padding:10px 14px"><span class="card-header__title" style="font-size:12px">Przymierz do lokalizacji</span></div>
+          <div class="card-body" style="padding:10px 14px">
+            <div style="font-size:11px;color:var(--gray-500);margin-bottom:8px">Zaznacz lokalizacje — wynik dopasowania pojawi się obok, bez przechodzenia dalej.</div>
+            <div style="display:flex;flex-direction:column;gap:5px;max-height:200px;overflow:auto">
+              {% for loc in fit_locations %}
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                <input type="checkbox" name="fit_loc" value="{{ loc.pk }}">
+                <span><strong>{{ loc.name }}</strong>
+                  <span style="color:var(--gray-400);font-size:11px">{{ loc.width_cm }}×{{ loc.depth_cm }}×{{ loc.total_height_cm }} cm{% if loc.is_pallet_location %} · paletowa{% else %} · półkowa{% endif %}</span>
+                </span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary w-full">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 3l14 9-14 9V3z"/></svg>
+          Przelicz
+        </button>
+      </form>
+
+      <!-- Save as palletization instruction -->
+      <div class="card" style="margin-top:16px">
+        <div class="card-header" style="padding:10px 14px">
+          <span class="card-header__title" style="font-size:12px">Zapisz jako paletyzację</span>
+        </div>
+        <div class="card-body" style="padding:12px 14px">
+          <form id="save-instr-form" method="post" action="{% url 'ui:planner_calc_save_instruction' %}">
+            {% csrf_token %}
+            <!-- Hidden mirrors of the calculator form values, kept in sync by JS -->
+            <input type="hidden" name="pallet" id="si_pallet" value="EU">
+            <input type="hidden" name="max_height_total" id="si_maxh" value="215">
+            <input type="hidden" name="max_weight" id="si_maxw" value="1000">
+            <input type="hidden" name="carton_l" id="si_l" value="40">
+            <input type="hidden" name="carton_w" id="si_w" value="30">
+            <input type="hidden" name="carton_h" id="si_h" value="25">
+            <input type="hidden" name="sku" id="si_sku" value="">
+            <input type="hidden" name="unit_weight" id="si_weight" value="0.45">
+            <input type="hidden" name="pcs_per_carton" id="si_pcs" value="1">
+            <input type="hidden" name="carton_tare" id="si_tare" value="0">
+            <input type="hidden" name="demand_pcs" id="si_demand" value="1000">
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div class="form-group">
+                <label for="si_product_select" style="font-size:12px">Produkt</label>
+                <select name="product_id" id="si_product_select" style="width:100%">
+                  <option value="">— nowy (wpisz kod poniżej) —</option>
+                  {% for p in products %}
+                  <option value="{{ p.pk }}">{{ p.code }}{% if p.name %} – {{ p.name }}{% endif %}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="form-group" id="si_new_code_wrap">
+                <label for="si_product_code" style="font-size:12px">Kod nowego produktu</label>
+                <input type="text" name="product_code" id="si_product_code" placeholder="np. ABC-001" style="width:100%;text-transform:uppercase">
+              </div>
+              <div class="form-group">
+                <label for="si_instr_name" style="font-size:12px">Nazwa instrukcji (opcjonalnie)</label>
+                <input type="text" name="instr_name" id="si_instr_name" placeholder="np. Wersja standardowa">
+              </div>
+              <button type="submit" class="btn btn-primary w-full" onclick="syncSaveFields()">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Zapisz jako paletyzację
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- CSV upload -->
+    <div id="tab-csv" class="tab-panel">
+      <div class="card">
+        <div class="card-body">
+          <form method="post" action="{% url 'ui:upload_csv' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <input type="hidden" name="pallet" value="EU">
+              <div class="form-group">
+                <label for="{{ upload_form.max_height_total.id_for_label }}">{{ upload_form.max_height_total.label }}</label>
+                {{ upload_form.max_height_total }}
+              </div>
+              <div class="form-group">
+                <label for="{{ upload_form.max_weight.id_for_label }}">{{ upload_form.max_weight.label }}</label>
+                {{ upload_form.max_weight }}
+              </div>
+              <div class="form-group">
+                <label for="{{ upload_form.file.id_for_label }}">{{ upload_form.file.label }}</label>
+                {{ upload_form.file }}
+                <span class="help-text">Kolumny: sku, variant, l, w, h, unit_weight, pcs_per_carton, demand_pcs</span>
+              </div>
+              <button type="submit" class="btn btn-primary">Wczytaj i oblicz</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right panel: result ────────────────────────────────────────────── -->
+  <div>
+    <div id="loading-indicator">
+      <div class="spinner"></div> Obliczanie…
+    </div>
+    <div id="result-area">
+      {% if result_html %}{{ result_html }}{% else %}
+      <div class="result-placeholder">
+        <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="var(--gray-300)" stroke-width="1.5">
+          <path d="M20 7H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/>
+          <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+        </svg>
+        <span>Wprowadź parametry i kliknij <strong>Przelicz</strong><br>lub przesuń suwak — wynik pojawi się tutaj</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function showTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', ['manual','csv'][i] === name));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function syncSlider(slider, hiddenId, lblId) {
+  document.getElementById(hiddenId).value = slider.value;
+  document.getElementById(lblId).value   = slider.value;
+}
+function syncNum(input, sliderId, hiddenId) {
+  const v = input.value;
+  document.getElementById(hiddenId).value = v;
+  document.getElementById(sliderId).value = v;
+}
+
+// Picking a defined location sets the target height from that location.
+(function () {
+  const heightsEl = document.getElementById('loc_heights');
+  const sel = document.getElementById('id_location');
+  if (!heightsEl || !sel) return;
+  const LOC_H = JSON.parse(heightsEl.textContent);
+  sel.addEventListener('change', function () {
+    const h = LOC_H[this.value];
+    if (!h) return;
+    document.getElementById('max_height_total').value = h;
+    document.getElementById('lbl_maxh').value = h;
+    document.getElementById('sl_maxh').value = Math.min(400, Math.max(100, h));
+  });
+})();
+
+function syncSaveFields() {
+  // Copy current form values into the save-instruction hidden fields
+  const g = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  document.getElementById('si_maxh').value   = g('max_height_total');
+  document.getElementById('si_maxw').value   = g('max_weight');
+  document.getElementById('si_l').value      = g('carton_l');
+  document.getElementById('si_w').value      = g('carton_w');
+  document.getElementById('si_h').value      = g('carton_h');
+  document.getElementById('si_sku').value    = g('id_sku') || '';
+  // unit_weight, pcs_per_carton, demand_pcs, carton_tare come from direct inputs
+  const mf = document.getElementById('manual-form');
+  if (mf) {
+    ['unit_weight','pcs_per_carton','demand_pcs','carton_tare'].forEach(name => {
+      const inp = mf.querySelector(`[name="${name}"]`);
+      const target = {
+        'unit_weight':    'si_weight',
+        'pcs_per_carton': 'si_pcs',
+        'demand_pcs':     'si_demand',
+        'carton_tare':    'si_tare',
+      }[name];
+      if (inp && target) document.getElementById(target).value = inp.value;
+    });
+  }
+}
+
+// Show/hide new product code input
+document.getElementById('si_product_select')?.addEventListener('change', function() {
+  document.getElementById('si_new_code_wrap').style.display = this.value ? 'none' : '';
+});
+</script>
+{% endblock %}

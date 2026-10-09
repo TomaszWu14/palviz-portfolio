@@ -1,0 +1,21 @@
+{% extends "ui/base.html" %}
+{% block title %}Usuń opakowanie — {{ app_name }}{% endblock %}
+{% block nav_cartons %}topnav__link--active{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Usuń opakowanie zbiorcze</div>
+  </div>
+</div>
+<div class="card" style="max-width:480px">
+  <div class="card-body">
+    <p>Czy na pewno chcesz usunąć opakowanie <strong>{{ pack.name }}</strong>?</p>
+    <p class="text-muted" style="font-size:13px">Przypisanie do kartonów zostanie usunięte.</p>
+    <form method="post" style="display:flex;gap:10px;margin-top:16px">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Usuń</button>
+      <a href="{% url 'ui:planner_inner_packs' %}" class="btn btn-ghost">Anuluj</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

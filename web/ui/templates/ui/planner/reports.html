@@ -1,0 +1,91 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Zgłoszenia błędów — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Zgłoszenia</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Zgłoszenia błędów</div>
+    <div class="page-header__sub">{{ page_obj.paginator.count }} zgłoszeń</div>
+  </div>
+</div>
+
+<!-- Status filter -->
+<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+  <a href="{% url 'ui:planner_reports' %}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-secondary{% endif %}">Wszystkie</a>
+  <a href="?status=new" class="btn btn-sm {% if status_filter == 'new' %}btn-primary{% else %}btn-secondary{% endif %}">Nowe</a>
+  <a href="?status=in_review" class="btn btn-sm {% if status_filter == 'in_review' %}btn-primary{% else %}btn-secondary{% endif %}">W trakcie</a>
+  <a href="?status=resolved" class="btn btn-sm {% if status_filter == 'resolved' %}btn-primary{% else %}btn-secondary{% endif %}">Rozwiązane</a>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Produkt</th>
+          <th>Zgłaszający</th>
+          <th>Lokalizacja</th>
+          <th>Opis</th>
+          <th>Status</th>
+          <th>Data</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for r in page_obj %}
+      <tr>
+        <td class="text-muted text-sm">{{ r.id }}</td>
+        <td>
+          <span style="font-family:monospace;font-weight:600">{{ r.product_code }}</span>
+          {% if r.instruction %}
+          <div class="text-sm text-muted">v{{ r.instruction.version }}</div>
+          {% endif %}
+        </td>
+        <td>{{ r.reporter_name|default:"anonimowy" }}</td>
+        <td class="text-muted">{{ r.reporter_location|truncatechars:20 }}</td>
+        <td class="text-muted">{{ r.description|truncatechars:45 }}</td>
+        <td>
+          <span class="badge {% if r.status == 'new' %}badge-red{% elif r.status == 'in_review' %}badge-yellow{% else %}badge-green{% endif %}">
+            {{ r.get_status_display }}
+          </span>
+        </td>
+        <td class="text-sm text-muted">{{ r.created_at|date:"d.m H:i" }}</td>
+        <td>
+          <a href="{% url 'ui:planner_report_detail' r.pk %}" class="btn btn-ghost btn-sm">Otwórz</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8">
+          <div class="empty-state">
+            <div class="empty-state__icon">{% icon "circle-check" cls="icon--em" %}</div>
+            <div class="empty-state__title">Brak zgłoszeń</div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+  {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">‹</a>{% else %}<span class="disabled">‹</span>{% endif %}
+  {% for num in page_obj.paginator.page_range %}
+  {% if page_obj.number == num %}<span class="current">{{ num }}</span>
+  {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}<a href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+  {% endif %}{% endfor %}
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">›</a>{% else %}<span class="disabled">›</span>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

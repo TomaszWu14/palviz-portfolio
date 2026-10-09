@@ -1,0 +1,4545 @@
+{
+ "actual_hu_anchor": {
+  "billed_kg": 1824.0,
+  "dim_weight_kg": 1824.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 7,
+    "by_vol": 7,
+    "by_weight": 1,
+    "est_theoretical": 7,
+    "fill_pct": 75.4,
+    "label": "1,80 m",
+    "ldm": 3.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 6,
+    "n_filled": 6,
+    "n_pallets": 7,
+    "n_pallets_low": 7,
+    "n_range": false,
+    "n_slack": 1,
+    "pallet_anchor": 7,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 7,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 15,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 4
+   },
+   {
+    "actual_hu": 7,
+    "by_vol": 5,
+    "by_weight": 1,
+    "est_theoretical": 5,
+    "fill_pct": 60.3,
+    "label": "2,25 m",
+    "ldm": 3.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 5,
+    "n_filled": 5,
+    "n_pallets": 7,
+    "n_pallets_low": 7,
+    "n_range": false,
+    "n_slack": 2,
+    "pallet_anchor": 7,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 7,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 15,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 4
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 95,
+  "total_vol_m3": 9.12,
+  "total_weight_kg": 665.0,
+  "weight_capped": false
+ },
+ "all_units": {
+  "billed_kg": 943.5,
+  "dim_weight_kg": 943.5,
+  "errors": [
+   "D-NOLAYOUT: brak układu palety (kartonów na paletę) w instrukcji — pominięto",
+   "E-ZEROCPP: brak układu palety (kartonów na paletę) w instrukcji — pominięto"
+  ],
+  "has_missing": true,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 30.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 30,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 2.88,
+    "weight_kg": 210.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 5,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.0375,
+    "weight_kg": 16.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 1.5,
+     "unit": "pal"
+    },
+    "max_layers": 0,
+    "n_cartons": 60,
+    "paz_pallets": 2,
+    "product": "C-PAL",
+    "unit": "pal",
+    "volume_m3": 1.8,
+    "weight_kg": 558.0
+   }
+  ],
+  "missing_products": [
+   {
+    "code": "D-NOLAYOUT",
+    "name": "Bez układu",
+    "quantity": 2.0,
+    "unit": "pal"
+   },
+   {
+    "code": "E-ZEROCPP",
+    "name": "Układ z cpp=0",
+    "quantity": 3.0,
+    "unit": "pal"
+   }
+  ],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 4,
+    "by_weight": 1,
+    "est_theoretical": 4,
+    "fill_pct": 68.3,
+    "label": "1,80 m",
+    "ldm": 2.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 4,
+    "n_filled": 4,
+    "n_pallets": 4,
+    "n_pallets_low": 4,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 4,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 48,
+       "skus": [
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 17,
+       "skus": [
+        "A-KAR",
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 14,
+       "skus": [
+        "B-SZT",
+        "C-PAL"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 3,
+    "by_weight": 1,
+    "est_theoretical": 3,
+    "fill_pct": 72.8,
+    "label": "2,25 m",
+    "ldm": 1.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 4,
+    "n_filled": 4,
+    "n_pallets": 3,
+    "n_pallets_low": 3,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 4,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 40,
+       "skus": [
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 40,
+       "skus": [
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 15,
+       "skus": [
+        "A-KAR",
+        "B-SZT"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 95,
+  "total_vol_m3": 4.7175,
+  "total_weight_kg": 784.0,
+  "weight_capped": false
+ },
+ "all_units_no_packing": {
+  "billed_kg": 943.5,
+  "dim_weight_kg": 943.5,
+  "errors": [
+   "D-NOLAYOUT: brak układu palety (kartonów na paletę) w instrukcji — pominięto",
+   "E-ZEROCPP: brak układu palety (kartonów na paletę) w instrukcji — pominięto"
+  ],
+  "has_missing": true,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 30.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 30,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 2.88,
+    "weight_kg": 210.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 5,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.0375,
+    "weight_kg": 16.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 1.5,
+     "unit": "pal"
+    },
+    "max_layers": 0,
+    "n_cartons": 60,
+    "paz_pallets": 2,
+    "product": "C-PAL",
+    "unit": "pal",
+    "volume_m3": 1.8,
+    "weight_kg": 558.0
+   }
+  ],
+  "missing_products": [
+   {
+    "code": "D-NOLAYOUT",
+    "name": "Bez układu",
+    "quantity": 2.0,
+    "unit": "pal"
+   },
+   {
+    "code": "E-ZEROCPP",
+    "name": "Układ z cpp=0",
+    "quantity": 3.0,
+    "unit": "pal"
+   }
+  ],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 4,
+    "by_weight": 1,
+    "est_theoretical": 4,
+    "fill_pct": 68.3,
+    "label": "1,80 m",
+    "ldm": 2.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 4,
+    "n_filled": 4,
+    "n_pallets": 4,
+    "n_pallets_low": 4,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": null,
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 3,
+    "by_weight": 1,
+    "est_theoretical": 3,
+    "fill_pct": 72.8,
+    "label": "2,25 m",
+    "ldm": 1.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 3,
+    "n_filled": 3,
+    "n_pallets": 3,
+    "n_pallets_low": 3,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": null,
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 95,
+  "total_vol_m3": 4.7175,
+  "total_weight_kg": 784.0,
+  "weight_capped": false
+ },
+ "borderline_range_sweep_60": {
+  "billed_kg": 2184.0,
+  "dim_weight_kg": 2184.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 50,
+    "paz_pallets": 0,
+    "product": "C-PAL",
+    "unit": "kar",
+    "volume_m3": 1.5,
+    "weight_kg": 465.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 400.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 34,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.3,
+    "weight_kg": 108.8
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 11,
+    "by_weight": 2,
+    "est_theoretical": 11,
+    "fill_pct": 57.4,
+    "label": "1,80 m",
+    "ldm": 5.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 11,
+    "n_filled": 11,
+    "n_pallets": 11,
+    "n_pallets_low": 10,
+    "n_range": true,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": null,
+    "usable_vol_m3": 1.0368,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 9,
+    "by_weight": 2,
+    "est_theoretical": 9,
+    "fill_pct": 56.2,
+    "label": "2,25 m",
+    "ldm": 4.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 9,
+    "n_filled": 9,
+    "n_pallets": 9,
+    "n_pallets_low": 8,
+    "n_range": true,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": null,
+    "usable_vol_m3": 1.296,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 60,
+  "total_cartons": 179,
+  "total_vol_m3": 10.92,
+  "total_weight_kg": 1238.8,
+  "weight_capped": false
+ },
+ "borderline_range_sweep_77": {
+  "billed_kg": 2184.0,
+  "dim_weight_kg": 2184.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 50,
+    "paz_pallets": 0,
+    "product": "C-PAL",
+    "unit": "kar",
+    "volume_m3": 1.5,
+    "weight_kg": 465.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 400.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 34,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.3,
+    "weight_kg": 108.8
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 9,
+    "by_weight": 2,
+    "est_theoretical": 9,
+    "fill_pct": 70.2,
+    "label": "1,80 m",
+    "ldm": 4.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 9,
+    "n_filled": 9,
+    "n_pallets": 9,
+    "n_pallets_low": 8,
+    "n_range": true,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": null,
+    "usable_vol_m3": 1.3306,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 7,
+    "by_weight": 2,
+    "est_theoretical": 7,
+    "fill_pct": 72.2,
+    "label": "2,25 m",
+    "ldm": 3.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 7,
+    "n_filled": 7,
+    "n_pallets": 7,
+    "n_pallets_low": 7,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": null,
+    "usable_vol_m3": 1.6632,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 77,
+  "total_cartons": 179,
+  "total_vol_m3": 10.92,
+  "total_weight_kg": 1238.8,
+  "weight_capped": false
+ },
+ "borderline_range_sweep_88": {
+  "billed_kg": 2184.0,
+  "dim_weight_kg": 2184.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 50,
+    "paz_pallets": 0,
+    "product": "C-PAL",
+    "unit": "kar",
+    "volume_m3": 1.5,
+    "weight_kg": 465.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 400.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 34,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.3,
+    "weight_kg": 108.8
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 8,
+    "by_weight": 2,
+    "est_theoretical": 8,
+    "fill_pct": 79.0,
+    "label": "1,80 m",
+    "ldm": 4.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 8,
+    "n_filled": 8,
+    "n_pallets": 8,
+    "n_pallets_low": 7,
+    "n_range": true,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": null,
+    "usable_vol_m3": 1.5206,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 6,
+    "by_weight": 2,
+    "est_theoretical": 6,
+    "fill_pct": 84.3,
+    "label": "2,25 m",
+    "ldm": 3.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 6,
+    "n_filled": 6,
+    "n_pallets": 6,
+    "n_pallets_low": 6,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": null,
+    "usable_vol_m3": 1.9008,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 88,
+  "total_cartons": 179,
+  "total_vol_m3": 10.92,
+  "total_weight_kg": 1238.8,
+  "weight_capped": false
+ },
+ "custom_heights": {
+  "billed_kg": 2184.0,
+  "dim_weight_kg": 2184.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 50,
+    "paz_pallets": 0,
+    "product": "C-PAL",
+    "unit": "kar",
+    "volume_m3": 1.5,
+    "weight_kg": 465.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 400.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 34,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.3,
+    "weight_kg": 108.8
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 9,
+    "by_weight": 2,
+    "est_theoretical": 9,
+    "fill_pct": 84.3,
+    "label": "1,50 m",
+    "ldm": 4.5,
+    "max_h_cm": 150,
+    "max_w_kg": 1000,
+    "model_pallets": 9,
+    "n_filled": 9,
+    "n_pallets": 9,
+    "n_pallets_low": 9,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.44,
+    "three": null,
+    "usable_vol_m3": 1.224,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 7,
+    "by_weight": 2,
+    "est_theoretical": 7,
+    "fill_pct": 81.2,
+    "label": "2,00 m",
+    "ldm": 3.5,
+    "max_h_cm": 200,
+    "max_w_kg": 1000,
+    "model_pallets": 7,
+    "n_filled": 7,
+    "n_pallets": 7,
+    "n_pallets_low": 7,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.92,
+    "three": null,
+    "usable_vol_m3": 1.632,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 6,
+    "by_weight": 2,
+    "est_theoretical": 6,
+    "fill_pct": 75.8,
+    "label": "2,50 m",
+    "ldm": 3.0,
+    "max_h_cm": 250,
+    "max_w_kg": 1000,
+    "model_pallets": 6,
+    "n_filled": 6,
+    "n_pallets": 6,
+    "n_pallets_low": 6,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.4,
+    "three": null,
+    "usable_vol_m3": 2.04,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 179,
+  "total_vol_m3": 10.92,
+  "total_weight_kg": 1238.8,
+  "weight_capped": false
+ },
+ "customer_cap": {
+  "billed_kg": 1000.0,
+  "dim_weight_kg": 120.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 50.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 20.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 20,
+    "paz_pallets": 0,
+    "product": "HVY",
+    "unit": "kar",
+    "volume_m3": 0.6,
+    "weight_kg": 1000.0
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 200,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 5,
+    "est_theoretical": 5,
+    "fill_pct": 6.9,
+    "label": "1,80 m",
+    "ldm": 2.5,
+    "max_h_cm": 180,
+    "max_w_kg": 200,
+    "model_pallets": 5,
+    "n_filled": 5,
+    "n_pallets": 5,
+    "n_pallets_low": 5,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 5,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "HVY"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.6416,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 5,
+    "est_theoretical": 5,
+    "fill_pct": 5.6,
+    "label": "2,25 m",
+    "ldm": 2.5,
+    "max_h_cm": 225,
+    "max_w_kg": 200,
+    "model_pallets": 5,
+    "n_filled": 5,
+    "n_pallets": 5,
+    "n_pallets_low": 5,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 5,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "HVY"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 2.052,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 95,
+  "total_cartons": 20,
+  "total_vol_m3": 0.6,
+  "total_weight_kg": 1000.0,
+  "weight_capped": true
+ },
+ "customer_loose_cap": {
+  "billed_kg": 1500.0,
+  "dim_weight_kg": 180.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 50.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 30.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 30,
+    "paz_pallets": 0,
+    "product": "HVY",
+    "unit": "kar",
+    "volume_m3": 0.9,
+    "weight_kg": 1500.0
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 2,
+    "est_theoretical": 2,
+    "fill_pct": 26.0,
+    "label": "1,80 m",
+    "ldm": 1.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 2,
+    "n_filled": 2,
+    "n_pallets": 2,
+    "n_pallets_low": 2,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 2,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 14,
+       "skus": [
+        "HVY"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 2,
+    "est_theoretical": 2,
+    "fill_pct": 20.8,
+    "label": "2,25 m",
+    "ldm": 1.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 2,
+    "n_filled": 2,
+    "n_pallets": 2,
+    "n_pallets_low": 2,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 2,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 14,
+       "skus": [
+        "HVY"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 30,
+  "total_vol_m3": 0.9,
+  "total_weight_kg": 1500.0,
+  "weight_capped": false
+ },
+ "customer_no_cap": {
+  "billed_kg": 1500.0,
+  "dim_weight_kg": 180.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 50.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 30.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 30,
+    "paz_pallets": 0,
+    "product": "HVY",
+    "unit": "kar",
+    "volume_m3": 0.9,
+    "weight_kg": 1500.0
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 2,
+    "est_theoretical": 2,
+    "fill_pct": 26.0,
+    "label": "1,80 m",
+    "ldm": 1.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 2,
+    "n_filled": 2,
+    "n_pallets": 2,
+    "n_pallets_low": 2,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 2,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 14,
+       "skus": [
+        "HVY"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 2,
+    "est_theoretical": 2,
+    "fill_pct": 20.8,
+    "label": "2,25 m",
+    "ldm": 1.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 2,
+    "n_filled": 2,
+    "n_pallets": 2,
+    "n_pallets_low": 2,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 2,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "HVY"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 14,
+       "skus": [
+        "HVY"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 30,
+  "total_vol_m3": 0.9,
+  "total_weight_kg": 1500.0,
+  "weight_capped": false
+ },
+ "empty": {
+  "billed_kg": 0.0,
+  "dim_weight_kg": 0.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": true,
+  "lines": [],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 0,
+    "by_weight": 0,
+    "est_theoretical": 0,
+    "fill_pct": 0,
+    "label": "1,80 m",
+    "ldm": 0.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 0,
+    "n_filled": 0,
+    "n_pallets": 0,
+    "n_pallets_low": 0,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": null,
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 0,
+    "by_weight": 0,
+    "est_theoretical": 0,
+    "fill_pct": 0,
+    "label": "2,25 m",
+    "ldm": 0.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 0,
+    "n_filled": 0,
+    "n_pallets": 0,
+    "n_pallets_low": 0,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": null,
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 0,
+  "total_vol_m3": 0.0,
+  "total_weight_kg": 0.0,
+  "weight_capped": false
+ },
+ "empty_instr_map": {
+  "billed_kg": 0.0,
+  "dim_weight_kg": 0.0,
+  "errors": [
+   "A-KAR: brak instrukcji paletyzacji — pominięto",
+   "B-SZT: brak instrukcji paletyzacji — pominięto",
+   "C-PAL: brak instrukcji paletyzacji — pominięto",
+   "D-NOLAYOUT: brak instrukcji paletyzacji — pominięto",
+   "E-ZEROCPP: brak instrukcji paletyzacji — pominięto"
+  ],
+  "has_missing": true,
+  "is_small": true,
+  "lines": [],
+  "missing_products": [
+   {
+    "code": "A-KAR",
+    "name": "Kartonowy",
+    "quantity": 30.0,
+    "unit": "kar"
+   },
+   {
+    "code": "B-SZT",
+    "name": "Sztukowy",
+    "quantity": 50.0,
+    "unit": "szt"
+   },
+   {
+    "code": "C-PAL",
+    "name": "Paletowy",
+    "quantity": 1.5,
+    "unit": "pal"
+   },
+   {
+    "code": "D-NOLAYOUT",
+    "name": "Bez układu",
+    "quantity": 2.0,
+    "unit": "pal"
+   },
+   {
+    "code": "E-ZEROCPP",
+    "name": "Układ z cpp=0",
+    "quantity": 3.0,
+    "unit": "pal"
+   }
+  ],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 0,
+    "by_weight": 0,
+    "est_theoretical": 0,
+    "fill_pct": 0,
+    "label": "1,80 m",
+    "ldm": 0.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 0,
+    "n_filled": 0,
+    "n_pallets": 0,
+    "n_pallets_low": 0,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": null,
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 0,
+    "by_weight": 0,
+    "est_theoretical": 0,
+    "fill_pct": 0,
+    "label": "2,25 m",
+    "ldm": 0.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 0,
+    "n_filled": 0,
+    "n_pallets": 0,
+    "n_pallets_low": 0,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": null,
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 0,
+  "total_vol_m3": 0.0,
+  "total_weight_kg": 0.0,
+  "weight_capped": false
+ },
+ "full_pallets_plus_remainders": {
+  "billed_kg": 2184.0,
+  "dim_weight_kg": 2184.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 50,
+    "paz_pallets": 0,
+    "product": "C-PAL",
+    "unit": "kar",
+    "volume_m3": 1.5,
+    "weight_kg": 465.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 400.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 34,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.3,
+    "weight_kg": 108.8
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 8,
+    "by_weight": 2,
+    "est_theoretical": 8,
+    "fill_pct": 79.0,
+    "label": "1,80 m",
+    "ldm": 4.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 8,
+    "n_filled": 8,
+    "n_pallets": 8,
+    "n_pallets_low": 8,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 8,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 48,
+       "skus": [
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR",
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 35,
+       "skus": [
+        "B-SZT",
+        "C-PAL"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 6,
+    "by_weight": 2,
+    "est_theoretical": 6,
+    "fill_pct": 84.3,
+    "label": "2,25 m",
+    "ldm": 3.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 6,
+    "n_filled": 6,
+    "n_pallets": 6,
+    "n_pallets_low": 6,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 6,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 32,
+       "skus": [
+        "A-KAR",
+        "B-SZT",
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 67,
+       "skus": [
+        "B-SZT",
+        "C-PAL"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 179,
+  "total_vol_m3": 10.92,
+  "total_weight_kg": 1238.8,
+  "weight_capped": false
+ },
+ "heights_all_falsy": {
+  "billed_kg": 2184.0,
+  "dim_weight_kg": 2184.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 50,
+    "paz_pallets": 0,
+    "product": "C-PAL",
+    "unit": "kar",
+    "volume_m3": 1.5,
+    "weight_kg": 465.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 400.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 34,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.3,
+    "weight_kg": 108.8
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 8,
+    "by_weight": 2,
+    "est_theoretical": 8,
+    "fill_pct": 79.0,
+    "label": "1,80 m",
+    "ldm": 4.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 8,
+    "n_filled": 8,
+    "n_pallets": 8,
+    "n_pallets_low": 8,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 8,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 48,
+       "skus": [
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR",
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 35,
+       "skus": [
+        "B-SZT",
+        "C-PAL"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 6,
+    "by_weight": 2,
+    "est_theoretical": 6,
+    "fill_pct": 84.3,
+    "label": "2,25 m",
+    "ldm": 3.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 6,
+    "n_filled": 6,
+    "n_pallets": 6,
+    "n_pallets_low": 6,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 6,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 32,
+       "skus": [
+        "A-KAR",
+        "B-SZT",
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 67,
+       "skus": [
+        "B-SZT",
+        "C-PAL"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 179,
+  "total_vol_m3": 10.92,
+  "total_weight_kg": 1238.8,
+  "weight_capped": false
+ },
+ "heights_empty_list": {
+  "billed_kg": 2184.0,
+  "dim_weight_kg": 2184.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 50,
+    "paz_pallets": 0,
+    "product": "C-PAL",
+    "unit": "kar",
+    "volume_m3": 1.5,
+    "weight_kg": 465.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 400.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 34,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.3,
+    "weight_kg": 108.8
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 8,
+    "by_weight": 2,
+    "est_theoretical": 8,
+    "fill_pct": 79.0,
+    "label": "1,80 m",
+    "ldm": 4.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 8,
+    "n_filled": 8,
+    "n_pallets": 8,
+    "n_pallets_low": 8,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": null,
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 6,
+    "by_weight": 2,
+    "est_theoretical": 6,
+    "fill_pct": 84.3,
+    "label": "2,25 m",
+    "ldm": 3.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 6,
+    "n_filled": 6,
+    "n_pallets": 6,
+    "n_pallets_low": 6,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": null,
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 179,
+  "total_vol_m3": 10.92,
+  "total_weight_kg": 1238.8,
+  "weight_capped": false
+ },
+ "marm_volume_and_versions": {
+  "billed_kg": 57.8,
+  "dim_weight_kg": 57.8,
+  "errors": [],
+  "has_missing": false,
+  "is_small": true,
+  "lines": [
+   {
+    "carton_dims": [
+     40,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.064,
+    "carton_weight_kg": 5.1,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 25.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 3,
+    "paz_pallets": 0,
+    "product": "F-MARM",
+    "unit": "szt",
+    "volume_m3": 0.1,
+    "weight_kg": 15.3
+   },
+   {
+    "carton_dims": [
+     30,
+     30,
+     30
+    ],
+    "carton_vol_m3": 0.027,
+    "carton_weight_kg": 1.0,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 7.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 7,
+    "paz_pallets": 0,
+    "product": "V-VERS",
+    "unit": "kar",
+    "volume_m3": 0.189,
+    "weight_kg": 7.0
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 16.7,
+    "label": "1,80 m",
+    "ldm": 0.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 1,
+    "n_filled": 1,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 1,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 10,
+       "skus": [
+        "F-MARM",
+        "V-VERS"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 13.4,
+    "label": "2,25 m",
+    "ldm": 0.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 1,
+    "n_filled": 1,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 1,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 10,
+       "skus": [
+        "F-MARM",
+        "V-VERS"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 10,
+  "total_vol_m3": 0.289,
+  "total_weight_kg": 22.3,
+  "weight_capped": false
+ },
+ "marm_volume_and_versions_2": {
+  "billed_kg": 51.0,
+  "dim_weight_kg": 51.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": true,
+  "lines": [
+   {
+    "carton_dims": [
+     40,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.064,
+    "carton_weight_kg": 5.1,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 3.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 3,
+    "paz_pallets": 0,
+    "product": "F-MARM",
+    "unit": "kar",
+    "volume_m3": 0.12,
+    "weight_kg": 15.3
+   },
+   {
+    "carton_dims": [
+     30,
+     30,
+     30
+    ],
+    "carton_vol_m3": 0.027,
+    "carton_weight_kg": 1.0,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 5.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 5,
+    "paz_pallets": 0,
+    "product": "V-VERS",
+    "unit": "szt",
+    "volume_m3": 0.135,
+    "weight_kg": 5.0
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 14.8,
+    "label": "1,80 m",
+    "ldm": 0.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 1,
+    "n_filled": 1,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 1,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 8,
+       "skus": [
+        "F-MARM",
+        "V-VERS"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 11.8,
+    "label": "2,25 m",
+    "ldm": 0.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 1,
+    "n_filled": 1,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 1,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 8,
+       "skus": [
+        "F-MARM",
+        "V-VERS"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 8,
+  "total_vol_m3": 0.255,
+  "total_weight_kg": 20.3,
+  "weight_capped": false
+ },
+ "missing_and_zero_dims": {
+  "billed_kg": 96.0,
+  "dim_weight_kg": 96.0,
+  "errors": [
+   "X-MISSING: brak instrukcji paletyzacji — pominięto",
+   "Z-ZERODIM: zerowe wymiary kartonu w instrukcji — pominięto"
+  ],
+  "has_missing": true,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 1,
+     "quantity": 5.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 5,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 0.48,
+    "weight_kg": 35.0
+   }
+  ],
+  "missing_products": [
+   {
+    "code": "X-MISSING",
+    "name": "Brak instrukcji",
+    "quantity": 7.0,
+    "unit": "kar"
+   },
+   {
+    "code": "Z-ZERODIM",
+    "name": "Zerowe wymiary",
+    "quantity": 3.0,
+    "unit": "szt"
+   }
+  ],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 27.8,
+    "label": "1,80 m",
+    "ldm": 0.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 1,
+    "n_filled": 1,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 1,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 5,
+       "skus": [
+        "A-KAR"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 22.2,
+    "label": "2,25 m",
+    "ldm": 0.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 1,
+    "n_filled": 1,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 1,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 5,
+       "skus": [
+        "A-KAR"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 5,
+  "total_vol_m3": 0.48,
+  "total_weight_kg": 35.0,
+  "weight_capped": false
+ },
+ "mixed_leftovers": {
+  "billed_kg": 279.8,
+  "dim_weight_kg": 279.8,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 7.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 7,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 0.672,
+    "weight_kg": 49.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 9.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 9,
+    "paz_pallets": 0,
+    "product": "C-PAL",
+    "unit": "kar",
+    "volume_m3": 0.27,
+    "weight_kg": 83.7
+   },
+   {
+    "carton_dims": [
+     30,
+     30,
+     30
+    ],
+    "carton_vol_m3": 0.027,
+    "carton_weight_kg": 4.2,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 11.0,
+     "unit": "kar"
+    },
+    "max_layers": 3,
+    "n_cartons": 11,
+    "paz_pallets": 0,
+    "product": "H-MAXL",
+    "unit": "kar",
+    "volume_m3": 0.297,
+    "weight_kg": 46.2
+   },
+   {
+    "carton_dims": [
+     40,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.064,
+    "carton_weight_kg": 5.1,
+    "cartons_per_pallet": 40,
+    "color": "#E07050",
+    "line": {
+     "order": 3,
+     "quantity": 4.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 4,
+    "paz_pallets": 0,
+    "product": "F-MARM",
+    "unit": "kar",
+    "volume_m3": 0.16,
+    "weight_kg": 20.4
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 81.0,
+    "label": "1,80 m",
+    "ldm": 0.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 1,
+    "n_filled": 1,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 1,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 31,
+       "skus": [
+        "A-KAR",
+        "C-PAL",
+        "F-MARM",
+        "H-MAXL"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 64.8,
+    "label": "2,25 m",
+    "ldm": 0.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 1,
+    "n_filled": 1,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 1,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 31,
+       "skus": [
+        "A-KAR",
+        "C-PAL",
+        "F-MARM",
+        "H-MAXL"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 31,
+  "total_vol_m3": 1.399,
+  "total_weight_kg": 199.3,
+  "weight_capped": false
+ },
+ "only_missing": {
+  "billed_kg": 0.0,
+  "dim_weight_kg": 0.0,
+  "errors": [
+   "X-MISSING: brak instrukcji paletyzacji — pominięto"
+  ],
+  "has_missing": true,
+  "is_small": true,
+  "lines": [],
+  "missing_products": [
+   {
+    "code": "X-MISSING",
+    "name": "Brak instrukcji",
+    "quantity": 2.0,
+    "unit": "pal"
+   }
+  ],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 0,
+    "by_weight": 0,
+    "est_theoretical": 0,
+    "fill_pct": 0,
+    "label": "1,80 m",
+    "ldm": 0.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 0,
+    "n_filled": 0,
+    "n_pallets": 0,
+    "n_pallets_low": 0,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": null,
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 0,
+    "by_weight": 0,
+    "est_theoretical": 0,
+    "fill_pct": 0,
+    "label": "2,25 m",
+    "ldm": 0.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 0,
+    "n_filled": 0,
+    "n_pallets": 0,
+    "n_pallets_low": 0,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": null,
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 0,
+  "total_vol_m3": 0.0,
+  "total_weight_kg": 0.0,
+  "weight_capped": false
+ },
+ "small_courier": {
+  "billed_kg": 6.4,
+  "dim_weight_kg": 3.6,
+  "errors": [],
+  "has_missing": false,
+  "is_small": true,
+  "lines": [
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 24.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 2,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.018,
+    "weight_kg": 6.4
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 1.0,
+    "label": "1,80 m",
+    "ldm": 0.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 1,
+    "n_filled": 1,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 1,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 2,
+       "skus": [
+        "B-SZT"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 0.8,
+    "label": "2,25 m",
+    "ldm": 0.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 1,
+    "n_filled": 1,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 1,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 2,
+       "skus": [
+        "B-SZT"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 2,
+  "total_vol_m3": 0.018,
+  "total_weight_kg": 6.4,
+  "weight_capped": false
+ },
+ "stackability": {
+  "billed_kg": 198.0,
+  "dim_weight_kg": 198.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     50
+    ],
+    "carton_vol_m3": 0.12,
+    "carton_weight_kg": 5.5,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 6.0,
+     "unit": "kar"
+    },
+    "max_layers": 1,
+    "n_cartons": 6,
+    "paz_pallets": 0,
+    "product": "G-NOSTACK",
+    "unit": "kar",
+    "volume_m3": 0.72,
+    "weight_kg": 33.0
+   },
+   {
+    "carton_dims": [
+     30,
+     30,
+     30
+    ],
+    "carton_vol_m3": 0.027,
+    "carton_weight_kg": 4.2,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 10.0,
+     "unit": "kar"
+    },
+    "max_layers": 3,
+    "n_cartons": 10,
+    "paz_pallets": 0,
+    "product": "H-MAXL",
+    "unit": "kar",
+    "volume_m3": 0.27,
+    "weight_kg": 42.0
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 57.3,
+    "label": "1,80 m",
+    "ldm": 0.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 2,
+    "n_filled": 2,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 2,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "G-NOSTACK"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 12,
+       "skus": [
+        "G-NOSTACK",
+        "H-MAXL"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 1,
+    "by_weight": 1,
+    "est_theoretical": 1,
+    "fill_pct": 45.8,
+    "label": "2,25 m",
+    "ldm": 0.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 2,
+    "n_filled": 2,
+    "n_pallets": 1,
+    "n_pallets_low": 1,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 2,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 4,
+       "skus": [
+        "G-NOSTACK"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 12,
+       "skus": [
+        "G-NOSTACK",
+        "H-MAXL"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 16,
+  "total_vol_m3": 0.99,
+  "total_weight_kg": 75.0,
+  "weight_capped": false
+ },
+ "stow_clamped_high": {
+  "billed_kg": 2184.0,
+  "dim_weight_kg": 2184.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 50,
+    "paz_pallets": 0,
+    "product": "C-PAL",
+    "unit": "kar",
+    "volume_m3": 1.5,
+    "weight_kg": 465.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 400.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 34,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.3,
+    "weight_kg": 108.8
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 7,
+    "by_weight": 2,
+    "est_theoretical": 7,
+    "fill_pct": 90.3,
+    "label": "1,80 m",
+    "ldm": 3.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 7,
+    "n_filled": 7,
+    "n_pallets": 7,
+    "n_pallets_low": 7,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 7,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 48,
+       "skus": [
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 51,
+       "skus": [
+        "A-KAR",
+        "B-SZT",
+        "C-PAL"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.728,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 6,
+    "by_weight": 2,
+    "est_theoretical": 6,
+    "fill_pct": 84.3,
+    "label": "2,25 m",
+    "ldm": 3.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 6,
+    "n_filled": 6,
+    "n_pallets": 6,
+    "n_pallets_low": 6,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 6,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 32,
+       "skus": [
+        "A-KAR",
+        "B-SZT",
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 67,
+       "skus": [
+        "B-SZT",
+        "C-PAL"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 2.16,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 100,
+  "total_cartons": 179,
+  "total_vol_m3": 10.92,
+  "total_weight_kg": 1238.8,
+  "weight_capped": false
+ },
+ "stow_clamped_low": {
+  "billed_kg": 2184.0,
+  "dim_weight_kg": 2184.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 50,
+    "paz_pallets": 0,
+    "product": "C-PAL",
+    "unit": "kar",
+    "volume_m3": 1.5,
+    "weight_kg": 465.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 400.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 34,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.3,
+    "weight_kg": 108.8
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 22,
+    "by_weight": 2,
+    "est_theoretical": 22,
+    "fill_pct": 28.7,
+    "label": "1,80 m",
+    "ldm": 11.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 8,
+    "n_filled": 8,
+    "n_pallets": 22,
+    "n_pallets_low": 19,
+    "n_range": false,
+    "n_slack": 14,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 22,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 48,
+       "skus": [
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR",
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 35,
+       "skus": [
+        "B-SZT",
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      }
+     ]
+    },
+    "usable_vol_m3": 0.5184,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 17,
+    "by_weight": 2,
+    "est_theoretical": 17,
+    "fill_pct": 29.7,
+    "label": "2,25 m",
+    "ldm": 8.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 6,
+    "n_filled": 6,
+    "n_pallets": 17,
+    "n_pallets_low": 15,
+    "n_range": false,
+    "n_slack": 11,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 17,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 32,
+       "skus": [
+        "A-KAR",
+        "B-SZT",
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": true,
+       "n_boxes": 67,
+       "skus": [
+        "B-SZT",
+        "C-PAL"
+       ]
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      }
+     ]
+    },
+    "usable_vol_m3": 0.648,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 30,
+  "total_cartons": 179,
+  "total_vol_m3": 10.92,
+  "total_weight_kg": 1238.8,
+  "weight_capped": false
+ },
+ "stow_saved_55": {
+  "billed_kg": 768.0,
+  "dim_weight_kg": 768.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 40.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 40,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 3.84,
+    "weight_kg": 280.0
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 5,
+    "by_weight": 1,
+    "est_theoretical": 5,
+    "fill_pct": 44.4,
+    "label": "1,80 m",
+    "ldm": 2.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 3,
+    "n_filled": 3,
+    "n_pallets": 5,
+    "n_pallets_low": 4,
+    "n_range": true,
+    "n_slack": 2,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 5,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 8,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      }
+     ]
+    },
+    "usable_vol_m3": 0.9504,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 4,
+    "by_weight": 1,
+    "est_theoretical": 4,
+    "fill_pct": 44.4,
+    "label": "2,25 m",
+    "ldm": 2.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 2,
+    "n_filled": 2,
+    "n_pallets": 4,
+    "n_pallets_low": 3,
+    "n_range": true,
+    "n_slack": 2,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 4,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      }
+     ]
+    },
+    "usable_vol_m3": 1.188,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 55,
+  "total_cartons": 40,
+  "total_vol_m3": 3.84,
+  "total_weight_kg": 280.0,
+  "weight_capped": false
+ },
+ "stow_string": {
+  "billed_kg": 2184.0,
+  "dim_weight_kg": 2184.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   },
+   {
+    "carton_dims": [
+     40,
+     30,
+     25
+    ],
+    "carton_vol_m3": 0.03,
+    "carton_weight_kg": 9.3,
+    "cartons_per_pallet": 40,
+    "color": "#8FBC8F",
+    "line": {
+     "order": 1,
+     "quantity": 50.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 50,
+    "paz_pallets": 0,
+    "product": "C-PAL",
+    "unit": "kar",
+    "volume_m3": 1.5,
+    "weight_kg": 465.0
+   },
+   {
+    "carton_dims": [
+     30,
+     20,
+     15
+    ],
+    "carton_vol_m3": 0.009,
+    "carton_weight_kg": 3.2,
+    "cartons_per_pallet": 40,
+    "color": "#F0C040",
+    "line": {
+     "order": 2,
+     "quantity": 400.0,
+     "unit": "szt"
+    },
+    "max_layers": 0,
+    "n_cartons": 34,
+    "paz_pallets": 0,
+    "product": "B-SZT",
+    "unit": "szt",
+    "volume_m3": 0.3,
+    "weight_kg": 108.8
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 10,
+    "by_weight": 2,
+    "est_theoretical": 10,
+    "fill_pct": 63.2,
+    "label": "1,80 m",
+    "ldm": 5.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 10,
+    "n_filled": 10,
+    "n_pallets": 10,
+    "n_pallets_low": 9,
+    "n_range": true,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": null,
+    "usable_vol_m3": 1.2096,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 8,
+    "by_weight": 2,
+    "est_theoretical": 8,
+    "fill_pct": 63.2,
+    "label": "2,25 m",
+    "ldm": 4.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 8,
+    "n_filled": 8,
+    "n_pallets": 8,
+    "n_pallets_low": 7,
+    "n_range": true,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": null,
+    "usable_vol_m3": 1.512,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 70,
+  "total_cartons": 179,
+  "total_vol_m3": 10.92,
+  "total_weight_kg": 1238.8,
+  "weight_capped": false
+ },
+ "stow_zero_on_shipment": {
+  "billed_kg": 768.0,
+  "dim_weight_kg": 768.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 40.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 40,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 3.84,
+    "weight_kg": 280.0
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 3,
+    "by_weight": 1,
+    "est_theoretical": 3,
+    "fill_pct": 74.1,
+    "label": "1,80 m",
+    "ldm": 1.5,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 3,
+    "n_filled": 3,
+    "n_pallets": 3,
+    "n_pallets_low": 3,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 3,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 8,
+       "skus": [
+        "A-KAR"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.3824,
+    "wh_pallets": 0
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 3,
+    "by_weight": 1,
+    "est_theoretical": 3,
+    "fill_pct": 59.3,
+    "label": "2,25 m",
+    "ldm": 1.5,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 2,
+    "n_filled": 2,
+    "n_pallets": 3,
+    "n_pallets_low": 3,
+    "n_range": false,
+    "n_slack": 1,
+    "pallet_anchor": 0,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 3,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": true,
+       "mixed": false,
+       "n_boxes": 0,
+       "skus": []
+      }
+     ]
+    },
+    "usable_vol_m3": 1.728,
+    "wh_pallets": 0
+   }
+  ],
+  "stow_eff_pct": 80,
+  "total_cartons": 40,
+  "total_vol_m3": 3.84,
+  "total_weight_kg": 280.0,
+  "weight_capped": false
+ },
+ "warehouse_anchor": {
+  "billed_kg": 1824.0,
+  "dim_weight_kg": 1824.0,
+  "errors": [],
+  "has_missing": false,
+  "is_small": false,
+  "lines": [
+   {
+    "carton_dims": [
+     60,
+     40,
+     40
+    ],
+    "carton_vol_m3": 0.096,
+    "carton_weight_kg": 7.0,
+    "cartons_per_pallet": 40,
+    "color": "#C8A87E",
+    "line": {
+     "order": 0,
+     "quantity": 95.0,
+     "unit": "kar"
+    },
+    "max_layers": 0,
+    "n_cartons": 95,
+    "paz_pallets": 0,
+    "product": "A-KAR",
+    "unit": "kar",
+    "volume_m3": 9.12,
+    "weight_kg": 665.0
+   }
+  ],
+  "missing_products": [],
+  "pallet_weight_cap_kg": 1000,
+  "scenarios": [
+   {
+    "actual_hu": 0,
+    "by_vol": 7,
+    "by_weight": 1,
+    "est_theoretical": 7,
+    "fill_pct": 131.9,
+    "label": "1,80 m",
+    "ldm": 2.0,
+    "max_h_cm": 180,
+    "max_w_kg": 1000,
+    "model_pallets": 6,
+    "n_filled": 6,
+    "n_pallets": 4,
+    "n_pallets_low": 4,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 4,
+    "pallet_vol_m3": 1.728,
+    "three": {
+     "max_h_cm": 180,
+     "n_pallets": 6,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 16,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 15,
+       "skus": [
+        "A-KAR"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.4688,
+    "wh_pallets": 4
+   },
+   {
+    "actual_hu": 0,
+    "by_vol": 5,
+    "by_weight": 1,
+    "est_theoretical": 5,
+    "fill_pct": 105.6,
+    "label": "2,25 m",
+    "ldm": 2.0,
+    "max_h_cm": 225,
+    "max_w_kg": 1000,
+    "model_pallets": 5,
+    "n_filled": 5,
+    "n_pallets": 4,
+    "n_pallets_low": 4,
+    "n_range": false,
+    "n_slack": 0,
+    "pallet_anchor": 4,
+    "pallet_vol_m3": 2.16,
+    "three": {
+     "max_h_cm": 225,
+     "n_pallets": 5,
+     "pallets": [
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 20,
+       "skus": [
+        "A-KAR"
+       ]
+      },
+      {
+       "empty": false,
+       "mixed": false,
+       "n_boxes": 15,
+       "skus": [
+        "A-KAR"
+       ]
+      }
+     ]
+    },
+    "usable_vol_m3": 1.836,
+    "wh_pallets": 4
+   }
+  ],
+  "stow_eff_pct": 85,
+  "total_cartons": 95,
+  "total_vol_m3": 9.12,
+  "total_weight_kg": 665.0,
+  "weight_capped": false
+ }
+}

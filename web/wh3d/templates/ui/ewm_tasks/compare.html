@@ -1,0 +1,76 @@
+{% extends "ui/base.html" %}
+{% block title %}Porównanie wariantów — {{ batch.name }} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .cmp-form { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-end; }
+  .cmp-form .form-group { margin: 0; }
+  .cmp-models { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow: auto; padding: 6px 10px;
+                border: 1px solid var(--gray-300); border-radius: 8px; min-width: 300px; }
+  .cmp-models label { display: flex; gap: 8px; align-items: center; font-weight: 400; }
+  .cmp-table td.num, .cmp-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cmp-best { color: var(--ok-fg); font-weight: 700; }
+  .cmp-note { font-size: 13px; color: var(--gray-500); line-height: 1.55; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:ewm_tasks_list' %}">Zadania magazynowe EWM</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:ewm_tasks_profile' batch.pk %}?p={{ p }}">Dzień projektowy</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Porównanie wariantów</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Porównanie wariantów hali</div>
+    <div class="page-header__sub">{{ batch.name }}{% if day %} · dzień P{{ p }}: {{ day|date:"d.m.Y" }}{% endif %} · ta sama praca, flota dobrana symulacją dla każdego wariantu</div>
+  </div>
+</div>
+
+<div class="card"><div class="card-body">
+  <form method="get" class="cmp-form">
+    <div class="form-group">
+      <span class="section-title">Warianty (modele hali, max {{ max_variants }})</span>
+      <div class="cmp-models">
+        {% for m in models %}<label><input type="checkbox" name="models" value="{{ m.pk }}" {% if m.pk in chosen_ids %}checked{% endif %}> {{ m.name }}</label>
+        {% empty %}<span class="text-muted">Brak modeli — utwórz warianty w <a href="{% url 'ui:warehouse_model_generator' %}">Generatorze hali</a>.</span>{% endfor %}
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="cmp-p">Dzień</label>
+      <select id="cmp-p" name="p">{% for q in percentiles %}<option value="{{ q }}" {% if q == p %}selected{% endif %}>P{{ q }}</option>{% endfor %}</select>
+    </div>
+    <div class="form-group">
+      <label for="cmp-mult">Mnożnik wzrostu</label>
+      <input id="cmp-mult" type="number" name="mult" value="{{ mult|stringformat:'g' }}" step="0.05" min="0.1" max="10">
+    </div>
+    <div class="form-group">
+      <label for="cmp-kt">Kalibracja wózków ×</label>
+      <input id="cmp-kt" type="number" name="kt" value="{{ calib.trucks|stringformat:'g' }}" step="0.05" min="0.3" max="10">
+    </div>
+    <div class="form-group">
+      <label for="cmp-kp">Kalibracja kompletacji ×</label>
+      <input id="cmp-kp" type="number" name="kp" value="{{ calib.picking|stringformat:'g' }}" step="0.05" min="0.3" max="10">
+    </div>
+    <button type="submit" class="btn btn-primary">Porównaj</button>
+  </form>
+</div></div>
+
+{% if not day %}
+<div class="alert alert-warning" style="margin-top:16px">Brak potwierdzonych zadań w tym imporcie — nie ma dnia projektowego.</div>
+{% elif table %}
+<div class="card" style="margin-top:16px"><div class="card-body">
+  <div class="table-wrap"><table class="table cmp-table">
+    <thead><tr><th>Wskaźnik</th>{% for m in chosen %}<th class="num"><a href="{% url 'ui:warehouse_model_view' m.pk %}">{{ m.name }}</a></th>{% endfor %}</tr></thead>
+    <tbody>{% for row in table %}<tr><td>{{ row.label }}{% if row.unit %} [{{ row.unit }}]{% endif %}</td>
+      {% for c in row.cells %}<td class="num {% if c.best %}cmp-best{% endif %}">{% if c.value is None %}—{% else %}{{ c.value }}{% endif %}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table></div>
+  {% if skipped %}<p class="cmp-note">Bez symulacji (brak regałów VNA, półek K1 albo doków): {{ skipped|join:", " }} — dla nich tylko pojemność.</p>{% endif %}
+  <p class="cmp-note">Flota „wymagana” = sugerowana przez symulację po ustaleniu (≤ 85 % pracy w 16 h). Pogrubione = najlepsza wartość. CAPEX/OPEX nie są liczone — wpisz ceny sprzętu i stawki, gdy będą znane.</p>
+</div></div>
+{% endif %}
+{% endblock %}

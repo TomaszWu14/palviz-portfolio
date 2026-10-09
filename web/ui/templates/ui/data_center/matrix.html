@@ -1,0 +1,180 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Biblioteka grafik — {{ app_name }}{% endblock %}
+{% block subnav %}{% include "ui/planner/_tabs.html" %}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:data_center' %}">Data Center</a> › <span>Biblioteka grafik</span></nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Biblioteka grafik opakowań</div>
+    <div class="page-header__sub">Macierz REF × jednostki — które poziomy są używane i czy mają wgrany render</div>
+  </div>
+</div>
+
+<style>
+  .mx-legend { display:flex; flex-wrap:wrap; gap:14px; margin:6px 0 14px; font-size:12px; color:var(--gray-500); }
+  .mx-legend span { display:inline-flex; align-items:center; gap:6px; }
+  /* Lokalne tokeny stanów kategorycznych (zachowane dokładne wartości) — na .mx-sq,
+     bo każdy swatch (legenda i macierz) ma tę klasę. */
+  .mx-sq { width:22px; height:22px; border-radius:5px; display:inline-flex; align-items:center;
+           justify-content:center; font-size:12px; font-weight:700; border:1px solid transparent;
+           --mx-todo-bg:#f3e8f9; --mx-todo-ink:#8e44ad; --mx-todo-line:#c890e0;
+           --mx-used-bg:#eef2f0; --mx-used-ink:#7a8a82; }
+  .mx-done   { background:var(--green-light); color:var(--green); border-color:var(--green); cursor:pointer; }
+  .mx-todo   { background:var(--mx-todo-bg); color:var(--mx-todo-ink); border-color:var(--mx-todo-line); cursor:pointer; }
+  .mx-used   { background:var(--mx-used-bg); color:var(--mx-used-ink); }
+  .mx-absent { background:var(--gray-100); color:var(--gray-400); opacity:.5; }
+  table.mx { border-collapse:separate; border-spacing:6px; }
+  table.mx th { font-size:11px; color:var(--gray-500); font-weight:600; text-align:center; padding:0 2px; }
+  table.mx td.ref { font-family:var(--mono,monospace); font-size:13px; white-space:nowrap; text-align:left; }
+  table.mx td.ref small { color:var(--gray-400); }
+</style>
+
+<div class="card" style="margin-bottom:12px">
+  <form method="get" style="display:flex; gap:8px; align-items:center">
+    <input type="text" name="q" value="{{ q }}" placeholder="Szukaj REF lub nazwy…"
+           style="max-width:280px" autofocus>
+    <button type="submit" class="btn btn-primary">Szukaj</button>
+    {% if q %}<a href="{% url 'ui:packaging_matrix' %}" class="btn">Wyczyść</a>{% endif %}
+  </form>
+</div>
+
+<div class="mx-legend">
+  <span><i class="mx-sq mx-done">{% icon "check" cls="icon--em" %}</i> render wgrany (potwierdzone)</span>
+  <span><i class="mx-sq mx-todo">+</i> używane, brak renderu — kliknij, aby wgrać</span>
+  <span><i class="mx-sq mx-used">•</i> używane (bez slotu grafiki)</span>
+  <span><i class="mx-sq mx-absent">–</i> nieużywane przez ten REF</span>
+</div>
+
+{# Podsumowanie stanu grafik na tej stronie + szybki filtr „tylko braki". #}
+<div class="card" style="margin-bottom:12px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+  <span style="font-weight:800;color:var(--green)">{% icon "check" %} wgrane: {{ summary.done }}</span>
+  <span style="font-weight:800;color:var(--red)">{% icon "x" %} braki: {{ summary.todo }}</span>
+  <span style="color:var(--gray-500)">wierszy z brakiem: {{ summary.gap_rows }} (ta strona)</span>
+  <button type="button" id="mx-only-gaps" class="btn btn-sm"
+          style="margin-left:auto">Pokaż tylko braki</button>
+</div>
+
+{# Masowy upload: wiele plików naraz, nazwa = REF_poziom[_rewizja] (karton/opz/sztuka). #}
+<div class="card" style="margin-bottom:12px">
+  <form method="post" action="{% url 'ui:packaging_matrix_bulk_upload' %}"
+        enctype="multipart/form-data" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    {% csrf_token %}
+    <strong>Masowy upload grafik</strong>
+    <input aria-label="Grafiki do masowego uploadu" type="file" name="files" accept="image/png,image/jpeg" multiple required>
+    <button type="submit" class="btn btn-primary btn-sm">Wgraj</button>
+    <span style="font-size:12px;color:var(--gray-500)">
+      Nazwa pliku: <code>REF_poziom_rewizja</code> (np. <code>DMOM10001_karton_R2</code>);
+      bez rewizji: <code>DMOM10001_karton</code>. Poziom: <code>karton</code> / <code>opz</code> / <code>sztuka</code>.
+    </span>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="mx">
+      <thead>
+        <tr>
+          <th style="text-align:left">REF</th>
+          {% for c in columns %}<th>{{ c.name }}</th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr data-gap="{% if row.has_gap %}1{% else %}0{% endif %}">
+          <td class="ref">{{ row.product.code }}<br><small>{{ row.product.name|truncatechars:28 }}</small></td>
+          {% for cell in row.cells %}
+          <td style="text-align:center">
+            {% if cell.ju_url %}
+              {# SZTUKA (JU): jeden slot, format po rozszerzeniu (.glb / PNG / JPG). #}
+              <i class="mx-sq {% if cell.state == 'done' %}mx-done{% else %}mx-todo{% endif %}"
+                 title="{% if cell.state == 'done' %}Media JU wgrane — kliknij, aby podmienić{% else %}Kliknij, aby wgrać media JU{% endif %} (.glb / PNG / JPG)"
+                 data-ju="{{ cell.ju_url }}">{% if cell.state == 'done' %}{% icon "check" %}{% else %}+{% endif %}</i>
+            {% elif cell.state == "done" %}
+              <i class="mx-sq mx-done" title="Render wgrany — kliknij, aby podmienić (PNG/JPG{% if cell.glb_url %} lub .glb{% endif %})"
+                 data-upload="{{ cell.upload_url }}"{% if cell.glb_url %} data-glb="{{ cell.glb_url }}"{% endif %}>{% icon "check" cls="icon--em" %}</i>
+            {% elif cell.state == "todo" %}
+              <i class="mx-sq mx-todo" title="Brak renderu — kliknij, aby wgrać (PNG/JPG{% if cell.glb_url %} lub .glb{% endif %})"
+                 data-upload="{{ cell.upload_url }}"{% if cell.glb_url %} data-glb="{{ cell.glb_url }}"{% endif %}>+</i>
+            {% elif cell.state == "used" %}
+              <i class="mx-sq mx-used" title="Poziom używany (bez osobnej grafiki)">•</i>
+            {% else %}
+              <i class="mx-sq mx-absent" title="Poziom nieużywany przez ten REF">–</i>
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="{{ columns|length|add:1 }}">
+          <div class="empty-state" style="padding:24px">
+            <div class="empty-state__title">Brak indeksów</div>
+          </div>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page.paginator.num_pages > 1 %}
+  <div style="display:flex; gap:8px; align-items:center; justify-content:center; margin-top:12px">
+    {% if page.has_previous %}<a class="btn" href="?q={{ q }}&page={{ page.previous_page_number }}">‹ Poprzednia</a>{% endif %}
+    <span class="text-sm text-muted">Strona {{ page.number }} / {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a class="btn" href="?q={{ q }}&page={{ page.next_page_number }}">Następna ›</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<input aria-label="Grafika dla komórki" type="file" id="mxFile" accept="image/png,image/jpeg,.glb" style="display:none">
+<script>
+(function () {
+  const CSRF = "{{ csrf_token }}";
+  const picker = document.getElementById("mxFile");
+  let target = null;                       // url uploadu grafiki klikniętej komórki
+  let targetGlb = null;                    // url uploadu modelu .glb (karton/produkt)
+
+  let targetJu = null;                     // url uploadu mediów JU (jeden slot, format po ext)
+
+  document.querySelectorAll("i.mx-sq[data-upload], i.mx-sq[data-ju]").forEach(el => {
+    el.addEventListener("click", () => {
+      target = el.dataset.upload || null; targetGlb = el.dataset.glb || null;
+      targetJu = el.dataset.ju || null;
+      picker.value = ""; picker.click();
+    });
+  });
+
+  picker.addEventListener("change", () => {
+    if ((!target && !targetJu) || !picker.files.length) return;
+    const file = picker.files[0];
+    const fd = new FormData();
+    let url = target;
+    if (targetJu) {                        // JU: jeden endpoint, format po rozszerzeniu
+      url = targetJu; fd.append("file", file);
+    } else if (/\.glb$/i.test(file.name)) { // .glb → slot Model 3D (nie grafika-nadruk)
+      if (!targetGlb) { alert("Model .glb można wgrać tylko dla kartonu lub sztuki/OP."); return; }
+      url = targetGlb; fd.append("glb", file);
+    } else {
+      fd.append("image", file);
+      fd.append("face", "front");
+      fd.append("kind", "print");          // render = nadruk całej ściany frontowej
+    }
+    fetch(url, { method: "POST", headers: { "X-CSRFToken": CSRF }, body: fd })
+      .then(r => r.json())
+      .then(d => { if (d.ok) location.reload(); else alert(d.error || "Błąd uploadu."); })
+      .catch(() => alert("Błąd sieci przy uploadzie."));
+  });
+
+  // Filtr „tylko braki": ukryj wiersze bez brakującego renderu (data-gap="0").
+  const btn = document.getElementById("mx-only-gaps");
+  let onlyGaps = false;
+  if (btn) btn.addEventListener("click", () => {
+    onlyGaps = !onlyGaps;
+    btn.textContent = onlyGaps ? "Pokaż wszystkie" : "Pokaż tylko braki";
+    btn.classList.toggle("btn-primary", onlyGaps);
+    document.querySelectorAll("table.mx tbody tr[data-gap]").forEach(tr => {
+      tr.style.display = (onlyGaps && tr.dataset.gap === "0") ? "none" : "";
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,30 @@
+{# Kolumna wariantu: nagłówek + 4 poziomy hierarchii (sztuka→OPZ→karton→paleta). #}
+{# Parametry: col_title, col_badge (opcjonalny), levels (lista poziomów lub None), empty_msg. #}
+<div class="vcol">
+  <div class="vcol__head">
+    <strong>{{ col_title }}</strong>
+    {% if col_badge %}<span class="vbadge vbadge--up">{{ col_badge }}</span>{% endif %}
+  </div>
+  {% if levels %}
+  {% for lv in levels %}
+  <div class="card" style="padding:0;margin-bottom:12px">
+    <div style="padding:10px 14px;border-bottom:1px solid var(--gray-100);font-weight:700;font-size:13px">
+      {{ forloop.counter }}. {{ lv.title }}</div>
+    {% if lv.three_data %}
+    <canvas data-three='{{ lv.three_data }}'
+            style="width:100%;height:{% if lv.key == 'pallet' %}480px{% else %}260px{% endif %};display:block"
+            aria-label="Render 3D — {{ lv.title }}"></canvas>
+    {% endif %}
+    <table class="table" style="font-size:12px">
+      <tr><td>Wymiary</td><td class="text-right" style="font-family:monospace">{{ lv.spec.dims_str }} cm</td></tr>
+      {% if lv.spec.stack %}<tr><td>Wysokość stosu</td><td class="text-right">{{ lv.spec.stack }}</td></tr>{% endif %}
+      {% if lv.spec.contains %}<tr><td>Mieści</td><td class="text-right"><strong>{{ lv.spec.contains }}</strong> szt. niższego poziomu</td></tr>{% endif %}
+      {% if lv.spec.fill %}<tr><td>Wypełnienie{% if lv.key == 'pallet' %} <span style="color:var(--gray-500);font-weight:400">(obj. vs max wys.)</span>{% endif %}</td><td class="text-right"><strong>{{ lv.spec.fill }}%</strong></td></tr>{% endif %}
+      {% if lv.spec.error %}<tr><td colspan="2" style="color:var(--red)">{{ lv.spec.error }}</td></tr>{% endif %}
+    </table>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="card" style="padding:20px;color:var(--gray-500)">{{ empty_msg }}</div>
+  {% endif %}
+</div>

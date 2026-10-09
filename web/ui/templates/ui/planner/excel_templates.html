@@ -1,0 +1,294 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Szablony Excel — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .tpl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 18px;
+    margin-top: 20px;
+  }
+  .tpl-card {
+    border-radius: var(--radius);
+    border: 1px solid var(--gray-200);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tpl-card__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+    padding: 16px 18px 12px;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .tpl-icon { font-size: 26px; flex-shrink: 0; margin-top: 1px; }
+  .tpl-title { font-size: 14px; font-weight: 600; color: var(--gray-900); margin-bottom: 2px; }
+  .tpl-desc  { font-size: 12px; color: var(--gray-500); line-height: 1.4; }
+  .tpl-badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 999px; margin-top: 5px;
+  }
+  .badge-blue   { background:var(--blue-light); color:#1d4ed8; }
+  .badge-green  { background:var(--green-light); color:var(--green); }
+  .badge-purple { background:rgba(139,92,246,.18); color:#c4b5fd; }
+  .badge-yellow { background:var(--yellow-light); color:var(--yellow-dark); }
+  .badge-cyan   { background:#cffafe; color:#155e75; }
+  .badge-teal   { background:#ccfbf1; color:#0f766e; }
+  .badge-pink   { background:#fce7f3; color:#9d174d; }
+  .tpl-card__foot {
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .upload-area {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+  .upload-area input[type=file] {
+    font-size: 11px;
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--gray-300);
+    border-radius: 4px;
+    padding: 4px 6px;
+    background: var(--gray-50);
+    cursor: pointer;
+  }
+  .info-box {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: #0c4a6e;
+    line-height: 1.6;
+  }
+  .info-box strong { display: block; margin-bottom: 4px; font-size: 14px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Szablony Excel</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Szablony migracyjne Excel</div>
+    <div class="page-header__sub">Pobierz wypełniony szablon i wgraj dane zbiorczo do systemu</div>
+  </div>
+</div>
+
+<div class="info-box">
+  <strong>Jak korzystać?</strong>
+  1. Pobierz szablon (.xlsx) — kliknij zieloną strzałkę {% icon "download" %}.<br>
+  2. Wypełnij dane od wiersza 3 (nie usuwaj wierszy 1–2 z nagłówkami).<br>
+  3. Wgraj wypełniony plik przez formularz „Importuj" w tej samej karcie.
+</div>
+
+{% if messages %}
+<div style="margin-bottom:16px">
+  {% for msg in messages %}
+  <div class="alert alert--{{ msg.tags }}" style="margin-bottom:6px">{{ msg }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="tpl-grid">
+
+  <!-- Produkty -->
+  <div class="tpl-card">
+    <div class="tpl-card__head">
+      <div class="tpl-icon">{% icon "package" cls="icon--em" %}</div>
+      <div>
+        <div class="tpl-title">Produkty (pełny import)</div>
+        <div class="tpl-desc">Produkty z danymi kartonu, wymiarami i parametrami paletyzacji.</div>
+        <span class="tpl-badge badge-blue">20 kolumn</span>
+      </div>
+    </div>
+    <div class="tpl-card__foot">
+      <a href="{% url 'ui:excel_template_products' %}" class="btn btn-sm btn-primary" title="Pobierz szablon">{% icon "download" %} Szablon</a>
+      {% if can_write_products %}
+      <form method="post" action="{% url 'ui:excel_import_products' %}" enctype="multipart/form-data" class="upload-area">
+        {% csrf_token %}
+        <input type="file" name="file" accept=".xlsx" required>
+        <button type="submit" class="btn btn-sm btn-secondary">Importuj</button>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-500);margin-top:6px">
+          <input type="checkbox" name="all_or_nothing" value="1">
+          Tryb „wszystko albo nic" — jakikolwiek błąd wycofuje cały import
+        </label>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Import bezpośrednio z SAP MARM (jeden plik, bez konwertera CLI) -->
+  <div class="tpl-card">
+    <div class="tpl-card__head">
+      <div class="tpl-icon">{% icon "factory" cls="icon--em" %}</div>
+      <div>
+        <div class="tpl-title">Import z SAP MARM (zalecane)</div>
+        <div class="tpl-desc">Wgraj surowy eksport MARM (Materiał, jednostki OP/KAR/PAZ, Mianownik/Licznik, wymiary, waga, <strong>Objętość</strong>). {{ app_name }} sam złoży produkty, kartony i instrukcje, a objętość bierze z kolumny Objętość — więc zgadza się z SAP 1:1, bez kroku z konwerterem.</div>
+        <span class="tpl-badge badge-green">jeden plik</span>
+      </div>
+    </div>
+    <div class="tpl-card__foot">
+      {% if can_write_products %}
+      <form method="post" action="{% url 'ui:excel_import_marm' %}" enctype="multipart/form-data" class="upload-area">
+        {% csrf_token %}
+        <input type="file" name="file" accept=".xlsx" required>
+        <button type="submit" class="btn btn-sm btn-primary">Importuj MARM</button>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-500);margin-top:6px">
+          <input type="checkbox" name="all_or_nothing" value="1">
+          Tryb „wszystko albo nic" — jakikolwiek błąd wycofuje cały import
+        </label>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Dane materiałowe SAP (BW) — hierarchia + przeliczniki do projektowania magazynu -->
+  <div class="tpl-card">
+    <div class="tpl-card__head">
+      <div class="tpl-icon">{% icon "dna" cls="icon--em" %}</div>
+      <div>
+        <div class="tpl-title">Dane materiałowe SAP (hierarchia + przeliczniki)</div>
+        <div class="tpl-desc">Wgraj eksport „SAP_Dane_materialowe” (.xlsm). {{ app_name }} czyta arkusze Nazwy, Hierarchia produktów i Przeliczniki: grupy asortymentowe H1–H4, producenta, sztuki w OPZ/kartonie/palecie, objętości i wagi. Materiały są dopisywane lub aktualizowane po MATNR — katalog produktów pozostaje bez zmian.</div>
+        <span class="tpl-badge badge-green">projektowanie magazynu</span>
+      </div>
+    </div>
+    <div class="tpl-card__foot">
+      {% if can_write_products %}
+      <form method="post" action="{% url 'ui:excel_import_sap_materials' %}" enctype="multipart/form-data" class="upload-area">
+        {% csrf_token %}
+        <input type="file" name="file" accept=".xlsm,.xlsx" required>
+        <button type="submit" class="btn btn-sm btn-primary">Importuj dane materiałowe</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Kartony -->
+  <div class="tpl-card">
+    <div class="tpl-card__head">
+      <div class="tpl-icon">{% icon "archive" cls="icon--em" %}</div>
+      <div>
+        <div class="tpl-title">Kartony zbiorcze</div>
+        <div class="tpl-desc">Baza opakowań zbiorczych: wymiary, wagi, ilości sztuk.</div>
+        <span class="tpl-badge badge-green">10 kolumn</span>
+      </div>
+    </div>
+    <div class="tpl-card__foot">
+      <a href="{% url 'ui:excel_template_cartons' %}" class="btn btn-sm btn-primary" title="Pobierz szablon">{% icon "download" %} Szablon</a>
+      {% if can_write_products %}
+      <form method="post" action="{% url 'ui:excel_import_cartons' %}" enctype="multipart/form-data" class="upload-area">
+        {% csrf_token %}
+        <input type="file" name="file" accept=".xlsx" required>
+        <button type="submit" class="btn btn-sm btn-secondary">Importuj</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Inner packs -->
+  <div class="tpl-card">
+    <div class="tpl-card__head">
+      <div class="tpl-icon">{% icon "mailbox" cls="icon--em" %}</div>
+      <div>
+        <div class="tpl-title">Opakowania zbiorcze (inner pack)</div>
+        <div class="tpl-desc">Opakowania wewnętrzne między sztuką a kartonem.</div>
+        <span class="tpl-badge badge-purple">12 kolumn</span>
+      </div>
+    </div>
+    <div class="tpl-card__foot">
+      <a href="{% url 'ui:excel_template_inner_packs' %}" class="btn btn-sm btn-primary" title="Pobierz szablon">{% icon "download" %} Szablon</a>
+      {% if can_write_products %}
+      <form method="post" action="{% url 'ui:excel_import_inner_packs' %}" enctype="multipart/form-data" class="upload-area">
+        {% csrf_token %}
+        <input type="file" name="file" accept=".xlsx" required>
+        <button type="submit" class="btn btn-sm btn-secondary">Importuj</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Kategorie -->
+  <div class="tpl-card">
+    <div class="tpl-card__head">
+      <div class="tpl-icon">{% icon "tag" cls="icon--em" %}</div>
+      <div>
+        <div class="tpl-title">Kategorie produktów</div>
+        <div class="tpl-desc">Słownik kategorii z kodem i kolorem.</div>
+        <span class="tpl-badge badge-yellow">4 kolumny</span>
+      </div>
+    </div>
+    <div class="tpl-card__foot">
+      <a href="{% url 'ui:excel_template_categories' %}" class="btn btn-sm btn-primary" title="Pobierz szablon">{% icon "download" %} Szablon</a>
+      {% if can_write_products %}
+      <form method="post" action="{% url 'ui:excel_import_categories' %}" enctype="multipart/form-data" class="upload-area">
+        {% csrf_token %}
+        <input type="file" name="file" accept=".xlsx" required>
+        <button type="submit" class="btn btn-sm btn-secondary">Importuj</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Lokalizacje -->
+  <div class="tpl-card">
+    <div class="tpl-card__head">
+      <div class="tpl-icon">{% icon "map-pin" cls="icon--em" %}</div>
+      <div>
+        <div class="tpl-title">Lokalizacje magazynowe</div>
+        <div class="tpl-desc">Kody lokalizacji w formacie B0-01-300A. Tworzy nową partię importu.</div>
+        <span class="tpl-badge badge-teal">4 kolumny · 2 arkusze</span>
+      </div>
+    </div>
+    <div class="tpl-card__foot">
+      <a href="{% url 'ui:excel_template_locations' %}" class="btn btn-sm btn-primary" title="Pobierz szablon">{% icon "download" %} Szablon</a>
+      {% if can_write_products %}
+      <form method="post" action="{% url 'ui:excel_import_locations' %}" enctype="multipart/form-data" class="upload-area">
+        {% csrf_token %}
+        <input type="file" name="file" accept=".xlsx" required>
+        <button type="submit" class="btn btn-sm btn-secondary">Importuj</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Linie przesyłki -->
+  <div class="tpl-card">
+    <div class="tpl-card__head">
+      <div class="tpl-icon">{% icon "truck" cls="icon--em" %}</div>
+      <div>
+        <div class="tpl-title">Linie przesyłki</div>
+        <div class="tpl-desc">Pozycje przesyłki transportowej. Import odbywa się bezpośrednio w formularzu przesyłki.</div>
+        <span class="tpl-badge badge-pink">4 kolumny</span>
+      </div>
+    </div>
+    <div class="tpl-card__foot">
+      <a href="{% url 'ui:excel_template_shipment_lines' %}" class="btn btn-sm btn-primary" title="Pobierz szablon">{% icon "download" %} Szablon</a>
+      <a href="{% url 'ui:planner_shipments' %}" class="btn btn-sm btn-secondary">Przejdź do przesyłek →</a>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:32px;padding:16px 20px;background:var(--gray-50);border-radius:8px;border:1px solid var(--gray-200)">
+  <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--gray-700)">Stary format CSV (kartony)</div>
+  <div style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Wcześniejszy szablon CSV dla kartonów jest nadal dostępny.</div>
+  <a href="{% url 'ui:planner_carton_csv_template' %}" class="btn btn-secondary btn-sm">{% icon "download" %} Pobierz kartony_wzor.csv</a>
+</div>
+{% endblock %}

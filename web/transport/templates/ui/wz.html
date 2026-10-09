@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>WZ {{ shipment.wz_number|default:shipment.pk }} — {{ shipment.name }}</title>
+  <style>
+    @page { size: A4; margin: 12mm; }
+    body { font-family: Arial, Helvetica, sans-serif; color:#111; font-size:11px; margin:0; }
+    h1 { font-size:17px; margin:0 0 2px; }
+    .docno { float:right; text-align:right; font-size:11px; }
+    .docno strong { font-size:13px; }
+    table { width:100%; border-collapse:collapse; }
+    .parties td { vertical-align:top; padding:4px 8px 4px 0; width:33%; }
+    .lbl { font-size:8.5px; font-weight:700; color:#444; text-transform:uppercase; letter-spacing:.3px; display:block; margin-bottom:2px; }
+    .val { font-size:11.5px; }
+    .uwagi { border:1px solid #333; padding:6px 8px; margin-top:6px; font-size:10.5px; }
+    .uwagi b { display:inline-block; min-width:120px; }
+    .goods { margin-top:8px; }
+    .goods th, .goods td { border:1px solid #333; padding:4px 6px; text-align:left; font-size:10px; vertical-align:top; }
+    .goods th { background:#f0f0f0; }
+    .num { text-align:right; }
+    .foot { margin-top:26px; display:flex; gap:40px; }
+    .foot div { flex:1; text-align:center; font-size:10.5px; }
+    .foot .line { border-top:1px dotted #333; margin-top:28px; padding-top:3px; }
+    .note { margin-top:14px; font-size:9.5px; color:#333; border-top:1px solid #999; padding-top:5px; }
+    .copy { page-break-after: always; }
+    .copy:last-child { page-break-after: auto; }
+    .copyno { float:right; font-size:9.5px; color:#666; margin-left:10px; }
+  </style>
+</head>
+<body>
+{% for c in copies %}
+<div class="copy">
+  <div class="docno">
+    {% if n_copies > 1 %}<span class="copyno">Kopia {{ forloop.counter }} / {{ n_copies }}</span>{% endif %}
+    Numer Dokumentu: <strong>{{ shipment.wz_number|default:"—" }}</strong><br>
+    {% now "Y/m/d" %}
+  </div>
+  <h1>Wydanie zewnętrzne</h1>
+
+  <table class="parties">
+    <tr>
+      <td>
+        <span class="lbl">Sprzedawca</span>
+        <span class="val">{{ sender_name }}</span><br>{{ sender_addr|linebreaksbr }}
+      </td>
+      <td>
+        <span class="lbl">Nabywca</span>
+        <span class="val">{{ consignee_name }}</span><br>
+        {{ dest_addr|default:"—" }}{% if consignee_country %} {{ consignee_country }}{% endif %}
+      </td>
+      <td>
+        <span class="lbl">Odbiorca</span>
+        <span class="val">{{ recipient_name|default:consignee_name }}</span><br>
+        {{ dest_addr|default:"—" }}
+        {% if recipient_phone %}<br>Telefon: {{ recipient_phone }}{% endif %}
+      </td>
+    </tr>
+  </table>
+
+  <div class="uwagi">
+    <span class="lbl">Uwagi</span>
+    {% if shipment.name %}<b>Dostawa:</b> {{ shipment.name }}<br>{% endif %}
+    {% if hu_codes %}<b>HU:</b> {{ hu_codes|join:", " }}<br>{% endif %}
+    {% if shipment.outbound_created_date %}<b>Data rejestracji:</b> {{ shipment.outbound_created_date|date:"d.m.Y" }}<br>{% endif %}
+    <b>Wystawił:</b> {{ issuer_name|default:"—" }}
+    {% if issuer_email %} &nbsp; E-mail: {{ issuer_email }}{% endif %}
+  </div>
+
+  <table class="goods">
+    <thead><tr>
+      <th style="width:24px">Lp.</th><th>Numer produktu</th><th>Opis Produktu</th>
+      <th>Seria/NR Seryjne</th><th>Data przydatności</th><th>Jm</th><th class="num">Ilość</th>
+    </tr></thead>
+    <tbody>
+    {% for l in lines %}
+      <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ l.ref }}</td>
+        <td>{{ l.desc|default:"—" }}</td>
+        <td>{{ l.lot|default:"BRAK" }}</td>
+        <td>{{ l.expiry|date:"d.m.Y"|default:"—" }}</td>
+        <td>{{ l.unit }}</td>
+        <td class="num">{{ l.qty|floatformat:"-2" }}</td>
+      </tr>
+    {% empty %}<tr><td colspan="7">Brak pozycji.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+
+  <div class="foot">
+    <div><div class="line">Odebrał</div></div>
+    <div><div class="line">Wydał</div></div>
+  </div>
+
+  <div class="note">Niezgodności dotyczące dostawy konieczne do zgłoszenia do 48h osobie,
+    która wystawiła dokument.</div>
+</div>
+{% endfor %}
+</body>
+</html>

@@ -1,0 +1,79 @@
+{% extends "ui/base.html" %}
+{% block title %}ZARIA — konfiguracja — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_zaria_panel' %}">ZARIA</a><span class="breadcrumb__sep">›</span><span>Konfiguracja</span></nav>
+<div class="page-header"><div><div class="page-header__title">Konfiguracja globalna ZARIA</div>
+  <div class="page-header__sub">Model domyślny, prompt systemowy, budżety, limity i komunikat RODO</div></div></div>
+
+<!-- Test połączenia z dostawcą (jedno kliknięcie) -->
+<div class="card" style="padding:16px;max-width:720px;margin-bottom:16px">
+  <form method="post" action="{% url 'ui:admin_zaria_test' %}" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+    {% csrf_token %}
+    <div>
+      <label style="display:block;font-size:12px;font-weight:600">Model do testu</label>
+      <select aria-label="Model do testu" name="model">
+        {% for m in models %}<option value="{{ m.id }}" {% if config.default_model_id == m.id %}selected{% endif %}>{{ m.display_name }}</option>{% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-secondary">Testuj połączenie</button>
+  </form>
+  <div class="help-text" style="margin-top:6px">Wysyła jedno krótkie zapytanie do dostawcy — potwierdza klucz API na serwerze, dostęp do modelu i realną odpowiedź (bez logowania treści).</div>
+</div>
+
+<div class="card" style="padding:16px;max-width:720px">
+  <form method="post" style="display:flex;flex-direction:column;gap:14px">
+    {% csrf_token %}
+    <div>
+      <label style="display:block;font-size:12px;font-weight:600">Model domyślny</label>
+      <select aria-label="Model domyślny" name="default_model">
+        <option value="">— brak —</option>
+        {% for m in models %}<option value="{{ m.id }}" {% if config.default_model_id == m.id %}selected{% endif %}>{{ m.display_name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label style="display:block;font-size:12px;font-weight:600">Globalny prompt systemowy</label>
+      <textarea aria-label="Globalny prompt systemowy" name="system_prompt" rows="4" style="width:100%">{{ config.system_prompt }}</textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><label style="display:block;font-size:12px;font-weight:600">Globalny budżet miesięczny (PLN, 0=brak)</label>
+        <input aria-label="Globalny budżet miesięczny (PLN, 0=brak)" name="monthly_budget_pln" type="number" step="0.01" value="{{ config.monthly_budget_pln }}"></div>
+      <div><label style="display:block;font-size:12px;font-weight:600">Domyślny budżet/użytkownika (PLN, 0=brak) — tylko ostrzeżenie</label>
+        <input aria-label="Domyślny budżet/użytkownika (PLN, 0=brak) — tylko ostrzeżenie" name="per_user_monthly_budget_pln" type="number" step="0.01" value="{{ config.per_user_monthly_budget_pln }}"></div>
+      <div><label style="display:block;font-size:12px;font-weight:600">Próg twardej blokady globalnej (% capu, 1–100)</label>
+        <input aria-label="Próg twardej blokady globalnej (% capu, 1–100)" name="hard_block_fraction" type="number" min="1" max="100" value="{{ config.hard_block_fraction }}"></div>
+      <div><label style="display:block;font-size:12px;font-weight:600">Limit wiadomości / minutę</label>
+        <input aria-label="Limit wiadomości / minutę" name="rate_limit_per_minute" type="number" value="{{ config.rate_limit_per_minute }}"></div>
+      <div><label style="display:block;font-size:12px;font-weight:600">Limit wiadomości / dzień</label>
+        <input aria-label="Limit wiadomości / dzień" name="rate_limit_per_day" type="number" value="{{ config.rate_limit_per_day }}"></div>
+      <div><label style="display:block;font-size:12px;font-weight:600">Maks. tokenów odpowiedzi</label>
+        <input aria-label="Maks. tokenów odpowiedzi" name="max_tokens" type="number" value="{{ config.max_tokens }}"></div>
+      <div><label style="display:block;font-size:12px;font-weight:600">Maks. długość wiadomości (znaki)</label>
+        <input aria-label="Maks. długość wiadomości (znaki)" name="max_message_chars" type="number" value="{{ config.max_message_chars }}"></div>
+      <div style="grid-column:1 / -1"><label style="display:block;font-size:12px;font-weight:600">Domyślny miesięczny limit tokenów / użytkownika (0=brak)</label>
+        <input aria-label="Domyślny miesięczny limit tokenów / użytkownika (0=brak)" name="default_monthly_token_budget" type="number" value="{{ config.default_monthly_token_budget }}"></div>
+    </div>
+
+    <div class="section-title" style="margin-top:4px">Limity tokenów per rola (puste = domyślny globalny)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      {% for role, value in role_budget_rows %}
+      <div><label style="display:block;font-size:12px;font-weight:600">{{ role }}</label>
+        <input aria-label="{{ role }}" name="tok_{{ role }}" type="number" placeholder="domyślny" value="{{ value }}"></div>
+      {% endfor %}
+    </div>
+
+    <div style="display:flex;align-items:center;gap:6px">
+      <input type="checkbox" name="hard_block_over_budget" value="1" id="hb" {% if config.hard_block_over_budget %}checked{% endif %}>
+      <label for="hb" style="font-size:13px">Blokuj wysyłkę po przekroczeniu budżetu (inaczej: tylko ostrzeżenie)</label>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <input type="checkbox" name="rag_enabled" value="1" id="rag" {% if config.rag_enabled %}checked{% endif %}>
+      <label for="rag" style="font-size:13px">RAG: wzbogacaj odpowiedzi danymi {{ app_name }} (produkty, palety, lokalizacje, klienci — tylko odczyt)</label>
+    </div>
+    <div>
+      <label style="display:block;font-size:12px;font-weight:600">Treść komunikatu RODO (pokazywana przy pierwszej wiadomości; puste = brak komunikatu)</label>
+      <textarea aria-label="Treść komunikatu RODO (pokazywana przy pierwszej wiadomości; puste = brak komunikatu)" name="rodo_notice" rows="4" style="width:100%">{{ config.rodo_notice }}</textarea>
+    </div>
+    <div><button type="submit" class="btn btn-primary">Zapisz</button></div>
+  </form>
+</div>
+{% endblock %}

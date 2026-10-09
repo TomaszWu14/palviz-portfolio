@@ -1,0 +1,66 @@
+{% load palviz_extras %}
+{% load i18n %}
+<aside class="z-side">
+  <div class="z-side__new">
+    <a href="{% url 'ui:zaria_home' %}" class="z-newbtn">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      {% trans "Nowy czat" %}
+    </a>
+  </div>
+
+  <div class="z-seg" role="tablist" aria-label="{% trans 'Widok rozmów' %}">
+    <button class="z-seg__btn" role="tab" aria-selected="true" onclick="zariaSeg(this,'all')">{% trans "Historia" %}</button>
+    <button class="z-seg__btn" role="tab" aria-selected="false" onclick="zariaSeg(this,'saved')">{% trans "Zapisane" %}</button>
+  </div>
+
+  <form method="get" action="{% url 'ui:zaria_home' %}" class="z-search">
+    <input type="text" name="q" value="{{ q|default:'' }}" placeholder="{% trans 'Szukaj w rozmowach…' %}" aria-label="{% trans 'Szukaj w rozmowach' %}">
+  </form>
+
+  <nav class="z-list" data-seg="all">
+    {% for label, items in sidebar_groups %}
+      <div class="z-group">{{ label }}</div>
+      {% for c in items %}
+        <a class="z-item {% if conversation and c.pk == conversation.pk %}z-item--active{% endif %}"
+           href="{% url 'ui:zaria_conversation' c.pk %}">
+          {{ c.title|default:_("(bez tytułu)")|truncatechars:48 }}
+          <div class="z-item__meta z-num">{{ c.model.display_name|default:"—" }} · {{ c.updated_at|date:"d.m H:i" }}</div>
+        </a>
+      {% endfor %}
+    {% empty %}
+      <div class="z-empty">{% trans "Zacznij pierwszą rozmowę" %}</div>
+    {% endfor %}
+  </nav>
+  <nav class="z-list" data-seg="saved" hidden>
+    {% for c in saved_conversations %}
+      <a class="z-item {% if conversation and c.pk == conversation.pk %}z-item--active{% endif %}"
+         href="{% url 'ui:zaria_conversation' c.pk %}">
+        {% icon "star" %} {{ c.title|default:_("(bez tytułu)")|truncatechars:46 }}
+        {% if c.tags %}<div class="z-item__meta">{{ c.tags }}</div>{% endif %}
+      </a>
+    {% empty %}
+      <div class="z-empty">{% trans "Zapisane wątki pojawią się tutaj" %}</div>
+    {% endfor %}
+  </nav>
+
+  <div class="z-foot">
+    <a class="z-foot__user" href="{% url 'ui:zaria_user_panel' %}" title="{% trans 'Mój panel' %}" style="text-decoration:none">{{ request.user.get_username }}</a>
+    <span class="z-toggle" role="group" aria-label="{% trans 'Motyw' %}">
+      <button type="button" aria-pressed="{% if ui_theme == 'light' %}true{% else %}false{% endif %}"
+              onclick="zariaPrefs('theme','light')" title="{% trans 'Jasny' %}" aria-label="{% trans 'Jasny motyw' %}">{% icon "sun" cls="icon--em" %}</button>
+      <button type="button" aria-pressed="{% if ui_theme == 'dark' %}true{% else %}false{% endif %}"
+              onclick="zariaPrefs('theme','dark')" title="{% trans 'Ciemny' %}" aria-label="{% trans 'Ciemny motyw' %}">{% icon "moon" cls="icon--em" %}</button>
+    </span>
+    <span class="z-toggle" role="group" aria-label="{% trans 'Język' %}">
+      <button type="button" aria-pressed="{% if LANGUAGE_CODE == 'pl' %}true{% else %}false{% endif %}" onclick="zariaPrefs('lang','pl')">PL</button>
+      <button type="button" aria-pressed="{% if LANGUAGE_CODE == 'en' %}true{% else %}false{% endif %}" onclick="zariaPrefs('lang','en')">EN</button>
+    </span>
+  </div>
+</aside>
+<div class="z-overlay" onclick="zariaDrawer('side')"></div>
+<script>
+  function zariaSeg(btn, seg){
+    btn.parentNode.querySelectorAll('.z-seg__btn').forEach(function(b){ b.setAttribute('aria-selected', b===btn); });
+    document.querySelectorAll('.z-list').forEach(function(l){ l.hidden = l.getAttribute('data-seg') !== seg; });
+  }
+</script>

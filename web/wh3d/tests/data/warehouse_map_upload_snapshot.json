@@ -1,0 +1,712 @@
+{
+ "at_size_limit": {
+  "db": {
+   "rows": [],
+   "snapshots": []
+  },
+  "messages": [
+   [
+    "error",
+    "Błąd zapisu snapshotu: Nie rozpoznano żadnych lokalizacji — sprawdź nagłówki kolumn w pliku."
+   ]
+  ],
+  "redirect": "map"
+ },
+ "bad_ext": {
+  "db": {
+   "rows": [],
+   "snapshots": []
+  },
+  "messages": [
+   [
+    "error",
+    "Obsługiwane formaty: xlsx, xls, csv"
+   ]
+  ],
+  "redirect": "map"
+ },
+ "broken_xlsx": {
+  "db": {
+   "rows": [],
+   "snapshots": []
+  },
+  "messages": [],
+  "redirect": "map"
+ },
+ "bulk_chunking": {
+  "messages": [
+   [
+    "success",
+    "Wgrano 5400 lokalizacji (5400 regałowych, 0 blokowych/zewnętrznych, 0 pominiętych) — 0 zajętych, 0 zablokowanych."
+   ]
+  ],
+  "redirect": "detail:Duży",
+  "snapshot": {
+   "blocked_count": 0,
+   "occupied_count": 0,
+   "row_count": 5400
+  }
+ },
+ "csv_extra_field": {
+  "db": {
+   "rows": [],
+   "snapshots": []
+  },
+  "messages": [
+   [
+    "error",
+    "Błąd odczytu pliku: 'NoneType' object has no attribute 'strip'"
+   ]
+  ],
+  "redirect": "map"
+ },
+ "csv_no_bom": {
+  "db": {
+   "rows": [
+    {
+     "aisle": "07",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "B0-07-700A",
+     "section": "",
+     "snapshot": "plik.csv",
+     "stack": "700",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    }
+   ],
+   "snapshots": [
+    {
+     "blocked_count": 0,
+     "name": "plik.csv",
+     "occupied_count": 0,
+     "row_count": 1
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Wgrano 1 lokalizacji (1 regałowych, 0 blokowych/zewnętrznych, 0 pominiętych) — 0 zajętych, 0 zablokowanych."
+   ]
+  ],
+  "redirect": "detail:plik.csv"
+ },
+ "csv_not_utf8": {
+  "db": {
+   "rows": [],
+   "snapshots": []
+  },
+  "messages": [],
+  "redirect": "map"
+ },
+ "csv_simple": {
+  "db": {
+   "rows": [
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 1,
+     "location_code": "B0-01-100A",
+     "section": "",
+     "snapshot": "Stock CSV",
+     "stack": "100",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 1,
+     "location_code": "B0-01-101A",
+     "section": "",
+     "snapshot": "Stock CSV",
+     "stack": "101",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 1,
+     "location_code": "B0-01-102A",
+     "section": "",
+     "snapshot": "Stock CSV",
+     "stack": "102",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "B0-01-103A",
+     "section": "",
+     "snapshot": "Stock CSV",
+     "stack": "103",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "B0-01-104A",
+     "section": "",
+     "snapshot": "Stock CSV",
+     "stack": "104",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "B0-01-105A",
+     "section": "",
+     "snapshot": "Stock CSV",
+     "stack": "105",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "B0-01-106A",
+     "section": "",
+     "snapshot": "Stock CSV",
+     "stack": "106",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 1,
+     "location_code": "B0-01-107",
+     "section": "",
+     "snapshot": "Stock CSV",
+     "stack": "107",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    }
+   ],
+   "snapshots": [
+    {
+     "blocked_count": 0,
+     "name": "Stock CSV",
+     "occupied_count": 4,
+     "row_count": 8
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Wgrano 8 lokalizacji (7 regałowych, 1 blokowych/zewnętrznych, 0 pominiętych) — 4 zajętych, 0 zablokowanych."
+   ]
+  ],
+  "redirect": "detail:Stock CSV"
+ },
+ "no_file": {
+  "db": {
+   "rows": [],
+   "snapshots": []
+  },
+  "messages": [
+   [
+    "error",
+    "Brak pliku."
+   ]
+  ],
+  "redirect": "map"
+ },
+ "no_locations": {
+  "db": {
+   "rows": [],
+   "snapshots": []
+  },
+  "messages": [
+   [
+    "error",
+    "Błąd zapisu snapshotu: Nie rozpoznano żadnych lokalizacji — sprawdź nagłówki kolumn w pliku."
+   ]
+  ],
+  "redirect": "map"
+ },
+ "repeat_upload": {
+  "db": {
+   "rows": [
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "B0-01-100A",
+     "section": "",
+     "snapshot": "Powtórka",
+     "stack": "100",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "B0-01-100A",
+     "section": "",
+     "snapshot": "Powtórka",
+     "stack": "100",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "B",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 1,
+     "location_code": "B0-01-100B",
+     "section": "",
+     "snapshot": "Powtórka",
+     "stack": "100",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "B",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 1,
+     "location_code": "B0-01-100B",
+     "section": "",
+     "snapshot": "Powtórka",
+     "stack": "100",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    }
+   ],
+   "snapshots": [
+    {
+     "blocked_count": 0,
+     "name": "Powtórka",
+     "occupied_count": 1,
+     "row_count": 2
+    },
+    {
+     "blocked_count": 0,
+     "name": "Powtórka",
+     "occupied_count": 1,
+     "row_count": 2
+    }
+   ]
+  },
+  "first": {
+   "messages": [
+    [
+     "success",
+     "Wgrano 2 lokalizacji (2 regałowych, 0 blokowych/zewnętrznych, 0 pominiętych) — 1 zajętych, 0 zablokowanych."
+    ]
+   ],
+   "redirect": "detail:Powtórka"
+  },
+  "second": {
+   "messages": [
+    [
+     "success",
+     "Wgrano 2 lokalizacji (2 regałowych, 0 blokowych/zewnętrznych, 0 pominiętych) — 1 zajętych, 0 zablokowanych."
+    ],
+    [
+     "success",
+     "Wgrano 2 lokalizacji (2 regałowych, 0 blokowych/zewnętrznych, 0 pominiętych) — 1 zajętych, 0 zablokowanych."
+    ]
+   ],
+   "redirect": "detail:Powtórka"
+  }
+ },
+ "sap_xlsx_full": {
+  "db": {
+   "rows": [
+    {
+     "aisle": "00",
+     "blocked_pick": true,
+     "blocked_put": true,
+     "capacity_mm": 900,
+     "col_code": "",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "04.01",
+     "section": "",
+     "snapshot": "Eksport.XLSX",
+     "stack": "",
+     "storage_group": "",
+     "warehouse_type": "TYP-ZA-DLU",
+     "zone": "04.01"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 1500,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "B0-01-100A",
+     "section": "S1",
+     "snapshot": "Eksport.XLSX",
+     "stack": "100",
+     "storage_group": "GR1",
+     "warehouse_type": "RT",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": true,
+     "blocked_put": false,
+     "capacity_mm": 1200,
+     "col_code": "B",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 1,
+     "location_code": "B0-01-100B",
+     "section": "S1",
+     "snapshot": "Eksport.XLSX",
+     "stack": "100",
+     "storage_group": "GR1",
+     "warehouse_type": "RT",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "B",
+     "col_idx": 1,
+     "is_empty": true,
+     "level": 3,
+     "location_code": "B0-01-300-3B",
+     "section": "S1",
+     "snapshot": "Eksport.XLSX",
+     "stack": "300",
+     "storage_group": "",
+     "warehouse_type": "RT",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "C",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 1,
+     "location_code": "B0-01-301C-1",
+     "section": "S1",
+     "snapshot": "Eksport.XLSX",
+     "stack": "301",
+     "storage_group": "",
+     "warehouse_type": "RT",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "C",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "B0-01-301C-2",
+     "section": "S1",
+     "snapshot": "Eksport.XLSX",
+     "stack": "301",
+     "storage_group": "",
+     "warehouse_type": "RT",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "1",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 1,
+     "location_code": "B0-01-302-AB1",
+     "section": "S1",
+     "snapshot": "Eksport.XLSX",
+     "stack": "302",
+     "storage_group": "",
+     "warehouse_type": "RT",
+     "zone": "B0"
+    },
+    {
+     "aisle": "02",
+     "blocked_pick": false,
+     "blocked_put": true,
+     "capacity_mm": 0,
+     "col_code": "C",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 1,
+     "location_code": "B0-02-200C",
+     "section": "S2",
+     "snapshot": "Eksport.XLSX",
+     "stack": "200",
+     "storage_group": "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+     "warehouse_type": "RT",
+     "zone": "B0"
+    },
+    {
+     "aisle": "03",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "X",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 2,
+     "location_code": "B0-03-100X",
+     "section": "",
+     "snapshot": "Eksport.XLSX",
+     "stack": "100",
+     "storage_group": "",
+     "warehouse_type": "RT",
+     "zone": "B0"
+    },
+    {
+     "aisle": "03",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "Y",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 3,
+     "location_code": "B0-03-100Y",
+     "section": "",
+     "snapshot": "Eksport.XLSX",
+     "stack": "100",
+     "storage_group": "",
+     "warehouse_type": "RT",
+     "zone": "B0"
+    },
+    {
+     "aisle": "03",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "Z",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 4,
+     "location_code": "B0-03-100Z",
+     "section": "",
+     "snapshot": "Eksport.XLSX",
+     "stack": "100",
+     "storage_group": "",
+     "warehouse_type": "RT",
+     "zone": "B0"
+    },
+    {
+     "aisle": "07",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 1,
+     "location_code": "B0-5-400A",
+     "section": "",
+     "snapshot": "Eksport.XLSX",
+     "stack": "400",
+     "storage_group": "",
+     "warehouse_type": "RT",
+     "zone": "B0"
+    },
+    {
+     "aisle": "00",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "Y",
+     "col_idx": 0,
+     "is_empty": false,
+     "level": 3,
+     "location_code": "ZWROTY",
+     "section": "SEKCJA-DLUGA-PONAD-2",
+     "snapshot": "Eksport.XLSX",
+     "stack": "",
+     "storage_group": "",
+     "warehouse_type": "92EX",
+     "zone": "ZWROTY"
+    }
+   ],
+   "snapshots": [
+    {
+     "blocked_count": 3,
+     "name": "Eksport.XLSX",
+     "occupied_count": 8,
+     "row_count": 13
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Wgrano 13 lokalizacji (9 regałowych, 4 blokowych/zewnętrznych, 0 pominiętych) — 8 zajętych, 3 zablokowanych."
+   ]
+  ],
+  "redirect": "detail:Eksport.XLSX"
+ },
+ "too_large": {
+  "db": {
+   "rows": [],
+   "snapshots": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik zbyt duży (max 10 MB)."
+   ]
+  ],
+  "redirect": "map"
+ },
+ "xlsx_blank_header": {
+  "db": {
+   "rows": [
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "A",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "B0-01-100A",
+     "section": "",
+     "snapshot": "Nagłówki",
+     "stack": "150",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    },
+    {
+     "aisle": "01",
+     "blocked_pick": false,
+     "blocked_put": false,
+     "capacity_mm": 0,
+     "col_code": "",
+     "col_idx": 0,
+     "is_empty": true,
+     "level": 1,
+     "location_code": "B0-01-101",
+     "section": "",
+     "snapshot": "Nagłówki",
+     "stack": "101",
+     "storage_group": "",
+     "warehouse_type": "",
+     "zone": "B0"
+    }
+   ],
+   "snapshots": [
+    {
+     "blocked_count": 0,
+     "name": "Nagłówki",
+     "occupied_count": 0,
+     "row_count": 2
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Wgrano 2 lokalizacji (1 regałowych, 1 blokowych/zewnętrznych, 0 pominiętych) — 0 zajętych, 0 zablokowanych."
+   ]
+  ],
+  "redirect": "detail:Nagłówki"
+ }
+}

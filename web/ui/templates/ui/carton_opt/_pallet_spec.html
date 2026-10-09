@@ -1,0 +1,17 @@
+{% if s %}
+<table class="table" style="font-size:12px;margin-top:6px">
+  <tr><td>Paleta</td><td class="text-right" style="font-family:monospace">{{ s.pallet_l }}×{{ s.pallet_w }} cm · max {{ s.max_h }} cm · {{ s.max_w }} kg</td></tr>
+  <tr><td>Karton</td><td class="text-right" style="font-family:monospace">{{ s.carton_l }}×{{ s.carton_w }}×{{ s.carton_h }} cm</td></tr>
+  <tr><td>Układ</td><td class="text-right">{{ s.per_layer }}/warstwę × {{ s.layers }} = <strong>{{ s.per_pallet }}</strong> kart/paletę</td></tr>
+  <tr><td>Wysokość stosu</td><td class="text-right">{{ s.stack_h }}/{{ s.max_h }} cm <span style="color:var(--gray-500)">(zapas {{ s.headroom }})</span></td></tr>
+  <tr><td>Waga/paletę</td><td class="text-right">{{ s.weight }}/{{ s.max_w }} kg</td></tr>
+  <tr><td>Wypełnienie · podłoga</td><td class="text-right"><strong>{{ s.fill }}%</strong> · {{ s.floor }}%</td></tr>
+  <tr><td>Środek ciężkości</td><td class="text-right">offset {{ s.cog_x }}/{{ s.cog_y }} cm · wys. {{ s.cog_z }} cm</td></tr>
+  <tr><td>Nawis</td><td class="text-right">{% if s.overhang %}<span style="color:var(--red)">{{ s.overhang }} cm</span>{% else %}brak{% endif %}</td></tr>
+  <tr><td>Stabilność</td><td class="text-right">
+    {% if s.stability == 'stabilny' %}<span class="badge badge-green">stabilny</span>
+    {% elif s.stability == 'uwaga' %}<span class="badge badge-yellow">uwaga</span>
+    {% else %}<span class="badge badge-red">ryzyko</span>{% endif %}
+    <span style="color:var(--gray-500);font-size:11px">{{ s.stability_why }} · smukłość {{ s.slender }}</span></td></tr>
+</table>
+{% elif err %}<div style="color:var(--red);font-size:12px;padding:8px 0">{{ err }}</div>{% endif %}

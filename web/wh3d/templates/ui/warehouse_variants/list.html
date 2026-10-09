@@ -1,0 +1,163 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Warianty projektu magazynu — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .var-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 960px) { .var-grid { grid-template-columns: 1fr; } }
+  .cmp { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+  .cmp th, .cmp td { padding: 9px 12px; border-bottom: 1px solid var(--gray-100); text-align: right; white-space: nowrap; }
+  .cmp th:first-child, .cmp td:first-child { text-align: left; white-space: normal; color: var(--gray-700); }
+  .cmp thead th { vertical-align: bottom; border-bottom: 2px solid var(--gray-200); background: var(--surface); position: sticky; top: 0; }
+  .cmp .v-name { font-weight: 700; color: var(--gray-900); font-size: 13px; }
+  .cmp .v-meta { font-weight: 400; color: var(--gray-500); font-size: 11px; margin-top: 2px; }
+  .cmp .num { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--gray-900); }
+  .cmp td.best { background: #ecfdf5; }
+  .cmp td.best .num { color: #047857; }
+  .cmp .delta { display: block; font-size: 11px; font-weight: 500; }
+  .cmp .delta.good { color: #047857; }
+  .cmp .delta.bad { color: #b91c1c; }
+  .cmp .delta.neutral { color: var(--gray-400); }
+  .cmp tr.section td { background: var(--gray-50); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--gray-500); font-weight: 700; }
+  .cmp .extra { display: block; font-size: 11px; color: var(--gray-500); font-weight: 400; }
+  .var-list { list-style: none; margin: 0; padding: 0; }
+  .var-list li { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--gray-100); font-size: 13px; }
+  .var-list label { flex: 1; cursor: pointer; }
+  .var-issue { color: #b91c1c; font-size: 12px; }
+  .hint { font-size: 12px; color: var(--gray-500); line-height: 1.5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_model_list' %}">Modele magazynu</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Warianty projektu</span>
+</nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#0f766e;--pcbg:#ecfdf5">
+    <div class="panel-head__chip">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/><path d="M14 18h7M14 21h7"/></svg>
+    </div>
+    <div>
+      <div class="page-header__title">Warianty projektu magazynu</div>
+      <div class="page-header__sub">Porównanie wariantów z Blendera z obecnym magazynem: pojemność, powierzchnia, droga do miejsc, sprzęt</div>
+    </div>
+  </div>
+</div>
+
+<div class="var-grid">
+  <div class="card card--accent" style="--pc:#0f766e">
+    <div class="card-header"><span class="card-header__title">Porównanie wariantów</span></div>
+    <div class="card-body" style="overflow-x:auto">
+    {% if chosen %}
+    <table class="cmp">
+      <thead>
+        <tr>
+          <th>Wskaźnik</th>
+          {% for v in chosen %}
+          <th>
+            <div class="v-name">{{ v.name }}</div>
+            <div class="v-meta">{{ v.get_source_display }} · {{ v.created_at|date:"d.m.Y" }}{% if forloop.first and chosen|length > 1 %} · <strong>punkt odniesienia</strong>{% endif %}</div>
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        {% if row.equipment %}{% ifchanged row.equipment %}<tr class="section"><td colspan="{{ chosen|length|add:1 }}">Elementy i sprzęt</td></tr>{% endifchanged %}{% endif %}
+        <tr>
+          <td>{{ row.label }}</td>
+          {% for c in row.cells %}
+          <td class="{% if c.best %}best{% endif %}">
+            {% if c.value is None %}<span class="num" style="color:var(--gray-400)">—</span>
+            {% else %}<span class="num">{{ c.value }}</span>{% if row.unit %} <span class="text-muted">{{ row.unit }}</span>{% endif %}{% endif %}
+            {% if c.extra %}<span class="extra">{{ c.extra }}</span>{% endif %}
+            {% if c.delta is not None %}
+            <span class="delta {% if c.good is True %}good{% elif c.good is False %}bad{% else %}neutral{% endif %}">{% if c.delta > 0 %}+{% endif %}{{ c.delta }}%</span>
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+        <tr>
+          <td>Pobierz do Blendera</td>
+          {% for v in chosen %}
+          <td><a href="{% url 'ui:warehouse_variant_json' v.pk %}" class="btn btn-secondary btn-sm">JSON</a></td>
+          {% endfor %}
+        </tr>
+      </tbody>
+    </table>
+    {% for v in chosen %}{% for i in v.kpi.aisle_issues|slice:":5" %}
+    <div class="var-issue">{% icon "triangle-alert" %} {{ v.name }}: {{ i.type }} {{ i.a }} ↔ {{ i.b }} — {{ i.gap_m }} m (wymagane {{ i.need_m }} m)</div>
+    {% endfor %}{% endfor %}
+    <p class="hint" style="margin-top:12px">
+      Zielone tło = najlepsza wartość w wierszu; procent = różnica do pierwszej kolumny.
+      Droga to odległość prostokątna od najbliższego doku / bramy / stanowiska do frontu boku regału,
+      ważona liczbą miejsc — miara porównawcza wariantów, nie symulacja trasy.
+      Pojemności i wydajności sprzętu z katalogu (typowe wartości; potwierdź u dostawcy).
+    </p>
+    {% else %}
+    <p class="text-muted" style="padding:24px 8px">
+      Brak wariantów. Dodaj wariant bazowy z modelu obecnego magazynu, a potem zaimportuj warianty
+      zaprojektowane w Blenderze zestawem <code>palviz_design_kit.py</code>.
+    </p>
+    {% endif %}
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:16px">
+    {% if variants %}
+    <form method="get" class="card">
+      <div class="card-header"><span class="card-header__title">Porównaj warianty (max 6)</span></div>
+      <div class="card-body">
+      <ul class="var-list">
+        {% for v in variants %}
+        <li>
+          <input type="checkbox" name="ids" value="{{ v.pk }}" id="v{{ v.pk }}" {% if v.pk in chosen_ids %}checked{% endif %}>
+          <label for="v{{ v.pk }}">{{ v.name }} <span class="text-muted text-sm">· {{ v.kpi.pallet_positions }} miejsc</span></label>
+          {% if can_write_products %}
+          <button type="submit" form="del{{ v.pk }}" class="btn btn-ghost btn-sm" title="Usuń wariant">{% icon "x" cls="icon--em" %}</button>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      <button type="submit" class="btn btn-primary btn-sm" style="margin-top:10px">Porównaj</button>
+      </div>
+    </form>
+    {% if can_write_products %}{% for v in variants %}
+    <form id="del{{ v.pk }}" method="post" action="{% url 'ui:warehouse_variant_delete' v.pk %}"
+          onsubmit="return confirm('Usunąć wariant „{{ v.name|escapejs }}”?')">{% csrf_token %}</form>
+    {% endfor %}{% endif %}
+    {% endif %}
+
+    {% if can_write_products %}
+    <form method="post" action="{% url 'ui:warehouse_variant_from_model' %}" class="card">
+      {% csrf_token %}
+      <div class="card-header"><span class="card-header__title">Wariant bazowy z modelu magazynu</span></div>
+      <div class="card-body">
+      <p class="hint">Regały modelu (np. „Model obecnego magazynu”) jako punkt odniesienia porównania.</p>
+      <select aria-label="Model odniesienia" name="model_id" class="form-control" style="width:100%;margin:6px 0 10px" required>
+        {% for wm in models %}<option value="{{ wm.pk }}">{{ wm.name }}</option>{% empty %}<option value="">Brak modeli</option>{% endfor %}
+      </select>
+      <button type="submit" id="btn-baseline" class="btn btn-secondary btn-sm" {% if not models %}disabled{% endif %}>Dodaj wariant bazowy</button>
+      </div>
+    </form>
+
+    <form method="post" action="{% url 'ui:warehouse_variant_import' %}" enctype="multipart/form-data" class="card">
+      {% csrf_token %}
+      <div class="card-header"><span class="card-header__title">Import wariantu z Blendera</span></div>
+      <div class="card-body">
+      <p class="hint">Plik z <code>kit["export_variant"](…)</code> (format palviz.design-variant). Wskaźniki GROOVE przeliczy sam.</p>
+      <input aria-label="Plik wariantu (JSON)" type="file" name="variant_file" accept=".json,application/json" required style="margin:6px 0">
+      <input type="text" name="name" placeholder="Nazwa (opcjonalnie)" class="form-control" style="width:100%;margin-bottom:10px">
+      <button type="submit" id="btn-import" class="btn btn-primary btn-sm">Importuj wariant</button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

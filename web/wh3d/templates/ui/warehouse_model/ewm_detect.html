@@ -1,0 +1,92 @@
+{% extends "ui/base.html" %}
+{% block title %}Wykryj z EWM — {{ wm.name }} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_model_list' %}">Modele magazynu</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:warehouse_model_view' wm.pk %}">{{ wm.name }}</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Wykryj z EWM</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Wykryj z EWM — {{ wm.name }}</div>
+    <div class="page-header__sub">Propozycja szablonów gniazd, numeracji i wyjątków z kodów lokalizacji{% if batch %} (master „{{ batch.name }}”){% endif %}. Nic nie jest zapisane, dopóki nie klikniesz „Zapisz”.</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:warehouse_model_compliance' wm.pk %}" class="btn btn-secondary">Zgodność z EWM</a>
+    <a href="{% url 'ui:warehouse_model_view' wm.pk %}" class="btn btn-ghost">Wróć do modelu</a>
+  </div>
+</div>
+
+{% if not batch %}
+<div class="alert alert-warning">{{ no_master }}</div>
+{% else %}
+<div class="stats-grid">
+  <div class="stat-card"><div><div class="stat-value">{{ rows|length }}</div><div class="stat-label">rzędów z kodami EWM</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ new_templates|length }}</div><div class="stat-label">nowych szablonów</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ old_templates|length }}</div><div class="stat-label">istniejących szablonów użytych</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ total_overrides }}</div><div class="stat-label">wyjątków (gniazd + miejsc)</div></div></div>
+</div>
+
+{% if proposal.missing_rows %}
+<div class="alert alert-info" style="margin-bottom:16px">
+  Rzędy bez żadnego kodu w masterze (zostają bez zmian): {{ proposal.missing_rows|join:", " }}
+</div>
+{% endif %}
+
+<div class="card" style="margin-bottom:20px">
+  <div class="card-header"><span class="card-header__title">Szablony gniazd</span>
+    <span class="text-sm text-muted">wysokości poziomów do poprawy w „Szablony gniazd”, jeśli master ich nie ma</span></div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Szablon</th><th></th><th>Palet</th><th>Poziomy od dołu</th><th>Gniazd</th></tr></thead>
+      <tbody>
+        {% for t in proposal.templates %}
+        <tr>
+          <td class="font-semibold">{{ t.name }}</td>
+          <td>{% if t.pk %}<span class="badge badge-gray">istniejący</span>{% else %}<span class="badge badge-blue">nowy</span>{% endif %}</td>
+          <td>{{ t.pallets_per_beam }}</td>
+          <td><code>{% for lv in t.levels %}{{ lv.letter }}{% if lv.split %}½{% endif %} {% endfor %}</code></td>
+          <td>{{ t.bays }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-header__title">Rzędy</span></div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Rząd</th><th>Szablon domyślny</th><th>Numeracja gniazd</th><th>Wyjątki gniazd</th><th>Wyjątki miejsc</th><th>Kodów EWM</th></tr></thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td class="font-semibold">{{ r.zone }}-{{ r.rack_id }}</td>
+          <td>{{ r.template_name }}</td>
+          <td><code>{{ r.bay_numbers }}</code></td>
+          <td>{{ r.bay_ov }}</td>
+          <td>{{ r.loc_ov }}</td>
+          <td>{{ r.codes }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if can_write_products %}
+  <div class="card-footer" style="display:flex;gap:10px;align-items:center">
+    <form method="post" action="{% url 'ui:warehouse_model_detect_save' wm.pk %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary">Zapisz</button>
+    </form>
+    <span class="text-sm text-muted">Zapis tworzy nowe szablony, ustawia szablon i numerację rzędów oraz zastępuje wyjątki tych rzędów.</span>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

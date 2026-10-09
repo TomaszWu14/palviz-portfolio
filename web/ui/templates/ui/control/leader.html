@@ -1,0 +1,362 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Panel lidera — Kontrola HU — {{ app_name }}{% endblock %}
+{% block nav_control %}topnav__link--active{% endblock %}
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:hu_control_hub' %}">Kontrola HU</a>
+  <span class="breadcrumb__sep">›</span><span>Panel lidera</span>
+</nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#7c3aed">
+    <div class="panel-head__chip">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+    </div>
+    <div>
+      <div class="page-header__title">Panel lidera</div>
+      <div class="page-header__sub">Praca zmiany na żywo · przydzielanie HU · zaległe rekontrole (limit {{ max_age_h }} h)</div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <span id="live-badge" title="Panel odświeża się automatycznie co 30 s (wstrzymane, gdy coś wpisujesz)"
+          style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--violet-fg);
+                 padding:0 6px;white-space:nowrap">
+      <span style="width:8px;height:8px;border-radius:50%;background:var(--green-solid);
+                   box-shadow:0 0 0 0 rgba(34,197,94,.6);animation:livePulse 2s infinite"></span>
+      na żywo
+    </span>
+    <a class="btn btn-secondary" href="{% url 'ui:reports_admin' %}">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      Zgłoszenia
+    </a>
+    <a class="btn btn-secondary" href="{% url 'ui:messages_admin' %}">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H5.2L4 17.2z"/></svg>
+      Wątki
+    </a>
+    <a class="btn btn-secondary" href="{% url 'ui:hu_control_kpi' %}?period=month">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+      Raport miesięczny (KPI)
+    </a>
+    <a class="btn btn-secondary" href="{% url 'ui:hu_control_kpi' %}?period=month&export=csv">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Eksport CSV
+    </a>
+  </div>
+</div>
+
+{# Spec UX par.5.1: wyjasniane bledy czekajace na potwierdzenie lidera/pickera - NA GORZE. #}
+{% if inv_pending %}
+<div class="card" style="border-left:4px solid var(--yellow-solid);margin-bottom:14px">
+  <div class="card-header">
+    <span class="card-header__title">{% icon "wrench" %} Wyjaśniane błędy do potwierdzenia ({{ inv_pending|length }})</span>
+  </div>
+  {% for inv in inv_pending %}
+  <div style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-top:1px solid var(--line);font-size:13px">
+    <span style="font-weight:800">{{ inv.hu.ref }}</span>
+    <span>{{ inv.get_error_type_display }}{% if inv.item %} · {{ inv.item.ref_code }}{% endif %}</span>
+    <span style="color:var(--gray-500)">{{ inv.controller.get_username|default:"—" }} · od {{ inv.started_at|date:"H:i" }}</span>
+    {% if inv.overdue %}<span class="pill" style="background:var(--red-light);color:var(--red);font-size:11px">po terminie — czas liczy się do KPI</span>{% endif %}
+    <span style="margin-left:auto;display:flex;gap:6px">
+      <form method="post" action="{% url 'ui:hu_investigation_confirm' inv.pk %}" style="margin:0">{% csrf_token %}
+        <button class="btn btn-secondary" style="padding:4px 12px">Potwierdzam błąd</button></form>
+      <form method="post" action="{% url 'ui:hu_investigation_reject' inv.pk %}" style="margin:0"
+            onsubmit="return confirm('Odrzucić wyjaśnianie {{ inv.hu.ref }}? Czas wróci do licznika kontroli.')">{% csrf_token %}
+        <button class="btn btn-secondary" style="padding:4px 12px;color:var(--red)">Odrzuć</button></form>
+    </span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--blue">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--blue-mid)" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    </div>
+    <div><div class="stat-value">{{ live|length }}</div><div class="stat-label">HU w kontroli teraz</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--yellow">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--yellow)" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+    </div>
+    <div><div class="stat-value">{{ rechecks|length }}</div><div class="stat-label">HU do rekontroli</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--green">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+    </div>
+    <div><div class="stat-value">{{ controllers_today }}</div><div class="stat-label">kontrolerów dziś</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--green">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--green)" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="var(--green)"/></svg>
+    </div>
+    <div><div class="stat-value">{{ online_count }}</div><div class="stat-label">kontrolerów online (zalogowani)</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon stat-icon--red">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="var(--red)" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8v8M11 8v8M15 8v8"/></svg>
+    </div>
+    <div><div class="stat-value">{{ planned_unassigned }}</div><div class="stat-label">zaplanowane bez przydziału</div></div>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header"><span class="card-header__title">Zmiana na żywo (dziś)</span></div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th></th><th>Kontroler</th><th class="text-right">Pozycje</th><th class="text-right">HU</th>
+        <th class="text-right">Wykryte błędy</th><th>Ostatnia aktywność</th></tr></thead>
+      <tbody>
+      {% for r in shift_rows %}
+        <tr>
+          <td>{% if r.active %}<span class="badge badge-green">● aktywny</span>{% else %}<span class="badge badge-gray">pauza</span>{% endif %}</td>
+          <td class="font-semibold">{{ r.controller }}</td>
+          <td class="text-right">{{ r.distinct_positions }}</td>
+          <td class="text-right">{{ r.hus }}</td>
+          <td class="text-right">{{ r.errors }}</td>
+          <td class="text-muted">{{ r.last|date:"H:i" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6"><div class="empty-state" style="padding:20px"><div class="empty-state__desc">Brak aktywności kontrolerów dzisiaj.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header"><span class="card-header__title">Komunikacja z kontrolerami</span></div>
+  <div style="padding:12px 14px">
+    {# Wiadomość in-app (dzwonek skanera). Odbiorca: jeden kontroler lub wszyscy zalogowani. #}
+    <form method="post" action="{% url 'ui:hu_control_message' %}"
+          style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
+      {% csrf_token %}
+      <select name="target" aria-label="Odbiorca wiadomości" style="width:auto;min-width:190px">
+        <option value="all_active">— Wszyscy zalogowani —</option>
+        {% for c in controller_rows %}
+        <option value="{{ c.id }}">{{ c.username }}{% if c.full_name %} ({{ c.full_name }}){% endif %}{% if c.online %} • online{% endif %}</option>
+        {% endfor %}
+      </select>
+      <input type="text" name="text" maxlength="400" required aria-label="Treść wiadomości" placeholder="Treść wiadomości…"
+             style="flex:1 1 240px;min-width:200px">
+      <button type="submit" class="btn btn-primary">{% icon "mail" %} Wyślij</button>
+    </form>
+    {# Zadanie „Zrób zdjęcie produktu": odbiorca dostaje pilne powiadomienie z REF; klik = MATinfo. #}
+    <form method="post" action="{% url 'ui:hu_control_photo_task' %}"
+          style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;margin-top:10px">
+      {% csrf_token %}
+      <select name="target" required aria-label="Kontroler, który zrobi zdjęcie" style="width:auto;min-width:190px">
+        <option value="" disabled selected>— Wybierz kontrolera —</option>
+        {% for c in controller_rows %}
+        <option value="{{ c.id }}">{{ c.username }}{% if c.full_name %} ({{ c.full_name }}){% endif %}{% if c.online %} • online{% endif %}</option>
+        {% endfor %}
+      </select>
+      <input type="text" name="ref_code" maxlength="50" required aria-label="REF / indeks produktu do zdjęcia" placeholder="REF / indeks (np. DMOM10001)"
+             data-ref-ac data-ref-url="{% url 'ui:phv_suggest' %}"
+             style="flex:1 1 200px;min-width:170px;font-family:monospace">
+      <button type="submit" class="btn btn-secondary">{% icon "camera" %} Zrób zdjęcie produktu</button>
+    </form>
+    {# Click-to-call: dzwoni urządzenie lidera na prywatny numer kontrolera (skanery bez SIM). #}
+    <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px">
+      {% for c in controller_rows %}
+        {% if c.phone %}
+        <a href="tel:{{ c.phone }}" class="badge {% if c.active %}badge-green{% else %}badge-gray{% endif %}"
+           style="text-decoration:none;padding:5px 10px" title="Zadzwoń: {{ c.phone }}">{% icon "phone" %} {{ c.username }}</a>
+        {% endif %}
+      {% empty %}
+        <span class="text-muted text-sm">Brak kontrolerów.</span>
+      {% endfor %}
+    </div>
+    {# Presence: kto online i NA CZYM (Zebra/telefon/komputer); offline → ostatnio widziany. #}
+    <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px">
+      {% for c in controller_rows %}
+      <span class="badge {% if c.online %}badge-green{% else %}badge-gray{% endif %}" style="padding:5px 10px"
+            title="{% if c.last_seen %}Ostatnia aktywność: {{ c.last_seen|date:'Y-m-d H:i' }}{% else %}Brak danych o aktywności{% endif %}">
+        {% if c.online %}●{% else %}○{% endif %} {{ c.username }}
+        {% if c.online and c.device %} · {% if c.device == 'Zebra' %}{% icon "scan-barcode" %}{% elif c.device == 'Telefon' %}{% icon "smartphone" %}{% else %}{% icon "laptop" %}{% endif %} {{ c.device }}{% endif %}
+        {% if not c.online and c.last_seen %} · {{ c.last_seen|timesince }} temu{% endif %}
+      </span>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% if live %}
+<div class="card mb-4">
+  <div class="card-header"><span class="card-header__title">W kontroli teraz</span></div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>HU</th><th>Kontroler</th><th>Lokalizacja</th><th>Typ magazynu</th></tr></thead>
+      <tbody>
+      {% for hu in live %}
+        <tr>
+          <td><a href="{% url 'ui:hu_control_detail' hu.pk %}" class="font-semibold">{{ hu.ref }}</a></td>
+          <td>{{ hu.controlled_by.username|default:"—" }}</td>
+          <td>{{ hu.location|default:"—" }}</td>
+          <td>{{ hu.warehouse_type|default:"—" }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-header__title">Rekontrole — najstarsze pierwsze</span>
+    <span class="text-sm text-muted">czerwone = ponad limit {{ max_age_h }} h</span>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>HU</th><th>Czeka od</th><th class="text-right">Godzin</th>
+        <th>Lokalizacja</th><th>Przydzielona do</th><th>Przydziel</th></tr></thead>
+      <tbody>
+      {% for hu in rechecks %}
+        <tr{% if hu.recheck_overdue %} style="background:rgba(248,113,113,.10)"{% endif %}>
+          <td><a href="{% url 'ui:hu_control_detail' hu.pk %}" class="font-semibold">{{ hu.ref }}</a></td>
+          <td class="text-muted">{{ hu.recheck_since|date:"d.m H:i" }}</td>
+          <td class="text-right {% if hu.recheck_overdue %}font-bold{% endif %}"
+              {% if hu.recheck_overdue %}style="color:var(--red)"{% endif %}>{{ hu.recheck_hours }}</td>
+          <td>{{ hu.location|default:"—" }}</td>
+          <td>{% if hu.assigned_to %}<span class="badge badge-blue">{{ hu.assigned_to.username }}</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+          <td>
+            <form method="post" action="{% url 'ui:hu_control_assign' hu.pk %}" class="flex gap-2" style="margin:0">
+              {% csrf_token %}
+              <select name="assignee" aria-label="Przypisz rekontrolę {{ hu.ref }}" style="width:auto;min-width:130px">
+                <option value="">— zdejmij —</option>
+                {% for c in controllers %}
+                <option value="{{ c.pk }}" {% if hu.assigned_to_id == c.pk %}selected{% endif %}>{{ c.username }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="btn btn-secondary btn-sm"
+                      onclick="return (!this.form.assignee.value && {{ hu.assigned_to_id|yesno:'true,false' }}) ? confirm('Zdjąć przydział z tego HU? Wróci do wspólnej kolejki.') : true">OK</button>
+              <button type="submit" class="btn btn-secondary btn-sm"
+                      formaction="{% url 'ui:hu_control_assign_group' hu.pk %}"
+                      title="Przepnij wszystkie HU tego odbiorcy na wybranego kontrolera"
+                      onclick="return this.form.assignee.value ? confirm('Przepiąć CAŁĄ grupę odbiorcy na wybranego kontrolera?') : (alert('Wybierz kontrolera'), false)">Grupa</button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6"><div class="empty-state" style="padding:20px"><div class="empty-state__title">Brak zaległych rekontroli</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# Warstwa C: sygnały nadużyć — tempo fizycznie niemożliwe / ręczny wpis zamiast skanu #}
+{% if abuse_rows %}
+<div class="card" style="margin-top:16px;border-left:4px solid var(--yellow-solid)">
+  <div class="card-header">
+    <span class="card-header__title">{% icon "siren" %} Sygnały nadużyć (dziś)</span>
+    <span class="text-sm text-muted">detekcja, nie dowód — zweryfikuj przy palecie</span>
+  </div>
+  <div style="padding:0 14px 12px">
+    {% for r in abuse_rows %}
+    <div style="border-top:1px solid var(--gray-100);padding:8px 0;font-size:13px;display:flex;gap:14px;align-items:center">
+      <strong style="min-width:110px">{{ r.controller }}</strong>
+      {% if r.fast %}<span style="color:var(--red);font-weight:700">⏱ {{ r.fast }}× pozycja &lt;3 s</span>{% endif %}
+      {% if r.keyboard %}<span style="color:var(--yellow);font-weight:700">⌨ {{ r.keyboard }}× wpis ręczny (bez skanu)</span>{% endif %}
+      {% if r.offline %}<span style="color:var(--gray-600);font-weight:700" title="Zsynchronizowane z trybu offline skanera — przeszły te same bramki co online">{% icon "wifi" %} {{ r.offline }}× wpis offline (sync)</span>{% endif %}
+      <span class="text-muted" style="margin-left:auto">{{ r.distinct_positions }} poz. dziś</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# Pilne komunikaty bez potwierdzenia odczytu — kto jeszcze nie potwierdził #}
+{% if unacked_groups %}
+<div class="card" style="margin-top:16px;border-left:4px solid var(--red-solid)">
+  <div class="card-header">
+    <span class="card-header__title">{% icon "mail" %} Niepotwierdzone komunikaty ({{ unacked_groups|length }})</span>
+    <span class="text-sm text-muted">pilne wiadomości, których adresaci jeszcze nie potwierdzili</span>
+  </div>
+  <div style="padding:0 14px 12px">
+    {% for g in unacked_groups %}
+    <div style="border-top:1px solid var(--gray-100);padding:8px 0;font-size:13px">
+      <strong>{{ g.title }}</strong> <span class="text-muted">· {{ g.created_at|date:"d.m H:i" }}</span><br>
+      <span style="color:var(--red);font-weight:700">nie potwierdziło:</span> {{ g.users|join:", " }}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# Fala 4: otwarte wyjątki master daty — decyzja lidera #}
+<div class="card" style="margin-top:16px">
+  <div class="card-header">
+    <span class="card-header__title">{% icon "clipboard-list" %} Wyjątki master daty ({{ md_exceptions|length }})</span>
+    <span class="text-sm text-muted">zgłoszone z kontroli; zamknij po poprawie master daty</span>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Pozycja</th><th>HU</th><th>Opis niezgodności</th><th style="text-align:right">Akcje</th></tr></thead>
+      <tbody>
+      {% for it in md_exceptions %}
+      <tr>
+        <td><strong>{{ it.ref_code }}</strong></td>
+        <td><a href="{% url 'ui:hu_control_detail' it.hu_id %}">{{ it.hu.ref }}</a></td>
+        <td class="text-sm">{{ it.md_exception_note|default:"—" }}</td>
+        <td style="text-align:right;white-space:nowrap">
+          <form method="post" action="{% url 'ui:hu_item_md_exception_close' it.pk %}" style="display:inline">
+            {% csrf_token %}<button type="submit" class="btn btn-secondary btn-sm">{% icon "check" %} Zamknij</button>
+          </form>
+          <form method="post" action="{% url 'ui:hu_item_md_exception_delete' it.pk %}" style="display:inline"
+                onsubmit="return confirm('Usunąć pozycję {{ it.ref_code }} z HU {{ it.hu.ref }}?')">
+            {% csrf_token %}<button type="submit" class="btn btn-sm" style="color:var(--red)">{% icon "trash-2" %} Usuń pozycję</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4"><div class="empty-state" style="padding:20px"><div class="empty-state__desc">Brak otwartych wyjątków.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<style>
+  @keyframes livePulse {
+    0%   { box-shadow:0 0 0 0 rgba(34,197,94,.6); }
+    70%  { box-shadow:0 0 0 7px rgba(34,197,94,0); }
+    100% { box-shadow:0 0 0 0 rgba(34,197,94,0); }
+  }
+  #live-badge.paused span:first-child { background:var(--gray-400); animation:none; }
+</style>
+<script>
+(function () {
+  // Auto-odświeżanie panelu „na żywo" — ale NIE gdy lider coś wpisuje/wybiera
+  // (odświeżenie zresetowałoby formularz wiadomości / foto-taska).
+  var SECONDS = 30;
+  var badge = document.getElementById('live-badge');
+
+  function busy() {
+    var a = document.activeElement;
+    if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
+    var dirty = false;
+    document.querySelectorAll('form input[type="text"], form textarea').forEach(function (el) {
+      if (String(el.value || '').trim() !== '') dirty = true;
+    });
+    if (dirty) return true;
+    if (document.querySelector('.ref-ac:not([hidden])')) return true;  // otwarte podpowiedzi REF
+    return document.hidden;
+  }
+
+  var left = SECONDS;
+  setInterval(function () {
+    var b = busy();
+    if (badge) badge.classList.toggle('paused', b);
+    if (b) { left = SECONDS; return; }
+    if (--left <= 0) location.reload();
+  }, 1000);
+})();
+</script>
+{% endblock %}

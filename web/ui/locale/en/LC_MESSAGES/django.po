@@ -1,0 +1,644 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-08 10:22+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\palletweb\settings.py:172
+msgid "Polski"
+msgstr "Polish"
+
+#: .\palletweb\settings.py:172
+msgid "English"
+msgstr "English"
+
+#: .\ui\platform_modules.py:29
+msgid "Data Center"
+msgstr "Data Center"
+
+#: .\ui\platform_modules.py:29
+msgid "Master data: opakowania, stock, klienci, produkty"
+msgstr "Master data: packaging, stock, customers, products"
+
+#: .\ui\platform_modules.py:31
+msgid "Paletyzacja"
+msgstr "Palletization"
+
+#: .\ui\platform_modules.py:31
+msgid "Jak budować paletę i dobierać opakowanie"
+msgstr "How to build a pallet and pick packaging"
+
+#: .\ui\platform_modules.py:33
+msgid "Wycena przesyłek"
+msgstr "Shipment quoting"
+
+#: .\ui\platform_modules.py:33
+msgid "Objętość, palety, przewoźnicy, wyceny"
+msgstr "Volume, pallets, carriers, quotes"
+
+#: .\ui\platform_modules.py:35
+msgid "Magazyn 3D + heatmapa"
+msgstr "3D warehouse + heatmap"
+
+#: .\ui\platform_modules.py:35
+msgid "Mapa 3D, zajętość, aktywność pickerów"
+msgstr "3D map, occupancy, picker activity"
+
+#: .\ui\platform_modules.py:37
+msgid "Kontrola HU"
+msgstr "HU control"
+
+#: .\ui\platform_modules.py:37
+msgid "Skaner, kontrola zawartości, KPI i raporty"
+msgstr "Scanner, content control, KPIs and reports"
+
+#: .\ui\platform_modules.py:39
+msgid "Wydruk HU"
+msgstr "HU printing"
+
+#: .\ui\platform_modules.py:39
+msgid "Etykiety HU (Zebra/ZPL) — druk sekwencyjny per projekt"
+msgstr "HU labels (Zebra/ZPL) — sequential printing per project"
+
+#: .\ui\platform_modules.py:41
+msgid "Zadania i powiadomienia"
+msgstr "Tasks and notifications"
+
+#: .\ui\platform_modules.py:41
+msgid "Zadania zespołu i alerty o niezgodnościach stocku"
+msgstr "Team tasks and stock discrepancy alerts"
+
+#: .\ui\platform_modules.py:43
+msgid "Baza klientów"
+msgstr "Customer database"
+
+#: .\ui\platform_modules.py:43
+msgid "Klienci / odbiorcy i ich wymagania dostaw"
+msgstr "Customers / recipients and their delivery requirements"
+
+#: .\ui\platform_modules.py:49
+msgid "ZARIA"
+msgstr "ZARIA"
+
+#: .\ui\platform_modules.py:49
+msgid "Asystent AI — czat z modelami LLM"
+msgstr "AI assistant — chat with LLM models"
+
+#: .\ui\platform_modules.py:53
+msgid "Wysyłka UKRAINA"
+msgstr "UKRAINE shipping"
+
+#: .\ui\platform_modules.py:53
+msgid "Monitoring wskazanych partii: ACME vs DLT"
+msgstr "Monitoring selected batches: ACME vs DLT"
+
+#: .\ui\platform_modules.py:55
+msgid "Hierarchia opakowań"
+msgstr "Packaging hierarchy"
+
+#: .\ui\platform_modules.py:55
+msgid "Szt → OPZ → karton → paleta: przeliczniki, wagi, zgłoszenia"
+msgstr "Pcs -> inner pack -> carton -> pallet: conversions, weights, reports"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:6
+msgid "Nowy czat"
+msgstr "New chat"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:10
+msgid "Widok rozmów"
+msgstr "Conversations view"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:11
+msgid "Historia"
+msgstr "History"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:12
+msgid "Zapisane"
+msgstr "Saved"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:16
+msgid "Szukaj w rozmowach…"
+msgstr "Search conversations…"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:16
+msgid "Szukaj w rozmowach"
+msgstr "Search conversations"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:25
+#: .\ui\templates\ui\zaria\_sidebar.html:37
+msgid "(bez tytułu)"
+msgstr "(untitled)"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:30
+msgid "Zacznij pierwszą rozmowę"
+msgstr "Start your first conversation"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:41
+msgid "Zapisane wątki pojawią się tutaj"
+msgstr "Saved threads will appear here"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:46
+#: .\ui\templates\ui\zaria\user_panel.html:12
+msgid "Mój panel"
+msgstr "My panel"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:47
+msgid "Motyw"
+msgstr "Theme"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:49
+msgid "Jasny"
+msgstr "Light"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:49
+msgid "Jasny motyw"
+msgstr "Light theme"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:51
+msgid "Ciemny"
+msgstr "Dark"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:51
+msgid "Ciemny motyw"
+msgstr "Dark theme"
+
+#: .\ui\templates\ui\zaria\_sidebar.html:53
+msgid "Język"
+msgstr "Language"
+
+#: .\ui\templates\ui\zaria\conversation.html:11
+#: .\ui\templates\ui\zaria\home.html:11
+#: .\ui\templates\ui\zaria\user_panel.html:11
+msgid "Menu rozmów"
+msgstr "Conversations menu"
+
+#: .\ui\templates\ui\zaria\conversation.html:13
+msgid "Nowa rozmowa"
+msgstr "New conversation"
+
+#: .\ui\templates\ui\zaria\conversation.html:14
+msgid "Auto — dobierany do pytania"
+msgstr "Auto — picked per question"
+
+#: .\ui\templates\ui\zaria\conversation.html:17
+msgid "Zapisz wątek"
+msgstr "Save thread"
+
+#: .\ui\templates\ui\zaria\conversation.html:18
+#: .\ui\templates\ui\zaria\conversation.html:240
+msgid "Odepnij"
+msgstr "Unpin"
+
+#: .\ui\templates\ui\zaria\conversation.html:18
+#: .\ui\templates\ui\zaria\conversation.html:240
+msgid "Przypnij"
+msgstr "Pin"
+
+#: .\ui\templates\ui\zaria\conversation.html:19
+msgid "Zmień nazwę"
+msgstr "Rename"
+
+#: .\ui\templates\ui\zaria\conversation.html:20
+msgid "Usuń"
+msgstr "Delete"
+
+#: .\ui\templates\ui\zaria\conversation.html:21
+msgid "Szczegóły"
+msgstr "Details"
+
+#: .\ui\templates\ui\zaria\conversation.html:26
+#, python-format
+msgid ""
+"Ten niezapisany wątek zostanie usunięty za %(days)s dzień. Zapisz go, aby "
+"zachować."
+msgid_plural ""
+"Ten niezapisany wątek zostanie usunięty za %(days)s dni. Zapisz go, aby "
+"zachować."
+msgstr[0] ""
+"This unsaved thread will be deleted in %(days)s day. Save it to keep it."
+msgstr[1] ""
+"This unsaved thread will be deleted in %(days)s days. Save it to keep it."
+
+#: .\ui\templates\ui\zaria\conversation.html:33
+msgid "Informacja RODO"
+msgstr "GDPR notice"
+
+#: .\ui\templates\ui\zaria\conversation.html:37
+msgid "Rozumiem, kontynuuj"
+msgstr "I understand, continue"
+
+#: .\ui\templates\ui\zaria\conversation.html:59
+#: .\ui\templates\ui\zaria\conversation.html:82
+#: .\ui\templates\ui\zaria\conversation.html:207
+#: .\ui\templates\ui\zaria\conversation.html:322
+msgid "tokenów"
+msgstr "tokens"
+
+#: .\ui\templates\ui\zaria\conversation.html:68
+msgid "Zadaj pytanie obu modelom…"
+msgstr "Ask both models…"
+
+#: .\ui\templates\ui\zaria\conversation.html:69
+#, fuzzy
+#| msgid "Wyślij"
+msgid "Wyślij do obu"
+msgstr "Send"
+
+#: .\ui\templates\ui\zaria\conversation.html:70
+#: .\ui\templates\ui\zaria\conversation.html:102
+msgid "Zatrzymaj generowanie"
+msgstr "Stop generating"
+
+#: .\ui\templates\ui\zaria\conversation.html:80
+msgid "Błąd"
+msgstr "Error"
+
+#: .\ui\templates\ui\zaria\conversation.html:87
+msgid "Napisz pierwszą wiadomość poniżej."
+msgstr "Write your first message below."
+
+#: .\ui\templates\ui\zaria\conversation.html:93
+msgid "Napisz uprzejmy e-mail do przewoźnika w sprawie: "
+msgstr "Write a polite e-mail to the carrier regarding: "
+
+#: .\ui\templates\ui\zaria\conversation.html:93
+msgid "E-mail do przewoźnika"
+msgstr "E-mail to carrier"
+
+#: .\ui\templates\ui\zaria\conversation.html:94 .\ui\views\zaria.py:282
+msgid "Przetłumacz na język angielski, zachowując rzeczowy ton: "
+msgstr "Translate into English, keeping a factual tone: "
+
+#: .\ui\templates\ui\zaria\conversation.html:94
+msgid "Tłumacz EN"
+msgstr "Translate EN"
+
+#: .\ui\templates\ui\zaria\conversation.html:95 .\ui\views\zaria.py:284
+msgid "Streść poniższy tekst w 5 punktach: "
+msgstr "Summarize the text below in 5 points: "
+
+#: .\ui\templates\ui\zaria\conversation.html:95
+msgid "Streszczenie"
+msgstr "Summary"
+
+#: .\ui\templates\ui\zaria\conversation.html:96
+msgid "Popraw styl, gramatykę i interpunkcję poniższego tekstu (po polsku): "
+msgstr "Improve the style, grammar and punctuation of the following text (in Polish): "
+"Improve the style, grammar and punctuation of the text below (in Polish): "
+"Improve the style, grammar and punctuation of the text below (in Polish): "
+
+#: .\ui\templates\ui\zaria\conversation.html:96
+msgid "Korekta"
+msgstr "Proofread"
+
+#: .\ui\templates\ui\zaria\conversation.html:100
+msgid "Napisz wiadomość…"
+msgstr "Write a message…"
+
+#: .\ui\templates\ui\zaria\conversation.html:101
+msgid "Wyślij"
+msgstr "Send"
+
+#: .\ui\templates\ui\zaria\conversation.html:104
+msgid ""
+"Wykryto dane osobowe (PESEL/NIP/nr konta). Dla treści wrażliwych rozważ "
+"model lokalny."
+msgstr "Personal data detected (PESEL/NIP/account no.). For sensitive content consider a local model."
+
+#: .\ui\templates\ui\zaria\conversation.html:113
+#: .\ui\templates\ui\zaria\home.html:33
+msgid "Model"
+msgstr "Model"
+
+#: .\ui\templates\ui\zaria\conversation.html:114
+msgid "Auto"
+msgstr "Auto"
+
+#: .\ui\templates\ui\zaria\conversation.html:118
+msgid "Zużycie w tym miesiącu"
+msgstr "Usage this month"
+
+#: .\ui\templates\ui\zaria\conversation.html:126
+#: .\ui\templates\ui\zaria\user_panel.html:30
+msgid "bez limitu"
+msgstr "no limit"
+
+#: .\ui\templates\ui\zaria\conversation.html:131
+#, fuzzy
+#| msgid "Niedostępny"
+msgid "Udostępnij"
+msgstr "Unavailable"
+
+#: .\ui\templates\ui\zaria\conversation.html:133
+#: .\ui\templates\ui\zaria\mail.html:3 .\ui\templates\ui\zaria\mail.html:5
+#, fuzzy
+#| msgid "Wyślij"
+msgid "Wyślij mailem"
+msgstr "Send"
+
+#: .\ui\templates\ui\zaria\conversation.html:134
+msgid "Eksport Markdown"
+msgstr "Export Markdown"
+
+#: .\ui\templates\ui\zaria\conversation.html:135
+msgid "Eksport PDF"
+msgstr "Export PDF"
+
+#: .\ui\templates\ui\zaria\conversation.html:140
+msgid "Załączniki"
+msgstr "Attachments"
+
+#: .\ui\templates\ui\zaria\conversation.html:141
+msgid "Wkrótce — PDF i obrazy dla modeli, które je obsługują."
+msgstr "Coming soon — PDF and images for models that support them."
+
+#: .\ui\templates\ui\zaria\conversation.html:186
+msgid "ZARIA odpowiada"
+msgstr "ZARIA is replying"
+
+#: .\ui\templates\ui\zaria\conversation.html:195
+#: .\ui\templates\ui\zaria\conversation.html:288
+#: .\ui\templates\ui\zaria\conversation.html:305
+msgid "Błąd usługi AI."
+msgstr "AI service error."
+
+#: .\ui\templates\ui\zaria\conversation.html:212
+msgid "Błąd połączenia."
+msgstr "Connection error."
+
+#: .\ui\templates\ui\zaria\conversation.html:244
+msgid "Nowa nazwa wątku:"
+msgstr "New thread name:"
+
+#: .\ui\templates\ui\zaria\conversation.html:248
+msgid "Usunąć ten wątek? Tej operacji nie można cofnąć."
+msgstr "Delete this thread? This cannot be undone."
+
+#: .\ui\templates\ui\zaria\conversation.html:322
+msgid "zasób własny"
+msgstr "own resource"
+
+#: .\ui\templates\ui\zaria\conversation.html:324
+msgid "Kopiuj"
+msgstr "Copy"
+
+#: .\ui\templates\ui\zaria\conversation.html:326
+msgid "Wybierz tę odpowiedź"
+msgstr "Choose this answer"
+
+#: .\ui\templates\ui\zaria\home.html:13
+msgid "Wewnętrzny asystent AI"
+msgstr "Internal AI assistant"
+
+#: .\ui\templates\ui\zaria\home.html:15
+msgid "Panel administracyjny"
+msgstr "Admin panel"
+
+#: .\ui\templates\ui\zaria\home.html:23
+msgid ""
+"Zadaj pytanie, przetłumacz, streść albo napisz maila — wybierz model i "
+"zacznij."
+msgstr "Ask a question, translate, summarize or write an e-mail — pick a model and begin."
+
+#: .\ui\templates\ui\zaria\home.html:35
+msgid "Auto — dobierz model do pytania"
+msgstr "Auto — match the model to the question"
+
+#: .\ui\templates\ui\zaria\home.html:36
+msgid "Niedostępny"
+msgstr "Unavailable"
+
+#: .\ui\templates\ui\zaria\home.html:44
+#, fuzzy
+#| msgid "Model"
+msgid "Model A"
+msgstr "Model"
+
+#: .\ui\templates\ui\zaria\home.html:50
+#, fuzzy
+#| msgid "Model"
+msgid "Model B"
+msgstr "Model"
+
+#: .\ui\templates\ui\zaria\home.html:59
+msgid "Szablon"
+msgstr "Template"
+
+#: .\ui\templates\ui\zaria\home.html:61
+msgid "Domyślny"
+msgstr "Default"
+
+#: .\ui\templates\ui\zaria\home.html:66
+msgid "Rozpocznij rozmowę"
+msgstr "Start conversation"
+
+#: .\ui\templates\ui\zaria\home.html:70
+msgid "Porównaj dwa modele obok siebie"
+msgstr "Compare two models side by side"
+
+#: .\ui\templates\ui\zaria\home.html:85
+msgid "Brak dostępnych modeli"
+msgstr "No models available"
+
+#: .\ui\templates\ui\zaria\home.html:85
+msgid "Brak dostępu do modelu"
+msgstr "No access to a model"
+
+#: .\ui\templates\ui\zaria\home.html:88
+msgid ""
+"Dodaj modele i nadaj dostęp rolom w panelu administracyjnym → Katalog modeli."
+msgstr "Add models and grant role access in the admin panel -> Model catalog."
+
+#: .\ui\templates\ui\zaria\home.html:89
+msgid "Otwórz katalog modeli"
+msgstr "Open model catalog"
+
+#: .\ui\templates\ui\zaria\home.html:91
+msgid "Poproś administratora o nadanie dostępu do modelu ZARIA"
+msgstr "Ask an administrator to grant access to a ZARIA model"
+
+#: .\ui\templates\ui\zaria\mail.html:9
+msgid "Wersja robocza gotowa"
+msgstr "Draft ready"
+
+#: .\ui\templates\ui\zaria\mail.html:10
+msgid "ZARIA przygotowała treść — wiadomość wysyłasz Ty w Outlooku."
+msgstr "ZARIA prepared the content — you send the message in Outlook."
+
+#: .\ui\templates\ui\zaria\mail.html:11
+#, fuzzy
+#| msgid "Otwórz katalog modeli"
+msgid "Otwórz w Outlooku"
+msgstr "Open model catalog"
+
+#: .\ui\templates\ui\zaria\mail.html:16
+msgid "Pobierz plik .eml"
+msgstr "Download .eml file"
+
+#: .\ui\templates\ui\zaria\mail.html:18
+msgid ""
+"Treść jest długa — w linku mailto została skrócona. Pełna wersja w "
+"pliku .eml."
+msgstr "The content is long — it was shortened in the mailto link. Full version in the .eml file."
+
+#: .\ui\templates\ui\zaria\mail.html:24
+msgid "Zakres"
+msgstr "Scope"
+
+#: .\ui\templates\ui\zaria\mail.html:26
+#, fuzzy
+#| msgid "Ostatnie 7 dni"
+msgid "Ostatnia odpowiedź"
+msgstr "Last 7 days"
+
+#: .\ui\templates\ui\zaria\mail.html:27
+#, fuzzy
+#| msgid "Nowa rozmowa"
+msgid "Cała rozmowa"
+msgstr "New conversation"
+
+#: .\ui\templates\ui\zaria\mail.html:30
+msgid "Do"
+msgstr "To"
+
+#: .\ui\templates\ui\zaria\mail.html:32
+msgid "DW"
+msgstr "Cc"
+
+#: .\ui\templates\ui\zaria\mail.html:34
+msgid "Temat"
+msgstr "Subject"
+
+#: .\ui\templates\ui\zaria\mail.html:37
+msgid "Przygotuj w Outlooku"
+msgstr "Prepare in Outlook"
+
+#: .\ui\templates\ui\zaria\mail.html:38
+msgid "Pobierz .eml"
+msgstr "Download .eml"
+
+#: .\ui\templates\ui\zaria\mail.html:40
+msgid ""
+"Do treści zostanie dodana stopka informująca, że wiadomość wygenerował "
+"asystent AI ZARIA i wymaga weryfikacji."
+msgstr "A footer will be added noting the message was generated by the ZARIA AI assistant and requires verification."
+
+#: .\ui\templates\ui\zaria\user_panel.html:3
+msgid "Mój panel ZARIA"
+msgstr "My ZARIA panel"
+
+#: .\ui\templates\ui\zaria\user_panel.html:13
+#, fuzzy
+#| msgid "Nowy czat"
+msgid "Do czatu"
+msgstr "New chat"
+
+#: .\ui\templates\ui\zaria\user_panel.html:20 .\ui\views\zaria.py:255
+msgid "Dziś"
+msgstr "Today"
+
+#: .\ui\templates\ui\zaria\user_panel.html:24
+msgid "Ten miesiąc"
+msgstr "This month"
+
+#: .\ui\templates\ui\zaria\user_panel.html:28
+msgid "Pozostały budżet"
+msgstr "Remaining budget"
+
+#: .\ui\templates\ui\zaria\user_panel.html:33
+msgid "Tokeny (miesiąc)"
+msgstr "Tokens (month)"
+
+#: .\ui\templates\ui\zaria\user_panel.html:40
+msgid "Wykorzystanie budżetu miesięcznego"
+msgstr "Monthly budget usage"
+
+#: .\ui\templates\ui\zaria\user_panel.html:50
+msgid "Zużycie — ostatnie 30 dni (PLN)"
+msgstr "Usage — last 30 days (PLN)"
+
+#: .\ui\templates\ui\zaria\user_panel.html:64
+msgid "Twoje modele"
+msgstr "Your models"
+
+#: .\ui\templates\ui\zaria\user_panel.html:75
+msgid "Brak przypisanych modeli — poproś administratora."
+msgstr "No assigned models — ask an administrator."
+
+#: .\ui\templates\ui\zaria\user_panel.html:77
+msgid "Masz dostęp do trybu porównania dwóch modeli."
+msgstr "You have access to two-model comparison."
+
+#: .\ui\templates\ui\zaria\user_panel.html:80
+msgid "Motyw i język zmienisz w stopce panelu bocznego."
+msgstr "Change theme and language in the sidebar footer."
+
+#: .\ui\views\zaria.py:255
+msgid "Przypięte"
+msgstr "Pinned"
+
+#: .\ui\views\zaria.py:255
+msgid "Wczoraj"
+msgstr "Yesterday"
+
+#: .\ui\views\zaria.py:256
+msgid "Ostatnie 7 dni"
+msgstr "Last 7 days"
+
+#: .\ui\views\zaria.py:256
+msgid "Starsze"
+msgstr "Older"
+
+#: .\ui\views\zaria.py:279
+msgid "Napisz maila do dostawcy"
+msgstr "Write an e-mail to a supplier"
+
+#: .\ui\views\zaria.py:279
+msgid "Uprzejma korespondencja B2B"
+msgstr "Polite B2B correspondence"
+
+#: .\ui\views\zaria.py:280
+msgid "Napisz uprzejmy e-mail do dostawcy w sprawie: "
+msgstr "Write a polite e-mail to a supplier regarding: "
+
+#: .\ui\views\zaria.py:281
+msgid "Przetłumacz na EN"
+msgstr "Translate to EN"
+
+#: .\ui\views\zaria.py:281
+msgid "Zachowaj rzeczowy ton"
+msgstr "Keep a factual tone"
+
+#: .\ui\views\zaria.py:283
+msgid "Podsumuj dokument"
+msgstr "Summarize a document"
+
+#: .\ui\views\zaria.py:283
+msgid "Streszczenie w punktach"
+msgstr "Bullet-point summary"
+
+#: .\ui\views\zaria.py:285
+msgid "Wyjaśnij błąd SAP"
+msgstr "Explain a SAP error"
+
+#: .\ui\views\zaria.py:285
+msgid "Diagnoza komunikatu"
+msgstr "Message diagnosis"
+
+#: .\ui\views\zaria.py:286
+msgid "Wyjaśnij, co oznacza ten komunikat/błąd SAP i jak go rozwiązać: "
+msgstr "Explain what this SAP message/error means and how to resolve it: "

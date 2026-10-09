@@ -1,0 +1,80 @@
+{% extends "ui/base.html" %}
+{% block title %}Log wydruków HU — {{ app_name }}{% endblock %}
+
+{% block content %}
+<div style="max-width:900px;margin:0 auto">
+  <div class="page-header">
+    <div class="panel-head" style="--pc:#0891b2;--pcbg:#ecfeff">
+      <div class="panel-head__chip">
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg>
+      </div>
+      <div>
+        <div class="page-header__title">Log wydruków HU</div>
+        <div class="page-header__sub">Łącznie {{ total_printed }} etykiet w {{ total_runs }} wydrukach — kto, ile i jakie numery</div>
+      </div>
+    </div>
+    <div class="page-header__actions">
+      <a href="{% url 'ui:hu_print_home' %}" class="btn btn-secondary">← Wróć do druku</a>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header"><span class="card-header__title">Kto ile wydrukował</span></div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr>
+          <th>Użytkownik</th>
+          <th class="text-right">Etykiet łącznie</th>
+          <th class="text-right">Wydruków</th>
+        </tr></thead>
+        <tbody>
+        {% for u in per_user %}
+          <tr>
+            <td class="font-semibold">{{ u.username|default:"—" }}</td>
+            <td class="text-right">{{ u.labels }}</td>
+            <td class="text-right">{{ u.runs }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3"><div class="empty-state"><div class="empty-state__desc">Brak wydruków.</div></div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-header__title">Wszystkie wydruki</span></div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr>
+          <th>Kiedy</th><th>Kto</th>
+          <th>Projekt</th><th>Zakres</th>
+          <th class="text-right">Ilość</th><th>Kod</th>
+        </tr></thead>
+        <tbody>
+        {% for r in page_obj %}
+          <tr>
+            <td class="text-muted" style="white-space:nowrap">{{ r.created_at|date:"Y-m-d H:i" }}</td>
+            <td>{% if r.username %}{{ r.username }}{% elif r.user %}{{ r.user.username }}{% else %}—{% endif %}</td>
+            <td>{{ r.project.name }}</td>
+            <td style="font-family:ui-monospace,monospace">{{ r.from_number }}–{{ r.to_number }}</td>
+            <td class="text-right">{{ r.quantity }}</td>
+            <td>{{ r.symbology }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-state__desc">Brak wydruków.</div></div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+  <div class="flex items-center gap-3 mt-4" style="justify-content:center">
+    {% if page_obj.has_previous %}<a class="btn btn-secondary btn-sm" href="?page={{ page_obj.previous_page_number }}">← Poprzednie</a>{% endif %}
+    <span class="text-sm text-muted">Strona {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="btn btn-secondary btn-sm" href="?page={{ page_obj.next_page_number }}">Następne →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

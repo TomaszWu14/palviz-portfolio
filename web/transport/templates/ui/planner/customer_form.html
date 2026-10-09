@@ -1,0 +1,130 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}{% if instance %}Edytuj{% else %}Nowy{% endif %} klient — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_shipments' %}">Wysyłki</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_customers' %}">Baza klientów</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if instance %}{{ instance.name }}{% else %}Nowy{% endif %}</span>
+</nav>
+
+<div class="page-header">
+  <div class="page-header__title">{% if instance %}Edytuj klienta{% else %}Nowy klient{% endif %}</div>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+
+  <div class="card" style="max-width:760px;margin-bottom:16px">
+    <div class="card-body">
+      <div style="font-weight:600;margin-bottom:12px">Dane klienta</div>
+      <div class="form-group"><label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>{{ form.name }} {{ form.name.errors }}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label for="{{ form.code.id_for_label }}">{{ form.code.label }}</label>{{ form.code }}</div>
+        <div class="form-group"><label for="{{ form.kind.id_for_label }}">{{ form.kind.label }}</label>{{ form.kind }}</div>
+        <div class="form-group"><label for="{{ form.kunnr.id_for_label }}">{{ form.kunnr.label }}</label>{{ form.kunnr }}</div>
+        <div class="form-group" style="align-self:end"><label style="display:flex;align-items:center;gap:6px">{{ form.is_vip }} {% icon "star" %} {{ form.is_vip.label }}</label></div>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:12px">
+        <div class="form-group"><label for="{{ form.country.id_for_label }}">{{ form.country.label }}</label>{{ form.country }}</div>
+        <div class="form-group"><label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>{{ form.city }}</div>
+        <div class="form-group"><label for="{{ form.postal.id_for_label }}">{{ form.postal.label }}</label>{{ form.postal }}</div>
+      </div>
+      <div class="form-group"><label for="{{ form.street.id_for_label }}">{{ form.street.label }}</label>{{ form.street }}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>{{ form.phone }}</div>
+        <div class="form-group"><label for="{{ form.contact_email.id_for_label }}">{{ form.contact_email.label }}</label>{{ form.contact_email }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="max-width:760px;margin-bottom:16px">
+    <div class="card-body">
+      <div style="font-weight:600;margin-bottom:4px">Wymagania dostawy</div>
+      <div class="help-text" style="margin-bottom:12px">Sterują domyślnymi wartościami kalkulatora i są pokazywane jako baner na przesyłce.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label for="{{ form.max_pallet_height_cm.id_for_label }}">{{ form.max_pallet_height_cm.label }}</label>{{ form.max_pallet_height_cm }}
+          <span class="help-text">{{ form.max_pallet_height_cm.help_text }}</span></div>
+        <div class="form-group"><label for="{{ form.max_pallet_weight_kg.id_for_label }}">{{ form.max_pallet_weight_kg.label }}</label>{{ form.max_pallet_weight_kg }}</div>
+      </div>
+      <div class="form-group"><label for="{{ form.pallet_type.id_for_label }}">{{ form.pallet_type.label }}</label>{{ form.pallet_type }}</div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">{{ form.requires_fumigated_pallet }} {{ form.requires_fumigated_pallet.label }}</label>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">{{ form.requires_adr }} {{ form.requires_adr.label }}</label>
+      </div>
+      <div class="form-group"><label for="{{ form.temp_control.id_for_label }}">{{ form.temp_control.label }}</label>{{ form.temp_control }}
+        <span class="help-text">{{ form.temp_control.help_text }}</span></div>
+      <div class="form-group"><label for="{{ form.delivery_hours.id_for_label }}">{{ form.delivery_hours.label }}</label>{{ form.delivery_hours }}
+        <span class="help-text">{{ form.delivery_hours.help_text }}</span></div>
+      <div class="form-group"><label for="{{ form.requirements_notes.id_for_label }}">{{ form.requirements_notes.label }}</label>{{ form.requirements_notes }}</div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">{{ form.is_active }} {{ form.is_active.label }}</label>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;max-width:760px">
+    <button type="submit" class="btn btn-primary">Zapisz</button>
+    <a href="{% url 'ui:planner_customers' %}" class="btn btn-secondary">Anuluj</a>
+  </div>
+</form>
+
+{% if instance %}
+{# ── Reguły pakowania per indeks (edycja: Master Data) — np. 25 szt/opak. zamiast luzem. #}
+<div class="card" style="margin-top:20px;max-width:760px;padding:16px 20px">
+  <div style="font-size:11px;font-weight:600;color:var(--gray-500);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">
+    Wymagania pakowania per indeks
+  </div>
+  {% if packaging_rules %}
+  <table class="table" style="margin-bottom:12px">
+    <thead><tr><th>Indeks</th><th class="text-right">Szt / opak.</th><th>Uwagi</th><th>Alert e-mail</th>{% if can_edit_rules %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+      {% for r in packaging_rules %}
+      <tr>
+        <td class="font-semibold" style="font-family:monospace">{{ r.product.code }}</td>
+        <td class="text-right">{{ r.units_per_pack }}</td>
+        <td class="text-muted">{{ r.note }}</td>
+        <td class="text-muted" style="font-family:monospace;font-size:12px">{{ r.alert_email }}</td>
+        {% if can_edit_rules %}
+        <td style="text-align:right">
+          <form method="post" action="{% url 'ui:customer_rule_delete' r.pk %}" style="margin:0"
+                onsubmit="return confirm('Usunąć regułę {{ r.product.code|escapejs }}?')">
+            {% csrf_token %}<button type="submit" class="btn btn-secondary btn-sm">Usuń</button>
+          </form>
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="text-muted text-sm" style="margin-bottom:12px">Brak reguł — klient przyjmuje standardowe opakowania.</div>
+  {% endif %}
+  {% if can_edit_rules %}
+  <form method="post" action="{% url 'ui:customer_rule_add' instance.pk %}"
+        style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
+    {% csrf_token %}
+    <input type="text" name="ref_code" required maxlength="50" placeholder="Indeks (np. CTND-200_V1)"
+           style="flex:1 1 180px;min-width:160px;font-family:monospace">
+    <input type="number" name="units_per_pack" required min="1" placeholder="szt/opak."
+           style="width:110px">
+    <input type="text" name="note" maxlength="200" placeholder="Uwagi (opcjonalnie)"
+           style="flex:1 1 180px;min-width:150px">
+    <input type="email" name="alert_email" maxlength="254" placeholder="Alert e-mail (opcjonalnie)"
+           title="Mail, gdy pojawi się dostawa z tym indeksem w ilości > szt/opak."
+           style="flex:1 1 200px;min-width:170px">
+    <button type="submit" class="btn btn-primary">+ Dodaj regułę</button>
+  </form>
+  {% else %}
+  <div class="help-text">Reguły edytuje Master Data.</div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

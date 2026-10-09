@@ -1,0 +1,125 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Wklej adresy — {{ wm.name }} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="breadcrumb">
+      <a href="{% url 'ui:warehouse_model_list' %}">Modele magazynu</a>
+      <span class="breadcrumb__sep">/</span>
+      <a href="{% url 'ui:warehouse_model_view' wm.pk %}">{{ wm.name }}</a>
+      <span class="breadcrumb__sep">/</span>
+      <span>Wklej adresy</span>
+    </div>
+    <div class="page-header__title">Wklej adresy alejki lub regału</div>
+    <div class="page-header__sub">Wklej listę lokalizacji i ustaw je w linii na planie hali — pionowo lub poziomo</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:warehouse_model_coords' wm.pk %}" class="btn btn-secondary">Wróć do współrzędnych</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-header__title">Adresy lokalizacji</span>
+      <span class="text-sm text-muted">hala {{ wm.floor_width_m }}&thinsp;×&thinsp;{{ wm.floor_depth_m }} m</span>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group form-group--full" style="margin-bottom:20px">
+          <label for="id_codes">Adresy — jedna lokalizacja per linia *</label>
+          <textarea name="codes" id="id_codes" rows="12" required
+                    placeholder="B0-01-300A&#10;B0-01-300B&#10;B0-01-301A&#10;B0-02-300A"
+                    style="font-family:monospace;font-size:13px;line-height:1.7">{{ codes }}</textarea>
+          <span class="help-text">
+            Format: <code style="font-family:monospace;background:var(--gray-100);padding:1px 5px;border-radius:3px">B0-01-300A</code>
+            (strefa-regał-boczek-poziom). Kolumny po przecinku/tabie są tolerowane — liczy się pierwsza.
+          </span>
+        </div>
+
+        <div style="margin-bottom:20px">
+          <div class="section-title">Ustawienie na planie</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+            <label style="flex:1;min-width:200px;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer">
+              <input type="radio" name="orientation" value="horizontal" style="margin-top:3px"
+                     {% if orientation != 'vertical' %}checked{% endif %}>
+              <span>
+                <span class="font-semibold">{% icon "arrow-left-right" %} Pozioma (0°)</span>
+                <span class="text-sm text-muted" style="display:block">Regały w linii wzdłuż osi X</span>
+              </span>
+            </label>
+            <label style="flex:1;min-width:200px;display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer">
+              <input type="radio" name="orientation" value="vertical" style="margin-top:3px"
+                     {% if orientation == 'vertical' %}checked{% endif %}>
+              <span>
+                <span class="font-semibold">{% icon "arrow-up-down" %} Pionowa (90°)</span>
+                <span class="text-sm text-muted" style="display:block">Regały w linii wzdłuż osi Y</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="form-grid-2" style="gap:16px">
+            <div class="form-group">
+              <label for="id_start_x">Start X [m]</label>
+              <input type="number" name="start_x" id="id_start_x" value="{{ start_x }}"
+                     step="0.1" min="0" max="{{ wm.floor_width_m }}">
+              <span class="help-text">Początek linii — od lewej krawędzi hali</span>
+            </div>
+            <div class="form-group">
+              <label for="id_start_y">Start Y [m]</label>
+              <input type="number" name="start_y" id="id_start_y" value="{{ start_y }}"
+                     step="0.1" min="0" max="{{ wm.floor_depth_m }}">
+              <span class="help-text">Początek linii — od dolnej krawędzi hali</span>
+            </div>
+            <div class="form-group form-group--full">
+              <label style="display:flex;gap:8px;align-items:center;cursor:pointer">
+                <input type="checkbox" name="keep_existing" value="1" {% if keep_existing %}checked{% endif %}>
+                <span>Nie zmieniaj pozycji istniejących regałów</span>
+              </label>
+              <span class="help-text">Zaznacz, gdy chcesz tylko dodać/uzupełnić boczki i poziomy, bez przesuwania.</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;padding-top:8px;border-top:1px solid var(--gray-100)">
+          <button type="submit" class="btn btn-primary">Ustaw regały na planie</button>
+          <a href="{% url 'ui:warehouse_model_coords' wm.pk %}" class="btn btn-secondary">Anuluj</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="card">
+      <div class="card-header"><span class="card-header__title">Jak to działa</span></div>
+      <div class="card-body">
+        <ol style="font-size:13px;color:var(--gray-700);padding-left:18px;line-height:2">
+          <li>Adresy są grupowane po <strong>strefie i regale</strong> (np. B0-01)</li>
+          <li>Boczki i poziomy wyliczane z listy — <strong>nigdy nie maleją</strong> przy scalaniu</li>
+          <li>Regały ustawiane w linii od punktu startowego, każdy przesunięty o swoją szerokość</li>
+          <li>Kąt ustawiany automatycznie: 0° poziomo, 90° pionowo</li>
+        </ol>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-header__title">Przykład</span></div>
+      <div class="card-body">
+        <pre style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;padding:12px;font-size:12px;font-family:monospace;line-height:1.8;overflow-x:auto">B0-01-300A
+B0-01-300B
+B0-01-301A
+B0-02-300A</pre>
+        <p style="font-size:12px;color:var(--gray-500);margin-top:10px">
+          Da 2 regały: <strong>B0-01</strong> (2 boczki, 2 poziomy) i <strong>B0-02</strong> (1 boczek, 1 poziom).
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

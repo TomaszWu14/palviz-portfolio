@@ -1,0 +1,26 @@
+{% extends "ui/base.html" %}
+{% block title %}Zgłoszenie wysłane{% endblock %}
+{% block nav_warehouse %}topnav__link--active{% endblock %}
+
+{% block content %}
+<div style="max-width:480px;margin:60px auto;text-align:center">
+  <div style="width:64px;height:64px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+    <svg width="28" height="28" fill="none" viewBox="0 0 24 24" style="stroke:var(--green-solid)" stroke-width="2.5">
+      <path d="m5 13 4 4L19 7"/>
+    </svg>
+  </div>
+  <h2 style="font-size:20px;font-weight:700;color:var(--gray-900);margin-bottom:8px">Zgłoszenie wysłane</h2>
+  <p style="font-size:14px;color:var(--gray-500);margin-bottom:28px">
+    Dziękujemy. Twoje zgłoszenie zostało przekazane do planisty i zostanie sprawdzone.
+  </p>
+  {% if instr %}
+  <a href="{% url 'ui:warehouse_instruction' instr.product.code %}" class="btn btn-primary">
+    Wróć do instrukcji
+  </a>
+  {% else %}
+  <a href="{% url 'ui:warehouse_search' %}" class="btn btn-primary">
+    Wróć do wyszukiwarki
+  </a>
+  {% endif %}
+</div>
+{% endblock %}

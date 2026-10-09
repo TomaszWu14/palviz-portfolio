@@ -1,0 +1,29 @@
+{% extends "ui/base.html" %}
+{% block title %}ZARIA — audyt — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_zaria_panel' %}">ZARIA</a><span class="breadcrumb__sep">›</span><span>Audyt</span></nav>
+<div class="page-header"><div>
+  <div class="page-header__title">Audyt administracyjny ZARIA</div>
+  <div class="page-header__sub">Zmiany konfiguracji, limitów, ról i dostępów (bez treści rozmów)</div>
+</div></div>
+
+<div class="card" style="padding:0">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Data</th><th>Kto</th><th>Zdarzenie</th><th>Szczegóły</th></tr></thead>
+      <tbody>
+      {% for log in logs %}
+        <tr>
+          <td class="text-sm">{{ log.created_at|date:"d.m.Y H:i" }}</td>
+          <td>{{ log.actor.username|default:"—" }}</td>
+          <td><span class="badge badge-gray">{{ log.action }}</span></td>
+          <td class="text-sm">{{ log.detail }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4"><div class="empty-state" style="padding:24px"><div class="empty-state__desc">Brak zdarzeń audytowych.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

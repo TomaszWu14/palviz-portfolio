@@ -1,0 +1,85 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% block title %}KPI transportu — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'ui/js/echarts.min.js' %}"></script>
+<style>
+.kpi-bar { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+.kpi-card { flex:1; min-width:150px; background:var(--surface); border:1px solid var(--gray-200);
+  border-radius:12px; padding:16px 18px; display:flex; flex-direction:column; gap:3px; }
+.kpi-card__val { font-size:26px; font-weight:900; line-height:1; color:var(--gray-900); }
+.kpi-card__unit { font-size:11px; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:.5px; }
+.kpi-card__label { font-size:12px; color:var(--gray-400); margin-top:2px; }
+.chart-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.chart-card { background:var(--surface); border:1px solid var(--gray-200); border-radius:12px; padding:14px 16px; }
+.chart-card h3 { font-size:14px; font-weight:700; color:var(--gray-700); margin:0 0 8px; }
+.chart-box { height:300px; }
+@media (max-width:820px){ .chart-grid{ grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_shipments' %}">Wysyłki</a>
+  <span class="breadcrumb__sep">›</span><span>KPI transportu</span>
+</nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#7c3aed;--pcbg:#f5f3ff">
+    <div class="panel-head__chip">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+    </div>
+    <div>
+      <div class="page-header__title">KPI transportu</div>
+      <div class="page-header__sub">Koszty (PLN, kurs NBP), wypełnienie, terminowość — przegląd zarządczy
+        · dane z {{ kpi_updated_at|date:"Y-m-d H:i" }}</div>
+    </div>
+  </div>
+  <div class="page-header__actions"><a href="{% url 'ui:planner_shipments' %}" class="btn btn-secondary">← Wysyłki</a></div>
+</div>
+
+<div class="kpi-bar">
+  <div class="kpi-card" style="border-top:3px solid #2563eb"><div class="kpi-card__val">{{ kpi.n_active }}</div><div class="kpi-card__unit">wysyłek</div><div class="kpi-card__label">aktywne (bez anulowanych)</div></div>
+  <div class="kpi-card" style="border-top:3px solid #0e7490"><div class="kpi-card__val">{{ kpi.n_pallets }}</div><div class="kpi-card__unit">palet</div><div class="kpi-card__label">łącznie (szacunek)</div></div>
+  <div class="kpi-card" style="border-top:3px solid #059669"><div class="kpi-card__val">{{ kpi.weight_t }}</div><div class="kpi-card__unit">ton</div><div class="kpi-card__label">{{ kpi.vol }} m³ łącznie</div></div>
+  <div class="kpi-card" style="border-top:3px solid #7c3aed"><div class="kpi-card__val">{{ kpi.avg_cost }}</div><div class="kpi-card__unit">PLN / wysyłkę</div><div class="kpi-card__label">średnia z {{ kpi.n_quoted }} wycen</div></div>
+  <div class="kpi-card" style="border-top:3px solid #b45309"><div class="kpi-card__val">{{ kpi.cost_per_pallet }}</div><div class="kpi-card__unit">PLN / paletę</div><div class="kpi-card__label">koszt jednostkowy</div></div>
+  <div class="kpi-card" style="border-top:3px solid #be185d"><div class="kpi-card__val">{{ kpi.cost_per_kg }}</div><div class="kpi-card__unit">PLN / kg</div><div class="kpi-card__label">koszt jednostkowy</div></div>
+  <div class="kpi-card" style="border-top:3px solid #16a34a"><div class="kpi-card__val">{{ kpi.ontime_pct }}%</div><div class="kpi-card__unit">potwierdzone</div><div class="kpi-card__label">odbiory potwierdzone przez kierowcę</div></div>
+</div>
+
+<div class="chart-grid">
+  <div class="chart-card"><h3>Trend miesięczny — wysyłki i koszt (PLN)</h3><div id="ch-monthly" class="chart-box"></div></div>
+  <div class="chart-card"><h3>Koszt wg kraju (PLN)</h3><div id="ch-country" class="chart-box"></div></div>
+  <div class="chart-card"><h3>Wysyłki wg statusu</h3><div id="ch-status" class="chart-box"></div></div>
+</div>
+
+<script>
+  const D = {{ charts_json|safe }};
+  function chart(id, opt){ const el=document.getElementById(id); if(!el) return;
+    const c=echarts.init(el); c.setOption(opt); addEventListener('resize',()=>c.resize()); }
+
+  chart('ch-monthly', {
+    tooltip:{trigger:'axis'}, legend:{data:['Wysyłki','Koszt PLN']},
+    grid:{left:48,right:56,top:36,bottom:30},
+    xAxis:{type:'category', data:D.monthly.labels},
+    yAxis:[{type:'value', name:'szt'},{type:'value', name:'PLN', position:'right'}],
+    series:[
+      {name:'Wysyłki', type:'bar', data:D.monthly.counts, itemStyle:{color:'#2563eb'}},
+      {name:'Koszt PLN', type:'line', yAxisIndex:1, data:D.monthly.costs, itemStyle:{color:'#be185d'}, smooth:true}
+    ]
+  });
+  chart('ch-country', {
+    tooltip:{trigger:'axis', axisPointer:{type:'shadow'}}, grid:{left:48,right:24,top:16,bottom:30},
+    xAxis:{type:'category', data:D.country.labels}, yAxis:{type:'value', name:'PLN'},
+    series:[{type:'bar', data:D.country.values, itemStyle:{color:'#0e7490'}}]
+  });
+  chart('ch-status', {
+    tooltip:{trigger:'item'},
+    series:[{type:'pie', radius:['40%','70%'],
+      data:D.status.labels.map((l,i)=>({name:l, value:D.status.values[i]}))}]
+  });
+</script>
+{% endblock %}

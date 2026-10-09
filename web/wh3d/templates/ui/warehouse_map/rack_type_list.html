@@ -1,0 +1,120 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% load static %}
+{% block title %}Typy regałów — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_map' %}">Mapa magazynu</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Typy regałów</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Typy regałów</div>
+    <div class="page-header__sub">Szablony wymiarów fizycznych — przypisywane przez kod w polu Typ magazynu (wh_type)</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:warehouse_rack_type_new' %}" class="btn btn-primary">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 4v16M4 12h16"/></svg>
+      Nowy typ
+    </a>
+  </div>
+</div>
+
+{% if types %}
+<div class="card" style="margin-bottom:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:700">Regały (z wymiarami do 3D)</div>
+  <table class="table">
+    <thead><tr>
+      <th>Kod</th><th>Nazwa / opis</th>
+      <th>Szer. fiz.</th><th>z manip.</th><th>Głęb.</th>
+      <th>Wys. poz. 1</th><th>Wys. poz. 2</th><th>Wys. poz. 3</th><th>Wys. poz. 4</th>
+      <th>Max kg</th><th>Kolor</th><th></th>
+    </tr></thead>
+    <tbody>
+    {% for t in racks %}
+    <tr>
+      <td>
+        <span style="font-family:monospace;font-weight:700;font-size:13px;
+                     background:{{ t.color_hex }}22;color:color-mix(in srgb, {{ t.color_hex }} 55%, var(--gray-900));
+                     border:1px solid {{ t.color_hex }}44;
+                     padding:2px 8px;border-radius:5px">{{ t.code }}</span>
+      </td>
+      <td style="font-weight:600">{{ t.name }}
+        {% if t.description and t.description != t.name %}<div style="font-size:11px;font-weight:400;color:var(--gray-500)">{{ t.description }}</div>{% endif %}</td>
+      <td>{{ t.width_mm }} mm</td>
+      <td>{{ t.manip_mm }} mm</td>
+      <td>{{ t.depth_mm }} mm</td>
+      <td>{% with h=t.level_heights.1 %}{% if h %}{{ h }} mm{% else %}<span style="color:var(--gray-400)">—</span>{% endif %}{% endwith %}</td>
+      <td>{% with h=t.level_heights.2 %}{% if h %}{{ h }} mm{% else %}<span style="color:var(--gray-400)">—</span>{% endif %}{% endwith %}</td>
+      <td>{% with h=t.level_heights.3 %}{% if h %}{{ h }} mm{% else %}<span style="color:var(--gray-400)">—</span>{% endif %}{% endwith %}</td>
+      <td>{% with h=t.level_heights.4 %}{% if h %}{{ h }} mm{% else %}<span style="color:var(--gray-400)">—</span>{% endif %}{% endwith %}</td>
+      <td>{{ t.max_weight_kg|floatformat:0 }} kg</td>
+      <td><span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:{{ t.color_hex }}"></span></td>
+      <td>
+        <a href="{% url 'ui:warehouse_rack_type_edit' t.pk %}" class="btn btn-ghost btn-sm">Edytuj</a>
+        <form method="post" action="{% url 'ui:warehouse_rack_type_delete' t.pk %}" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red)"
+                  onclick="return confirm('Usunąć typ {{ t.code }}?')">Usuń</button>
+        </form>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="12" style="color:var(--gray-400);text-align:center;padding:16px">Brak typów regałowych.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:700">Strefy (podłogowe / techniczne — bez geometrii regału)</div>
+  <table class="table">
+    <thead><tr><th>Kod</th><th>Nazwa / opis</th><th>Kolor</th><th></th></tr></thead>
+    <tbody>
+    {% for t in zones %}
+    <tr>
+      <td>
+        <span style="font-family:monospace;font-weight:700;font-size:13px;
+                     background:{{ t.color_hex }}22;color:color-mix(in srgb, {{ t.color_hex }} 55%, var(--gray-900));
+                     border:1px solid {{ t.color_hex }}44;
+                     padding:2px 8px;border-radius:5px">{{ t.code }}</span>
+      </td>
+      <td style="font-weight:600">{{ t.name }}
+        {% if t.description and t.description != t.name %}<div style="font-size:11px;font-weight:400;color:var(--gray-500)">{{ t.description }}</div>{% endif %}</td>
+      <td><span style="display:inline-block;width:20px;height:20px;border-radius:4px;background:{{ t.color_hex }}"></span></td>
+      <td>
+        <a href="{% url 'ui:warehouse_rack_type_edit' t.pk %}" class="btn btn-ghost btn-sm">Edytuj</a>
+        <form method="post" action="{% url 'ui:warehouse_rack_type_delete' t.pk %}" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red)"
+                  onclick="return confirm('Usunąć typ {{ t.code }}?')">Usuń</button>
+        </form>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" style="color:var(--gray-400);text-align:center;padding:16px">Brak stref.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card" style="padding:40px;text-align:center;color:var(--gray-400)">
+  <div style="font-size:32px;margin-bottom:12px">{% icon "package" cls="icon--em" %}</div>
+  <div style="font-size:14px;font-weight:600;color:var(--gray-700);margin-bottom:6px">Brak zdefiniowanych typów</div>
+  <div style="font-size:12px;margin-bottom:20px">
+    Utwórz typ lokalizacji — jego kod wpisz w pole <b>Typ magazynu</b> przy snapshocie lub generatorze.
+  </div>
+  <a href="{% url 'ui:warehouse_rack_type_new' %}" class="btn btn-primary">Utwórz pierwszy typ</a>
+</div>
+{% endif %}
+
+<div class="card" style="padding:16px;margin-top:16px;font-size:12px;color:var(--gray-500);line-height:1.7">
+  <b>Jak działa przypisanie?</b> Każda lokalizacja w snapshocie ma pole <code>Typ magazynu</code> (np. <code>K01</code>).
+  Jeśli istnieje typ o tym kodzie, renderer 3D automatycznie używa jego wymiarów (wysokość, szerokość, głębokość, kolor).
+  Nie trzeba nic ręcznie przypisywać — kod w lokalizacji = typ.
+</div>
+{% endblock %}

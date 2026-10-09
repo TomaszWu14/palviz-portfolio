@@ -1,0 +1,313 @@
+{% load palviz_extras %}
+<style>
+  .grid5 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 14px;
+  }
+  .card { background: var(--surface); border: 1px solid #ddd; border-radius: 10px; padding: 12px; }
+  /* Row 1: produkt (sztuka / opak. zbiorcze / karton) NAD paletą + podsumowanie (sidebar) */
+  .g-unit    { grid-column: 1; grid-row: 1; }
+  .g-inner   { grid-column: 2; grid-row: 1; }
+  .g-carton  { grid-column: 3; grid-row: 1; }
+  .g-summary { grid-column: 4; grid-row: 1 / span 3; overflow: auto; }
+  /* Row 2: paleta */
+  .g-pallet  { grid-column: 1 / span 3; grid-row: 2; }
+  /* Row 3: przymierzenie do lokalizacji POD paletą (powiększone) */
+  .g-locfit  { grid-column: 1 / span 3; grid-row: 3; }
+  /* Row 4: warstwa 2D; Row 5: miniatury */
+  .g-layer   { grid-column: 1 / span 4; grid-row: 4; }
+  .g-thumbs  { grid-column: 1 / span 4; grid-row: 5; overflow: auto; }
+  @media (max-width: 1100px) {
+    .grid5 { grid-template-columns: 1fr; }
+    .g-unit,.g-inner,.g-carton,.g-summary,.g-pallet,.g-locfit,.g-layer,.g-thumbs { grid-column: 1; grid-row: auto; }
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td { padding: 5px 4px; border-bottom: 1px solid #eee; }
+  td:first-child { color: #555; }
+  .muted { color: #666; font-size: 12px; }
+  .thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .thumb { border: 1px solid #ddd; border-radius: 10px; padding: 6px; cursor: pointer; background: #fafafa; width: 238px; }
+  .thumb:hover { border-color: #2d6cdf; background: #f0f4ff; }
+  .thumb.active { border-color: #2d6cdf; background: #e9f0ff; }
+  select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 8px; }
+  .badge-best { background: #2d6cdf; color: #fff; font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; margin-left: 6px; }
+  .hint-box { background: var(--yellow-light); border-left: 4px solid #f0ad00; border-radius: 6px; padding: 8px 10px; margin-top: 8px; font-size: 12px; }
+  .hint-box ul { margin: 4px 0 0 0; padding-left: 16px; }
+  .cog-good { color: #27ae60; font-weight: 700; }
+  .cog-warn { color: #e67e22; font-weight: 700; }
+  .layer-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .layer-nav button { padding: 4px 12px; border: 1px solid #ccc; border-radius: 6px; background: #fafafa; cursor: pointer; font-size: 13px; }
+  .layer-nav button:hover { background: #e9f0ff; border-color: #2d6cdf; }
+  .chart-placeholder { display:flex;align-items:center;justify-content:center;height:200px;
+    background:var(--gray-50);border-radius:8px;border:2px dashed var(--gray-200);flex-direction:column;gap:8px; }
+  .chart-placeholder__txt { font-size:12px;color:var(--gray-400);text-align:center; }
+  .section-lbl { font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;
+    letter-spacing:.6px;margin-bottom:6px; }
+</style>
+
+<div class="grid5" id="panel-target">
+
+  <!-- ===== PALETA 3D ===== -->
+  <div class="card g-pallet">
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:8px;">
+      <div style="font-weight:800;">Wariant ułożenia</div>
+      <select
+        name="layout"
+        hx-get="{% if pid %}{% url 'ui:pallet_panel' pid %}{% endif %}"
+        hx-target="#panel-target"
+        hx-swap="outerHTML"
+        hx-include="[name='render_layers'],[name='fit_loc']"
+        {% if not pid %}disabled{% endif %}
+      >
+        {% if pid %}
+          {% for l in layouts %}
+            <option value="{{ l.name }}" {% if l.name == selected %}selected{% endif %}>
+              {% if l.is_best %}★ {% endif %}{{ l.name }} — {{ l.cartons_per_pallet }} kart/pal
+            </option>
+          {% endfor %}
+        {% else %}
+          <option>Najlepszy: {{ layouts.0.name }}</option>
+        {% endif %}
+      </select>
+      {% if layout.is_best %}<span class="badge-best">{% icon "star" %} NAJLEPSZY</span>{% endif %}
+      <div class="muted" style="margin-left:auto;">
+        {{ meta.length_cm }}×{{ meta.width_cm }}, baza {{ meta.base_height_cm }} cm
+      </div>
+    </div>
+    {% if three_pallet_json %}
+    <div id="plot-pallet" style="height:440px;position:relative;border-radius:10px;overflow:hidden;background:linear-gradient(#fdfdfd,#eef1f4)">
+      <canvas id="three-pallet" style="display:block;width:100%;height:100%"></canvas>
+    </div>
+    {% else %}
+    <div id="plot-pallet"></div>
+    {% endif %}
+  </div>
+
+  <!-- ===== PRZYMIERZENIE DO LOKALIZACJI (pod paletą, powiększone) ===== -->
+  {% if loc_fits %}
+  <div class="card g-locfit">
+    <div style="font-weight:800;margin-bottom:10px">Przymierzenie do lokalizacji</div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      {% for f in loc_fits %}
+      <div style="border:1px solid {% if f.fits %}#bbf7d0{% else %}#fecaca{% endif %};border-radius:10px;padding:12px 14px;background:{% if f.fits %}#f0fdf4{% else %}#fef2f2{% endif %}">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <strong style="font-size:15px;color:#1e293b">{{ f.loc.name }}</strong>
+          <span style="font-size:13px;font-weight:700;white-space:nowrap;color:{{ f.verdict_color }}">{{ f.verdict }}</span>
+        </div>
+        <div style="font-size:12px;color:var(--gray-500);margin-top:4px">
+          {{ f.loc.width_cm }}×{{ f.loc.depth_cm }}×{{ f.loc.total_height_cm }} cm ·
+          {{ f.per_layer }}/warstwa × {{ f.n_layers }} = <strong>{{ f.total_cartons }}</strong> kart{% if f.pieces %} · {{ f.pieces }} szt{% endif %}
+          · wyp. {{ f.fill_pct }}%{% if f.weight %} · {{ f.weight }} kg{% endif %}{% if f.over_weight %} (limit {{ f.max_w }} kg){% endif %}
+        </div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-top:10px">
+          <div class="locfig" data-src="locfig3d-src-{{ forloop.counter0 }}" data-h="520" style="height:520px;background:var(--surface);border-radius:8px"></div>
+          <div class="locfig" data-src="locfig2d-src-{{ forloop.counter0 }}" data-h="520" style="height:520px;background:var(--surface);border-radius:8px"></div>
+        </div>
+        <script type="application/json" id="locfig3d-src-{{ forloop.counter0 }}">{{ f.fig3d_json|safe }}</script>
+        <script type="application/json" id="locfig2d-src-{{ forloop.counter0 }}">{{ f.fig2d_json|safe }}</script>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ===== PODSUMOWANIE ===== -->
+  <div class="card g-summary">
+    <h3 style="margin:0 0 8px 0;">Podsumowanie</h3>
+    <table>
+      <tr><td>SKU</td><td><b>{{ carton.sku }}:{{ carton.variant }}</b></td></tr>
+      <tr><td>Paleta</td><td><b>{{ meta.length_cm }}×{{ meta.width_cm }} cm</b></td></tr>
+      <tr><td>Wys. max</td><td><b>{{ meta.max_height_total_cm }} cm</b></td></tr>
+      <tr><td>Area Used</td><td><b>{{ layout.area_used_pct }}%</b></td></tr>
+      <tr><td>Cube Used</td><td><b>{{ layout.cube_used_pct }}%</b></td></tr>
+      <tr><td>Per Layer</td><td><b>{{ layout.cartons_per_layer }}</b></td></tr>
+      <tr><td>Warstwy</td><td><b>{{ layout.layers_used }}</b> (H={{ layout.layers_by_height }}, W={{ layout.layers_by_weight }})</td></tr>
+      <tr><td>Kart / Paleta</td><td><b>{{ layout.cartons_per_pallet }}</b></td></tr>
+      <tr><td>Pełne palety</td><td><b>{{ layout.pallets_full }}</b></td></tr>
+      <tr><td>Reszta</td><td><b>{{ layout.remainder_cartons }}</b> kart.</td></tr>
+      <tr><td>Wys. towaru</td><td><b>{{ layout.cargo_height_used_cm }} cm</b></td></tr>
+      <tr><td>Wys. total</td><td><b>{{ layout.total_height_used_cm }} cm</b></td></tr>
+      <tr><td>Waga / paleta</td><td><b>{{ layout.weight_per_pallet_kg }} kg</b></td></tr>
+      {% if layout.cog %}
+        <tr><td>CoG X</td>
+          <td class="{% if layout.cog.offset_x|floatformat:0 == '0' %}cog-good{% else %}cog-warn{% endif %}">
+            {{ layout.cog.x }} cm (Δ{{ layout.cog.offset_x|floatformat:1 }})
+          </td>
+        </tr>
+        <tr><td>CoG Y</td>
+          <td class="{% if layout.cog.offset_y|floatformat:0 == '0' %}cog-good{% else %}cog-warn{% endif %}">
+            {{ layout.cog.y }} cm (Δ{{ layout.cog.offset_y|floatformat:1 }})
+          </td>
+        </tr>
+      {% endif %}
+    </table>
+
+    {% if layout.hints %}
+      <div class="hint-box">
+        <b>{% icon "lightbulb" %} Wskazówki optymalizacji:</b>
+        <ul>{% for h in layout.hints %}<li>{{ h }}</li>{% endfor %}</ul>
+      </div>
+    {% endif %}
+
+
+    {% if pid %}
+    <div style="margin-top:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;">
+      <div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:8px;">{% icon "check" %} Zapisano wynik</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <a href="{% url 'ui:pallet_detail' pid %}" style="display:flex;align-items:center;gap:6px;text-decoration:none;font-size:13px;font-weight:700;color:#1a56db;">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Otwórz pełny widok
+        </a>
+        <a href="{% url 'ui:export_excel' pid %}" style="display:flex;align-items:center;gap:6px;text-decoration:none;font-size:13px;color:#059669;">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Eksportuj Excel
+        </a>
+        <a href="{% url 'ui:saved_list' %}" style="display:flex;align-items:center;gap:6px;text-decoration:none;font-size:13px;color:#6b7280;">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          Wszystkie moje zapisy
+        </a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ===== SZTUKA 3D ===== -->
+  <div class="card g-unit">
+    <div class="section-lbl">Poziom 1 — Sztuka</div>
+    {% if fig_unit_json %}
+      <div id="plot-unit"></div>
+    {% else %}
+      <div class="chart-placeholder">
+        <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="var(--gray-400)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        <div class="chart-placeholder__txt">Brak wymiarów sztuki<br><a href="{% if instr %}{% url 'ui:planner_product_edit' instr.product.pk %}{% else %}#{% endif %}" style="color:#1a56db;font-size:11px">Uzupełnij w produkcie</a></div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- ===== OPAKOWANIE ZBIORCZE 3D ===== -->
+  <div class="card g-inner">
+    <div class="section-lbl">Poziom 2 — Opak. zbiorcze</div>
+    {% if fig_inner_pack_json %}
+      <div id="plot-inner"></div>
+    {% else %}
+      <div class="chart-placeholder">
+        <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="var(--gray-400)" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+        <div class="chart-placeholder__txt">Brak opak. zbiorczego<br><a href="{% url 'ui:planner_inner_packs' %}" style="color:#1a56db;font-size:11px">Zarządzaj opak. zbiorcz.</a></div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- ===== KARTON 3D ===== -->
+  <div class="card g-carton">
+    <div class="section-lbl">Poziom 3 — Karton</div>
+    <div id="plot-carton"></div>
+  </div>
+
+  <!-- ===== WARSTWA 2D ===== -->
+  <div class="card g-layer">
+    <div class="section-lbl">Poziom 4 — Warstwa na palecie</div>
+    <div class="layer-nav">
+      <button onclick="prevLayer()">◀</button>
+      <span>Warstwa <b id="layer-num">{{ layer_idx }}</b> / <b>{{ layout.layers_used }}</b></span>
+      <button onclick="nextLayer()">▶</button>
+    </div>
+    <div id="plot-layer"></div>
+    {% if pid %}
+    <button class="btn btn-secondary" style="margin-top:10px"
+            hx-get="{% url 'ui:calc_optimal_layer' pid %}"
+            hx-target="#optimal-layer-slot" hx-swap="innerHTML">
+      {% icon "search" %} Policz optymalny układ (OR-Tools)
+    </button>
+    <div id="optimal-layer-slot" style="margin-top:10px"></div>
+    {% endif %}
+  </div>
+
+  <!-- ===== MINIATURY TOP 10 ===== -->
+  <div class="card g-thumbs">
+    <h3 style="margin:0 0 8px 0;">Miniatury TOP 15</h3>
+    <div class="muted" style="margin-bottom:8px;">Kliknij miniaturę, żeby przełączyć layout.</div>
+    <div class="thumbs">
+      {% for l in layouts %}
+        <div class="thumb {% if l.name == selected %}active{% endif %}"
+             {% if pid %}
+             hx-get="{% url 'ui:pallet_panel' pid %}?layout={{ l.name }}"
+             hx-target="#panel-target"
+             hx-swap="outerHTML"
+             hx-include="[name='render_layers'],[name='fit_loc']"
+             {% endif %}>
+          <div style="font-size:11px; font-weight:800; color:{% if l.is_best %}#2d6cdf{% else %}#333{% endif %};">
+            {% if l.is_best %}{% icon "star" %} {% endif %}{{ l.name }}
+          </div>
+          <div class="muted">kart/pal: <b>{{ l.cartons_per_pallet }}</b> | warstw: <b>{{ l.layers_used }}</b></div>
+          <div class="muted">util: <b>{{ l.utilization_percent }}%</b> | area: <b>{{ l.area_used_pct }}%</b></div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  var figPallet = {{ fig_pallet_json|safe }};
+  var figCarton = {{ fig_carton_json|safe }};
+  var figLayer  = {{ fig_layer_json|safe }};
+
+  // Inline location-fit visualisations (3D slot + 2D front) per ticked location
+  document.querySelectorAll('.locfig').forEach(function(el) {
+    var srcEl = document.getElementById(el.dataset.src);
+    if (!srcEl) return;
+    try {
+      var fig = JSON.parse(srcEl.textContent);
+      var lay = Object.assign({}, fig.layout, {height: +el.dataset.h || 240, autosize: true, margin: {l: 0, r: 0, t: 24, b: 0}});
+      Plotly.react(el, fig.data, lay, {responsive: true, displayModeBar: false});
+    } catch (e) {}
+  });
+
+  {% if three_pallet_json %}
+  // Realistic Three.js pallet (textured cartons + shadows); falls back to Plotly if the module isn't ready.
+  var threeData = {{ three_pallet_json|safe }};
+  function _renderThreePallet() {
+    var canvas = document.getElementById('three-pallet');
+    if (!canvas) return;
+    if (window.PalViz3D) {
+      if (window.__calcPalletViewer) { try { window.__calcPalletViewer.destroy(); } catch (e) {} }
+      window.__calcPalletViewer = window.PalViz3D(canvas, threeData);
+    } else {
+      window.addEventListener('palviz3d-ready', _renderThreePallet, { once: true });
+    }
+  }
+  _renderThreePallet();
+  {% else %}
+  Plotly.react('plot-pallet', figPallet.data, figPallet.layout, {responsive: true, displayModeBar: false});
+  {% endif %}
+  Plotly.react('plot-carton', figCarton.data, figCarton.layout, {responsive: true, displayModeBar: false});
+  Plotly.react('plot-layer',  figLayer.data,  figLayer.layout,  {responsive: true, displayModeBar: false});
+
+  {% if fig_unit_json %}
+  var figUnit = {{ fig_unit_json|safe }};
+  Plotly.react('plot-unit', figUnit.data, figUnit.layout, {responsive: true, displayModeBar: false});
+  {% endif %}
+
+  {% if fig_inner_pack_json %}
+  var figInner = {{ fig_inner_pack_json|safe }};
+  Plotly.react('plot-inner', figInner.data, figInner.layout, {responsive: true, displayModeBar: false});
+  {% endif %}
+
+  // Layer navigation
+  var _currentLayer = {{ layer_idx }};
+  var _totalLayers  = {{ layout.layers_used }};
+
+  window.prevLayer = function() { setLayer(_currentLayer - 1); };
+  window.nextLayer = function() { setLayer(_currentLayer + 1); };
+
+  function setLayer(n) {
+    _currentLayer = Math.max(1, Math.min(n, _totalLayers));
+    document.getElementById('layer-num').textContent = _currentLayer;
+    Plotly.relayout('plot-layer', {
+      'title.text': 'Warstwa ' + _currentLayer + ' / ' + _totalLayers + ' — widok z góry (2D)'
+    });
+  }
+})();
+</script>

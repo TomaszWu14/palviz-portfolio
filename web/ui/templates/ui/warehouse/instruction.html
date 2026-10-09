@@ -1,0 +1,330 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% load palviz_extras %}
+{% block title %}{{ instr.product.code }} — instrukcja paletyzacji{% endblock %}
+{% block nav_warehouse %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'ui/js/plotly.min.js' %}"></script>
+<style>
+  .instr-header {
+    background: var(--blue);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .instr-header__code { font-size: 22px; font-weight: 700; font-family: monospace; letter-spacing: -.3px; }
+  .instr-header__name { font-size: 14px; opacity: .85; margin-top: 2px; }
+  .instr-header__meta { text-align: right; }
+  .instr-header__version { font-size: 12px; opacity: .7; }
+
+  .versions-nav {
+    display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .versions-nav a {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid var(--gray-300);
+    color: var(--gray-600);
+    transition: all .15s;
+  }
+  .versions-nav a:hover { border-color: var(--blue); color: var(--blue-mid); background: var(--blue-light); }
+  .versions-nav a.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .metric-card__value { font-size: 24px; font-weight: 700; color: var(--blue-mid); line-height: 1; }
+  .metric-card__label { font-size: 11px; color: var(--gray-500); margin-top: 4px; text-transform: uppercase; letter-spacing: .4px; }
+
+  .viz-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 900px) { .viz-grid { grid-template-columns: 1fr; } }
+
+  .plotly-container {
+    background: var(--surface);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .plotly-container__title {
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .plotly-container__body { padding: 4px; }
+
+  .notes-card {
+    background: var(--yellow-light);
+    border: 1px solid var(--yellow-dark);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .notes-card__title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--yellow);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .notes-card__body { font-size: 13px; color: var(--gray-700); white-space: pre-wrap; line-height: 1.6; }
+
+  .layout-selector {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .layout-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--gray-300);
+    background: var(--surface);
+    color: var(--gray-600);
+    text-decoration: none;
+    transition: all .15s;
+  }
+  .layout-btn:hover { border-color: var(--blue); color: var(--blue-mid); }
+  .layout-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+  .report-link {
+    color: var(--gray-400);
+    font-size: 12px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 0 0;
+    transition: color .15s;
+  }
+  .report-link:hover { color: var(--red); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_search' %}">Magazyn</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{{ instr.product.code }}</span>
+</nav>
+
+<!-- Header -->
+<div class="instr-header">
+  <div>
+    <div class="instr-header__code">{{ instr.product.code }}</div>
+    <div class="instr-header__name">{{ instr.product.name }}</div>
+    {% if instr.product.ean %}
+    <div style="font-size:12px;opacity:.6;margin-top:4px;">EAN: {{ instr.product.ean }}</div>
+    {% endif %}
+  </div>
+  <div class="instr-header__meta">
+    <div class="instr-header__version">v{{ instr.version }}{% if instr.name %} — {{ instr.name }}{% endif %}</div>
+    <div style="font-size:12px;opacity:.6;margin-top:4px;">Paleta: {{ instr.get_pallet_code_display }}</div>
+  </div>
+</div>
+
+<!-- Version selector (if multiple) -->
+{% if all_versions|length > 1 %}
+<div class="versions-nav">
+  {% for v in all_versions %}
+  <a href="{% url 'ui:warehouse_instruction_v' instr.product.code v.version %}"
+     class="{% if v.version == instr.version %}active{% endif %}">
+    v{{ v.version }}{% if v.name %} — {{ v.name }}{% endif %}
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if not layout %}
+<div class="card">
+  <div class="card-body empty-state">
+    <div class="empty-state__icon">{% icon "package" cls="icon--em" %}</div>
+    <div class="empty-state__title">Brak danych paletyzacji</div>
+    <div class="empty-state__desc">Instrukcja istnieje, ale nie zawiera wyliczonych layoutów. Skontaktuj się z planistą.</div>
+  </div>
+</div>
+{% else %}
+
+<!-- Key metrics -->
+<div class="metrics-grid">
+  <div class="metric-card">
+    <div class="metric-card__value">{{ layout.cartons_per_pallet }}</div>
+    <div class="metric-card__label">Kartonów / paletę</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card__value">{{ layout.layers_used }}</div>
+    <div class="metric-card__label">Warstw</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card__value">{{ layout.cx }}×{{ layout.cy }}</div>
+    <div class="metric-card__label">Układ warstwy</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card__value">{{ layout.total_height_used_cm }} cm</div>
+    <div class="metric-card__label">Wys. towaru</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card__value">{{ layout.total_weight_kg }} kg</div>
+    <div class="metric-card__label">Waga całkowita</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-card__value">{{ instr.pallet_code }}</div>
+    <div class="metric-card__label">Typ palety</div>
+  </div>
+</div>
+
+<!-- Layout selector -->
+{% if all_layouts|length > 1 %}
+<div class="layout-selector">
+  {% for lname, lkpis in all_layouts %}
+  <a href="?layout={{ lname }}" class="layout-btn {% if lname == layout.name %}active{% endif %}">
+    {{ lname }} ({{ lkpis.cartons_per_pallet }} kart)
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Notes -->
+{% if instr.notes %}
+<div class="notes-card">
+  <div class="notes-card__title">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    Uwagi dla magazyniera
+  </div>
+  <div class="notes-card__body">{{ instr.notes }}</div>
+</div>
+{% endif %}
+
+<!-- Visualizations -->
+<div class="viz-grid">
+  <div class="plotly-container">
+    <div class="plotly-container__title">
+      Widok 3D
+      <div></div>
+    </div>
+    <div class="plotly-container__body">
+      <div id="fig3d" style="height:340px"></div>
+    </div>
+  </div>
+  <div class="plotly-container">
+    <div class="plotly-container__title">
+      Widok warstwy
+      <div style="display:flex;gap:6px;align-items:center">
+        <button onclick="prevLayer()" class="btn btn-sm btn-secondary btn-icon">◀</button>
+        <span id="layer-label" style="font-size:12px;font-weight:600;min-width:60px;text-align:center">Warstwa 1</span>
+        <button onclick="nextLayer()" class="btn btn-sm btn-secondary btn-icon">▶</button>
+      </div>
+    </div>
+    <div class="plotly-container__body">
+      <div id="fig2d" style="height:340px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Carton info -->
+<div class="card mb-4">
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px">
+      <div>
+        <div class="text-sm text-muted">Wymiary kartonu</div>
+        <div class="font-semibold">{{ instr.carton_l }}×{{ instr.carton_w }}×{{ instr.carton_h }} cm</div>
+      </div>
+      <div>
+        <div class="text-sm text-muted">Waga jednostkowa</div>
+        <div class="font-semibold">{{ instr.unit_weight }} kg/szt</div>
+      </div>
+      <div>
+        <div class="text-sm text-muted">Szt / karton</div>
+        <div class="font-semibold">{{ instr.pcs_per_carton }}</div>
+      </div>
+      <div>
+        <div class="text-sm text-muted">Orientacja</div>
+        <div class="font-semibold">{{ layout.orientation }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="{% url 'ui:report_error' instr.id %}" class="report-link">
+  <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+  Zgłoś błąd w instrukcji
+</a>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if fig_pallet_json and fig_layer_json %}
+<script>
+const figPallet = {{ fig_pallet_json|safe }};
+const figLayer  = {{ fig_layer_json|safe }};
+const placements = {{ placements_json|safe }};
+const cartonDims = {{ carton_dims_json|safe }};
+const totalLayers = {{ layout.layers_used }};
+let currentLayer = 1;
+
+Plotly.react('fig3d', figPallet.data, figPallet.layout, {responsive: true, displayModeBar: false});
+Plotly.react('fig2d', figLayer.data,  figLayer.layout,  {responsive: true, displayModeBar: false});
+
+function prevLayer() {
+  if (currentLayer > 1) { currentLayer--; renderLayer(currentLayer); }
+}
+function nextLayer() {
+  if (currentLayer < totalLayers) { currentLayer++; renderLayer(currentLayer); }
+}
+function renderLayer(idx) {
+  document.getElementById('layer-label').textContent = 'Warstwa ' + idx;
+  const url = '{% url "ui:warehouse_instruction" instr.product.code %}?layer_idx=' + idx + '{% if request.GET.layout %}&layout={{ request.GET.layout }}{% endif %}';
+  fetch(url, {headers: {'X-Requested-With': 'fetch-layer'}})
+    .then(r => r.text()).then(() => {});
+  // Simple local rerender
+  const filtered = placements.filter(p => p.layer === idx);
+  const traces = filtered.map(p => ({
+    type: 'scatter',
+    x: [p.x, p.x+cartonDims.l, p.x+cartonDims.l, p.x, p.x],
+    y: [p.y, p.y, p.y+cartonDims.w, p.y+cartonDims.w, p.y],
+    fill: 'toself', mode: 'lines', line: {color: '#1a56db', width: 1.5},
+    fillcolor: 'rgba(26,86,219,0.12)', showlegend: false,
+  }));
+  Plotly.react('fig2d', traces, figLayer.layout, {responsive: true, displayModeBar: false});
+}
+
+</script>
+{% endif %}
+{% endblock %}

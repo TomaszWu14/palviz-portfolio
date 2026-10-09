@@ -1,0 +1,80 @@
+{% extends "ui/base.html" %}
+{% block title %}{% if obj.pk %}Edytuj szablon{% else %}Nowy szablon gniazda{% endif %} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .levels-table input, .levels-table select { width: 100%; padding: 5px 8px; font-size: 12px; }
+  .levels-table td { vertical-align: middle; }
+  .levels-table .col-letter { width: 70px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_model_list' %}">Modele magazynu</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:bay_template_list' %}">Szablony gniazd</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if obj.pk %}{{ obj.name }}{% else %}Nowy szablon{% endif %}</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{% if obj.pk %}Edytuj szablon „{{ obj.name }}”{% else %}Nowy szablon gniazda{% endif %}</div>
+    <div class="page-header__sub">Poziomy wpisuj od podłogi w górę. Pusta litera = wiersz pominięty.</div>
+  </div>
+</div>
+
+<form method="post" class="card">
+  {% csrf_token %}
+  <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px">
+    <label class="form-group" style="grid-column:span 2">Nazwa
+      <input type="text" name="name" value="{{ obj.name }}" class="form-control" required maxlength="100">
+    </label>
+    <label class="form-group">Palet na belce
+      <input type="number" name="pallets_per_beam" value="{{ obj.pallets_per_beam }}" class="form-control" min="1" max="10" step="1">
+    </label>
+    <label class="form-group">Szerokość belki [mm]
+      <input type="number" name="beam_mm" value="{{ obj.beam_mm }}" class="form-control" min="1" step="1">
+    </label>
+    <label class="form-group">Głębokość [mm]
+      <input type="number" name="depth_mm" value="{{ obj.depth_mm }}" class="form-control" min="1" step="1">
+    </label>
+    <label class="form-group" style="grid-column:1/-1">Uwagi
+      <input type="text" name="notes" value="{{ obj.notes }}" class="form-control" maxlength="200">
+    </label>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table levels-table">
+      <thead>
+        <tr><th class="col-letter">Litera</th><th>Wysokość [mm]</th><th>Typ EWM</th><th>Połówki (-1/-2)</th><th>Udźwig [kg]</th></tr>
+      </thead>
+      <tbody>
+        {% for lv in rows %}
+        <tr>
+          <td class="col-letter"><input type="text" name="lvl-{{ forloop.counter0 }}-letter" value="{{ lv.letter|default:'' }}" maxlength="1" style="text-transform:uppercase"></td>
+          <td><input type="number" name="lvl-{{ forloop.counter0 }}-height" value="{{ lv.height_mm|default:'' }}" min="1" step="1"></td>
+          <td><input type="text" name="lvl-{{ forloop.counter0 }}-type" value="{{ lv.ewm_type|default:'' }}" list="ewm-types" maxlength="20"></td>
+          <td>
+            <select name="lvl-{{ forloop.counter0 }}-split">
+              <option value="0">nie</option>
+              <option value="1"{% if lv.split %} selected{% endif %}>tak — miejsce dzielone na dwie połówki</option>
+            </select>
+          </td>
+          <td><input type="number" name="lvl-{{ forloop.counter0 }}-kg" value="{{ lv.max_kg|default:'' }}" min="0" step="1"></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <datalist id="ewm-types">{% for code in ewm_types %}<option value="{{ code }}">{% endfor %}</datalist>
+
+  <div class="card-footer" style="display:flex;gap:10px">
+    <button type="submit" class="btn btn-primary">Zapisz szablon</button>
+    <a href="{% url 'ui:bay_template_list' %}" class="btn btn-ghost">Anuluj</a>
+    <span class="text-sm text-muted" style="margin-left:auto">Potrzebujesz więcej poziomów? Zapisz — pojawią się kolejne puste wiersze.</span>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,44 @@
+# Tooling config for GROOVE / PalViz. These tools are DEV aids (see requirements-dev.txt);
+# they are intentionally lenient so they never block the auto-merge pipeline. Tighten the
+# rule sets gradually as the codebase is cleaned.
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = ["**/migrations/**", "**/vendor/**", "**/static/**"]
+
+[tool.ruff.lint]
+# Start conservative: real bugs (pyflakes F) + obvious bugbears, not style churn.
+select = ["F", "E9", "B"]
+ignore = ["F403", "F405", "B008"]   # star re-exports (views/__init__) + Django defaults
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["F841", "B011"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+follow_imports = "silent"
+warn_unused_ignores = false
+check_untyped_defs = false
+exclude = ['migrations/', 'vendor/']
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "palletweb.settings"
+pythonpath = [".", "web"]
+testpaths = ["web/ui/tests", "web/wh3d/tests", "web/huctl/tests", "web/transport/tests", "palletizer/tests"]
+python_files = ["test_*.py"]
+# pytest-env (requirements-test.txt): env jak w web/scripts/test.sh; "D:" = tylko gdy nieustawione
+env = ["D:DJANGO_SECRET_KEY=ci-test-secret", "D:DJANGO_DEBUG=true", "D:DJANGO_ALLOWED_HOSTS=*"]
+# Tests still run via `manage.py test` in CI; pytest is a developer convenience.
+
+[tool.coverage.run]
+source = ["web/ui", "web/wh3d", "web/huctl", "web/transport", "palletizer"]
+omit = ["*/migrations/*", "*/tests/*", "*/vendor/*"]
+# Django's `test --parallel` runs tests in worker subprocesses; capture their coverage too.
+concurrency = ["multiprocessing"]
+parallel = true
+
+[tool.bandit]
+exclude_dirs = ["tests", "migrations", "vendor"]
+skips = ["B101"]   # asserts are fine in this codebase

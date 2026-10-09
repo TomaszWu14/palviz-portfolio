@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;background:#eef2f7;font-family:Arial,Helvetica,sans-serif;color:#0f172a">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f7;padding:24px 0">
+    <tr><td align="center">
+      <table role="presentation" width="560" cellpadding="0" cellspacing="0"
+             style="width:560px;max-width:560px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 6px 24px rgba(2,6,23,.10)">
+        <tr><td style="padding:20px 26px;border-bottom:1px solid #eef2f7">
+          <div style="font-size:19px;font-weight:800">Gotowość magazynu — {{ shipment.name }}</div>
+          {% if urgent %}<div style="display:inline-block;margin-top:8px;background:#fef2f2;color:#b91c1c;font-weight:800;font-size:12px;padding:5px 10px;border-radius:999px">● PILNE — prosimy o odpowiedź do 15 minut</div>{% endif %}
+        </td></tr>
+        <tr><td style="padding:18px 26px 4px;font-size:14px;color:#334155">
+          Dzień dobry,<br>prosimy o potwierdzenie gotowości przygotowania dostawy <strong>{{ shipment.name }}</strong>.
+        </td></tr>
+        <tr><td style="padding:8px 26px;font-size:14px;color:#475569">
+          {% if pickup_date %}<div>Data odbioru: <strong>{{ pickup_date }}</strong></div>{% endif %}
+          {% if asked_pallets %}<div>Do przygotowania: <strong>{{ asked_pallets }} palet</strong> (układ jak w wycenie — w linku poniżej)</div>{% endif %}
+          <div>Adres dostawy: <strong>{{ dest }}</strong></div>
+          {% if client_requirements %}<div style="margin-top:8px;padding:8px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;color:#92400e;font-weight:700">⚠ Wymagania klienta: {{ client_requirements }}</div>{% endif %}
+        </td></tr>
+        {% if hu_rows %}
+        <tr><td style="padding:8px 26px">
+          <table role="presentation" width="100%" cellpadding="4" cellspacing="0" style="font-size:12px;color:#334155;border-collapse:collapse">
+            <tr style="border-bottom:1px solid #e2e8f0;font-weight:700">
+              <td>Paleta</td><td>Wymiary</td><td align="right">Waga</td><td align="right">Objętość</td>
+            </tr>
+            {% for r in hu_rows %}
+            <tr style="border-bottom:1px solid #f1f5f9">
+              <td>{{ r.code }}</td><td>{{ r.dims|default:"—" }}</td>
+              <td align="right">{% if r.weight %}{% if r.estimated %}~{% endif %}{{ r.weight|floatformat:1 }} kg{% else %}—{% endif %}</td>
+              <td align="right">{% if r.volume %}{% if r.estimated %}~{% endif %}{{ r.volume|floatformat:3 }} m³{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+            {% if total_weight or total_volume %}
+            <tr style="font-weight:800">
+              <td colspan="2">Razem</td>
+              <td align="right">{% if total_weight %}{{ total_weight|floatformat:1 }} kg{% endif %}</td>
+              <td align="right">{% if total_volume %}{{ total_volume|floatformat:3 }} m³{% endif %}</td>
+            </tr>
+            {% endif %}
+          </table>
+          <div style="font-size:11px;color:#94a3b8;margin-top:4px">~ = wartość szacowana z master daty</div>
+        </td></tr>
+        {% endif %}
+        <tr><td style="padding:16px 26px" align="center">
+          <a href="{{ response_url }}" style="display:inline-block;background:#0e5e74;color:#fff;text-decoration:none;
+             font-size:17px;font-weight:800;padding:15px 30px;border-radius:11px">Potwierdź gotowość (Tak / Nie) &rarr;</a>
+          <div style="font-size:12px;color:#94a3b8;margin-top:10px">Jeśli przycisk nie działa, skopiuj link:<br>
+            <a href="{{ response_url }}" style="color:#0e5e74">{{ response_url }}</a></div>
+        </td></tr>
+        <tr><td style="padding:14px 26px;border-top:1px solid #eef2f7;font-size:13px;color:#475569">Dziękujemy.</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>

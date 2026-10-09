@@ -1,0 +1,1169 @@
+{
+ "at_size_limit": {
+  "db": {
+   "batches": [
+    {
+     "is_active": true,
+     "location_count": 1,
+     "name": "Combined upload"
+    }
+   ],
+   "cells": [
+    {
+     "grid_col": 0,
+     "grid_row": 0,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-01-100A"
+    }
+   ],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 1,
+     "name": "Hala"
+    }
+   ],
+   "masters": [
+    {
+     "batch": "Combined upload",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "B0-01-100A",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "",
+     "width_mm": 0
+    }
+   ],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Kombinowany upload: 1 nowych / 0 zaktualizowanych lokalizacji w layoucie, 1 nowych / 0 zaktualizowanych rekordów master, 0 typów regałów."
+   ]
+  ]
+ },
+ "broken_xlsx": {
+  "db": {
+   "batches": [],
+   "cells": [],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 0,
+     "name": "Hala"
+    }
+   ],
+   "masters": [],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": []
+ },
+ "csv_cp1250": {
+  "db": {
+   "batches": [
+    {
+     "is_active": true,
+     "location_count": 1,
+     "name": "Combined upload"
+    }
+   ],
+   "cells": [
+    {
+     "grid_col": 0,
+     "grid_row": 0,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-01-100A"
+    }
+   ],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 1,
+     "name": "Hala"
+    }
+   ],
+   "masters": [
+    {
+     "batch": "Combined upload",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "B0-01-100A",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "",
+     "width_mm": 0
+    }
+   ],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Kombinowany upload: 1 nowych / 0 zaktualizowanych lokalizacji w layoucie, 1 nowych / 0 zaktualizowanych rekordów master, 0 typów regałów."
+   ]
+  ]
+ },
+ "csv_english_update": {
+  "db": {
+   "batches": [
+    {
+     "is_active": true,
+     "location_count": 5,
+     "name": "Aktywny"
+    },
+    {
+     "is_active": false,
+     "location_count": 0,
+     "name": "Stary"
+    }
+   ],
+   "cells": [
+    {
+     "grid_col": 0,
+     "grid_row": 0,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-01-100A"
+    },
+    {
+     "grid_col": 0,
+     "grid_row": 0,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-01-100B"
+    },
+    {
+     "grid_col": 4,
+     "grid_row": 0,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-01-105C"
+    },
+    {
+     "grid_col": 0,
+     "grid_row": 6,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-02-100A"
+    },
+    {
+     "grid_col": 0,
+     "grid_row": 3,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B1-01-100A"
+    },
+    {
+     "grid_col": 1,
+     "grid_row": 1,
+     "layout": "Inny",
+     "level": 1,
+     "location_code": "B0-01-100A"
+    }
+   ],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 5,
+     "name": "Hala"
+    },
+    {
+     "is_active": true,
+     "location_count": 0,
+     "name": "Inny"
+    }
+   ],
+   "masters": [
+    {
+     "batch": "Aktywny",
+     "depth_mm": 2,
+     "height_mm": 1200,
+     "level": 1,
+     "location_code": "B0-01-100A",
+     "max_volume_m3": 1.5,
+     "max_weight_kg": 10.0,
+     "warehouse_type": "NEW2",
+     "width_mm": 700
+    },
+    {
+     "batch": "Aktywny",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "B0-01-100B",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "",
+     "width_mm": 0
+    },
+    {
+     "batch": "Aktywny",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "B0-01-105C",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "",
+     "width_mm": 0
+    },
+    {
+     "batch": "Aktywny",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "B0-02-100A",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "",
+     "width_mm": 0
+    },
+    {
+     "batch": "Aktywny",
+     "depth_mm": 2,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "B1-01-100A",
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "warehouse_type": "NEW2",
+     "width_mm": 700
+    }
+   ],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "NEW2",
+     "depth_mm": 2,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Czytelna nazwa",
+     "width_mm": 700
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Kombinowany upload: 4 nowych / 1 zaktualizowanych lokalizacji w layoucie, 4 nowych / 1 zaktualizowanych rekordów master, 0 typów regałów."
+   ]
+  ]
+ },
+ "csv_full_new_batch": {
+  "db": {
+   "batches": [
+    {
+     "is_active": true,
+     "location_count": 11,
+     "name": "Combined upload"
+    }
+   ],
+   "cells": [
+    {
+     "grid_col": 0,
+     "grid_row": 0,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-01-100A"
+    },
+    {
+     "grid_col": 0,
+     "grid_row": 0,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-01-100B"
+    },
+    {
+     "grid_col": 4,
+     "grid_row": 0,
+     "layout": "Hala",
+     "level": 2,
+     "location_code": "B0-01-101X"
+    },
+    {
+     "grid_col": 4,
+     "grid_row": 0,
+     "layout": "Hala",
+     "level": 3,
+     "location_code": "B0-01-101Y"
+    },
+    {
+     "grid_col": 0,
+     "grid_row": 6,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-02-200C"
+    },
+    {
+     "grid_col": 4,
+     "grid_row": 6,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-02-201"
+    },
+    {
+     "grid_col": 2,
+     "grid_row": 9,
+     "layout": "Hala",
+     "level": 2,
+     "location_code": "B0-03-300-2K"
+    },
+    {
+     "grid_col": 0,
+     "grid_row": 12,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-04-100A"
+    },
+    {
+     "grid_col": 0,
+     "grid_row": 3,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "DOK1"
+    },
+    {
+     "grid_col": 0,
+     "grid_row": 3,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "GLRP"
+    },
+    {
+     "grid_col": 0,
+     "grid_row": 3,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "ZWROTY"
+    }
+   ],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 11,
+     "name": "Hala"
+    }
+   ],
+   "masters": [
+    {
+     "batch": "Combined upload",
+     "depth_mm": 1000,
+     "height_mm": 1500,
+     "level": 1,
+     "location_code": "B0-01-100A",
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1000.5,
+     "warehouse_type": "NEW1",
+     "width_mm": 900
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 1050,
+     "height_mm": 1600,
+     "level": 1,
+     "location_code": "B0-01-100B",
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "warehouse_type": "NEW1",
+     "width_mm": 950
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 1100,
+     "height_mm": 2494,
+     "level": 2,
+     "location_code": "B0-01-101X",
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "warehouse_type": "0010",
+     "width_mm": 800
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 1100,
+     "height_mm": 1800,
+     "level": 3,
+     "location_code": "B0-01-101Y",
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "warehouse_type": "0010",
+     "width_mm": 800
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 1100,
+     "height_mm": 2100,
+     "level": 1,
+     "location_code": "B0-02-200C",
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "warehouse_type": "HONLY",
+     "width_mm": 800
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "B0-02-201",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "JUNK",
+     "width_mm": 0
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 2,
+     "location_code": "B0-03-300-2K",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "",
+     "width_mm": 12
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "B0-04-100A",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "",
+     "width_mm": 0
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "DOK1",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "",
+     "width_mm": 0
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "GLRP",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "WCGL",
+     "width_mm": 0
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "ZWROTY",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "",
+     "width_mm": 0
+    }
+   ],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "HONLY",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "HONLY",
+     "width_mm": 800
+    },
+    {
+     "code": "NEW1",
+     "depth_mm": 1000,
+     "kind": "rack",
+     "level_cols": {
+      "1": 3,
+      "2": 1
+     },
+     "level_heights": {
+      "1": 100,
+      "3": 100000
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "NEW1",
+     "width_mm": 900
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {
+      "1": 2
+     },
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Kombinowany upload: 11 nowych / 0 zaktualizowanych lokalizacji w layoucie, 11 nowych / 0 zaktualizowanych rekordów master, 2 typów regałów."
+   ]
+  ]
+ },
+ "empty_csv": {
+  "db": {
+   "batches": [],
+   "cells": [],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 0,
+     "name": "Hala"
+    }
+   ],
+   "masters": [],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": [
+   [
+    "error",
+    "Plik jest pusty."
+   ]
+  ]
+ },
+ "empty_xlsx": {
+  "db": {
+   "batches": [],
+   "cells": [],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 0,
+     "name": "Hala"
+    }
+   ],
+   "masters": [],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": [
+   [
+    "error",
+    "Plik jest pusty."
+   ]
+  ]
+ },
+ "header_only": {
+  "db": {
+   "batches": [],
+   "cells": [],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 0,
+     "name": "Hala"
+    }
+   ],
+   "masters": [],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": [
+   [
+    "error",
+    "Brak danych do wgrania."
+   ]
+  ]
+ },
+ "no_file": {
+  "db": {
+   "batches": [],
+   "cells": [],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 0,
+     "name": "Hala"
+    }
+   ],
+   "masters": [],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": [
+   [
+    "error",
+    "Brak pliku."
+   ]
+  ]
+ },
+ "no_loc_header": {
+  "db": {
+   "batches": [],
+   "cells": [],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 0,
+     "name": "Hala"
+    }
+   ],
+   "masters": [],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": [
+   [
+    "error",
+    "Nie znaleziono kolumny z kodem lokalizacji. Sprawdź nagłówki."
+   ]
+  ]
+ },
+ "too_large": {
+  "db": {
+   "batches": [],
+   "cells": [],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 0,
+     "name": "Hala"
+    }
+   ],
+   "masters": [],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": [
+   [
+    "error",
+    "Plik jest zbyt duży (max 30 MB)."
+   ]
+  ]
+ },
+ "xlsx_numeric": {
+  "db": {
+   "batches": [
+    {
+     "is_active": true,
+     "location_count": 3,
+     "name": "Combined upload"
+    }
+   ],
+   "cells": [
+    {
+     "grid_col": 0,
+     "grid_row": 3,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "101"
+    },
+    {
+     "grid_col": 0,
+     "grid_row": 0,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-01-100A"
+    },
+    {
+     "grid_col": 0,
+     "grid_row": 0,
+     "layout": "Hala",
+     "level": 1,
+     "location_code": "B0-01-100B"
+    }
+   ],
+   "layouts": [
+    {
+     "is_active": true,
+     "location_count": 3,
+     "name": "Hala"
+    }
+   ],
+   "masters": [
+    {
+     "batch": "Combined upload",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "101",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "",
+     "width_mm": 0
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 1100,
+     "height_mm": 1500,
+     "level": 1,
+     "location_code": "B0-01-100A",
+     "max_volume_m3": 1.25,
+     "max_weight_kg": 999.5,
+     "warehouse_type": "11",
+     "width_mm": 800
+    },
+    {
+     "batch": "Combined upload",
+     "depth_mm": 0,
+     "height_mm": 0,
+     "level": 1,
+     "location_code": "B0-01-100B",
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "warehouse_type": "0011",
+     "width_mm": 0
+    }
+   ],
+   "rack_types": [
+    {
+     "code": "0010",
+     "depth_mm": 1100,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {
+      "1": 2494,
+      "3": 1800
+     },
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Regał zapasowy — składowanie wysokie",
+     "width_mm": 800
+    },
+    {
+     "code": "0011",
+     "depth_mm": 0,
+     "kind": "rack",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 0.0,
+     "max_weight_kg": 0.0,
+     "name": "Regał zapasowy — składowanie wysokie (II)",
+     "width_mm": 0
+    },
+    {
+     "code": "WCGL",
+     "depth_mm": 1100,
+     "kind": "zone",
+     "level_cols": {},
+     "level_heights": {},
+     "max_volume_m3": 2.5,
+     "max_weight_kg": 1200.0,
+     "name": "Wydanie — GLS",
+     "width_mm": 800
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Kombinowany upload: 3 nowych / 0 zaktualizowanych lokalizacji w layoucie, 3 nowych / 0 zaktualizowanych rekordów master, 1 typów regałów."
+   ]
+  ]
+ }
+}

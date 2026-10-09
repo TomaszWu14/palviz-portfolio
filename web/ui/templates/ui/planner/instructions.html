@@ -1,0 +1,112 @@
+{% extends "ui/base.html" %}{% load palviz_extras %}
+{% block title %}Instrukcje — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block subnav %}{% include "ui/planner/_tabs.html" %}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Instrukcje</span>
+</nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#0891b2;--pcbg:#ecfeff">
+    <div class="panel-head__chip">{% icon "clipboard-list" 24 %}</div>
+    <div>
+      <h1 class="page-header__title">Instrukcje paletyzacji</h1>
+      <div class="page-header__sub">{{ page_obj.paginator.count }} instrukcji w bazie</div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    {% if can_write_products %}<a href="{% url 'ui:planner_instruction_new' %}" class="btn btn-primary">
+      {% icon "plus" %}Nowa instrukcja
+    </a>{% endif %}
+  </div>
+</div>
+
+<form method="get" class="filterbar" role="search">
+  <label class="filterbar__search"><span class="sr-only">Szukaj</span>{% icon "search" %}
+    <input type="text" name="q" value="{{ query }}" placeholder="Szukaj kodu produktu lub nazwy…"></label>
+  <button type="submit" class="btn btn-secondary">{% icon "filter" %}Szukaj</button>
+  {% if query %}<a href="{% url 'ui:planner_instructions' %}" class="btn btn-ghost">{% icon "x" %}Wyczyść</a>{% endif %}
+</form>
+
+<div class="card card--accent" style="--pc:#0891b2">
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Lista paletyzacji">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Produkt</th>
+          <th>Wersja</th>
+          <th>Paleta</th>
+          <th class="num">Kartony/pal</th>
+          <th class="num">Waga [kg]</th>
+          <th>Status</th>
+          <th><span class="sr-only">Akcje</span></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for instr in page_obj %}
+      {% with layout=instr.get_selected_layout %}
+      <tr>
+        <td>
+          <a href="{% url 'ui:planner_instruction_detail' instr.pk %}" style="color:var(--blue-mid);text-decoration:none;font-weight:600;font-family:var(--font-mono)">
+            {{ instr.product.code }}
+          </a>
+          <div class="text-sm text-muted">{{ instr.product.name|truncatechars:35 }}</div>
+        </td>
+        <td>
+          <span class="badge badge-blue">v{{ instr.version }}</span>
+          {% if instr.name %}<div class="text-sm text-muted">{{ instr.name }}</div>{% endif %}
+        </td>
+        <td>{{ instr.pallet_code }}</td>
+        <td class="num">{% if layout %}{{ layout.cartons_per_pallet }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+        <td class="num">{% if layout %}{{ layout.total_weight_kg }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+        <td>
+          {% if instr.is_active %}
+          <span class="badge badge-green">Aktywna</span>
+          {% else %}
+          <span class="badge badge-gray">Nieaktywna</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="actions">
+            {% url 'ui:planner_instruction_detail' instr.pk as view_url %}{% icon_button "eye" label="Szczegóły" href=view_url size="sm" %}
+            {% if can_write_products %}{% url 'ui:planner_instruction_edit' instr.pk as edit_url %}{% icon_button "pencil" label="Edytuj" href=edit_url size="sm" %}{% endif %}
+            {% if can_write_products %}<form method="post" action="{% url 'ui:planner_instruction_delete' instr.pk %}">
+              {% csrf_token %}
+              {% icon_button "trash-2" label="Usuń" type="submit" variant="btn-ghost text-danger" size="sm" confirm="Usunąć instrukcję?" %}
+            </form>{% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endwith %}
+      {% empty %}
+      <tr>
+        <td colspan="7">
+          <div class="empty-state">
+            <div class="empty-state__icon">{% icon "clipboard-list" 24 %}</div>
+            <div class="empty-state__title">Brak instrukcji</div>
+            <div class="empty-state__desc">{% if can_write_products %}<a href="{% url 'ui:planner_instruction_new' %}">Utwórz pierwszą instrukcję</a>{% endif %}</div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+  {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">‹</a>{% else %}<span class="disabled">‹</span>{% endif %}
+  {% for num in page_obj.paginator.page_range %}
+  {% if page_obj.number == num %}<span class="current">{{ num }}</span>
+  {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}<a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+  {% endif %}{% endfor %}
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">›</a>{% else %}<span class="disabled">›</span>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

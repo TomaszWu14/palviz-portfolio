@@ -1,0 +1,30 @@
+{% load palviz_extras %}
+{% if unavailable %}
+  <div class="card" style="border-left:3px solid #f59e0b">
+    <b>Optymalny układ (OR-Tools)</b><br>
+    <span class="muted">Solver niedostępny lub karton nie mieści się na palecie.</span>
+  </div>
+{% else %}
+  <div class="card">
+    <h3 style="margin:0 0 6px 0;">{% icon "search" %} Optymalny układ warstwy — OR-Tools CP-SAT</h3>
+    <div class="muted" style="margin-bottom:8px;">
+      Optymalnie: <b>{{ optimal }}</b> szt./warstwę · wykorzystanie pola <b>{{ area_pct }}%</b> ·
+      najlepsza heurystyka: <b>{{ best_heuristic }}</b>
+      {% if delta > 0 %}
+        <span style="color:var(--green);font-weight:700">(+{{ delta }} szt. — heurystyka poniżej optimum)</span>
+      {% else %}
+        <span style="color:#2563eb;font-weight:600">(heurystyka osiąga optimum {% icon "check" %})</span>
+      {% endif %}
+    </div>
+    <div id="plot-optimal" style="height:340px"></div>
+    <script type="application/json" id="opt-fig">{{ fig_json|safe }}</script>
+    <script>
+    (function () {
+      try {
+        var fig = JSON.parse(document.getElementById('opt-fig').textContent);
+        Plotly.newPlot('plot-optimal', fig.data, fig.layout, {responsive: true, displayModeBar: false});
+      } catch (e) {}
+    })();
+    </script>
+  </div>
+{% endif %}

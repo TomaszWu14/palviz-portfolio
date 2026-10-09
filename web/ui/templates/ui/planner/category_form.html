@@ -1,0 +1,78 @@
+{% extends "ui/base.html" %}
+{% block title %}{% if object %}Edytuj kategorię{% else %}Nowa kategoria{% endif %} — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block content %}
+
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_categories' %}">Kategorie</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if object %}{{ object.name }}{% else %}Nowa{% endif %}</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{% if object %}Edytuj kategorię{% else %}Nowa kategoria{% endif %}</div>
+  </div>
+</div>
+
+<div class="card" style="max-width:560px">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div style="margin-bottom:14px;padding:10px 14px;background:var(--red-light);border-radius:var(--radius);color:var(--red);font-size:13px">
+        {% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}
+      </div>
+      {% endif %}
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+        <div class="form-group" style="grid-column:1/-1">
+          <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+          {{ form.name }}
+          {% if form.name.errors %}
+          <ul class="error-list">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.code.id_for_label }}">{{ form.code.label }}</label>
+          {{ form.code }}
+          {% if form.code.errors %}
+          <ul class="error-list">{% for e in form.code.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.color.id_for_label }}">{{ form.color.label }}</label>
+          {{ form.color }}
+          {% if form.color.errors %}
+          <ul class="error-list">{% for e in form.color.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group" style="grid-column:1/-1">
+          <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+          {{ form.description }}
+          {% if form.description.errors %}
+          <ul class="error-list">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:20px">
+        <button type="submit" class="btn btn-primary">
+          {% if object %}Zapisz zmiany{% else %}Utwórz kategorię{% endif %}
+        </button>
+        <a href="{% url 'ui:planner_categories' %}" class="btn btn-secondary">Anuluj</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

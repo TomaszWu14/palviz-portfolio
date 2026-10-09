@@ -1,0 +1,52 @@
+{% load static %}<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Typ urządzenia — {{ app_name }}</title>
+  <style>
+    /* Strona standalone (poza motywem app) — lokalne tokeny mirrorujące paletę skanera. */
+    :root { --stage:#c2e4e1; --ink:#133b3a; --teal-deep:#0c5c58; --teal:#0f7d79;
+            --paper:#fbffff; --line:#cfeae6; --active:#e7f6f3; --muted:#64748b; }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+           font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+           background:var(--stage); color:var(--ink); }
+    .card { width:100%; max-width:420px; background:var(--paper); border-radius:18px;
+            padding:26px 22px; margin:16px; box-shadow:0 6px 24px rgba(13,60,58,.18); }
+    h1 { font-size:19px; margin:0 0 4px; color:var(--teal-deep); }
+    p  { font-size:13px; color:var(--muted); margin:0 0 18px; }
+    .dev { display:flex; align-items:center; gap:14px; width:100%; padding:16px;
+           margin-bottom:10px; border:2px solid var(--line); border-radius:14px;
+           background:#fff; font-size:17px; font-weight:700; color:var(--ink);
+           cursor:pointer; text-align:left; }
+    .dev:active { background:var(--active); }
+    .dev--remembered { border-color:var(--teal); background:var(--active); }
+    .dev svg { flex:0 0 auto; color:var(--teal); }
+    .dev small { display:block; font-size:12px; font-weight:600; color:var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Na czym pracujesz?</h1>
+    <p>Potwierdź typ urządzenia — m.in. zadania ze zdjęciem trafią tylko na sprzęt z aparatem.</p>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      {% for key, label in device_types %}
+      <button type="submit" name="device_type" value="{{ key }}"
+              class="dev{% if key == remembered %} dev--remembered{% endif %}">
+        {% if key == "zebra" %}<svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M9 6h6M9 9h6M9 12h6"/><circle cx="12" cy="17.5" r="1.5"/></svg>
+        {% elif key == "mobile" %}<svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+        {% elif key == "tablet" %}<svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M11 18h2"/></svg>
+        {% else %}<svg width="26" height="26" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>{% endif %}
+        <span>{{ label }}
+          {% if key == "zebra" %}<small>bez aparatu — zadania bez foto</small>
+          {% elif key == remembered %}<small>ostatnio na tym urządzeniu</small>{% endif %}
+        </span>
+      </button>
+      {% endfor %}
+    </form>
+  </div>
+</body>
+</html>

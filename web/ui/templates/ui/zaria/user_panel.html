@@ -1,0 +1,85 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% load i18n %}
+{% block title %}{% trans "Mój panel ZARIA" %} — {{ app_name }}{% endblock %}
+{% block extra_head %}{% include "ui/zaria/_head.html" %}{% endblock %}
+{% block content %}
+<div class="zaria zaria--nocontext" data-side="closed">
+  {% include "ui/zaria/_sidebar.html" %}
+
+  <section class="z-main">
+    <div class="z-head">
+      <button type="button" class="btn btn-ghost btn-sm z-drawerbtn" onclick="zariaDrawer('side')" aria-label="{% trans 'Menu rozmów' %}">{% icon "menu" cls="icon--em" %}</button>
+      <div class="z-head__title">{% trans "Mój panel" %}</div>
+      <div style="margin-left:auto"><a href="{% url 'ui:zaria_home' %}" class="btn btn-secondary btn-sm">{% trans "Do czatu" %}</a></div>
+    </div>
+
+    <div class="z-scroll" style="gap:20px">
+      {# Kafelki liczbowe #}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+        <div class="card" style="padding:16px">
+          <div style="font-size:12px;color:var(--gray-500)">{% trans "Dziś" %}</div>
+          <div style="font-size:26px;font-weight:800;font-variant-numeric:tabular-nums">{{ today_spend|floatformat:2 }} PLN</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div style="font-size:12px;color:var(--gray-500)">{% trans "Ten miesiąc" %}</div>
+          <div style="font-size:26px;font-weight:800;font-variant-numeric:tabular-nums">{{ month_spend|floatformat:2 }} PLN</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div style="font-size:12px;color:var(--gray-500)">{% trans "Pozostały budżet" %}</div>
+          <div style="font-size:26px;font-weight:800;font-variant-numeric:tabular-nums">
+            {% if budget %}{{ remaining|floatformat:2 }} PLN{% else %}{% trans "bez limitu" %}{% endif %}</div>
+        </div>
+        <div class="card" style="padding:16px">
+          <div style="font-size:12px;color:var(--gray-500)">{% trans "Tokeny (miesiąc)" %}</div>
+          <div style="font-size:26px;font-weight:800;font-variant-numeric:tabular-nums">{{ tok_used }}{% if tok_budget %} / {{ tok_budget }}{% endif %}</div>
+        </div>
+      </div>
+
+      {% if budget %}
+      <div class="card" style="padding:16px">
+        <div style="font-size:12px;color:var(--gray-500);margin-bottom:6px">{% trans "Wykorzystanie budżetu miesięcznego" %}</div>
+        <div class="z-usage__bar">
+          <div class="z-usage__fill{% if usage_pct >= 90 %} z-usage__fill--crit{% elif usage_pct >= 75 %} z-usage__fill--warn{% endif %}" style="width:{{ usage_pct }}%"></div>
+        </div>
+        <div class="z-usage__cap">{{ month_spend|floatformat:2 }} / {{ budget }} PLN · {{ usage_pct }}%</div>
+      </div>
+      {% endif %}
+
+      {# Wykres 30 dni — słupki CSS, bez biblioteki #}
+      <div class="card" style="padding:16px">
+        <div style="font-weight:700;margin-bottom:10px">{% trans "Zużycie — ostatnie 30 dni (PLN)" %}</div>
+        <div style="display:flex;align-items:flex-end;gap:3px;height:120px">
+          {% for pt in series %}
+          <div title="{{ pt.date|date:'d.m' }}: {{ pt.spend|floatformat:2 }} PLN · {{ pt.toks }} tok."
+               style="flex:1;min-width:4px;height:{{ pt.pct }}%;background:var(--z-accent);border-radius:3px 3px 0 0;opacity:.85"></div>
+          {% endfor %}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-400);margin-top:4px">
+          <span>{{ series.0.date|date:"d.m" }}</span>{% with last=series|last %}<span>{{ last.date|date:"d.m" }}</span>{% endwith %}
+        </div>
+      </div>
+
+      {# Przypisane modele #}
+      <div class="card" style="padding:16px">
+        <div style="font-weight:700;margin-bottom:10px">{% trans "Twoje modele" %}</div>
+        {% for m in models %}
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--gray-100)">
+          <div>
+            <span style="font-weight:600">{{ m.display_name }}</span>
+            <span class="z-badge" style="margin-left:6px">{{ m.provider }}</span>
+          </div>
+          <div style="font-size:12px;color:var(--gray-500);font-variant-numeric:tabular-nums">
+            {{ m.price_input_per_1k }} / {{ m.price_output_per_1k }} PLN / 1k</div>
+        </div>
+        {% empty %}
+        <div style="font-size:13px;color:var(--gray-500)">{% trans "Brak przypisanych modeli — poproś administratora." %}</div>
+        {% endfor %}
+        {% if can_compare %}<div style="font-size:12px;color:var(--gray-500);margin-top:8px">{% trans "Masz dostęp do trybu porównania dwóch modeli." %}</div>{% endif %}
+      </div>
+
+      <div style="font-size:12px;color:var(--gray-500)">{% trans "Motyw i język zmienisz w stopce panelu bocznego." %}</div>
+    </div>
+  </section>
+</div>
+{% endblock %}

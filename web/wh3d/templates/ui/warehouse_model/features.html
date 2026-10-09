@@ -1,0 +1,184 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Elementy hali — {{ wm.name }} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .feat-table th { white-space: nowrap; font-size: 12px; }
+  .feat-table td { vertical-align: middle; }
+  .feat-table input[type=number] { width: 68px; padding: 5px 7px; font-size: 12px; }
+  .feat-table input[type=text]   { width: 110px; padding: 5px 7px; font-size: 12px; }
+  .feat-table input[type=color]  { width: 34px; height: 28px; padding: 0; border: 1px solid var(--gray-300); border-radius: 4px; cursor: pointer; }
+  .feat-table select { padding: 5px 7px; font-size: 12px; }
+  .feat-row:hover td { background: #fafbff; }
+  .row-del { border: none; background: none; cursor: pointer; color: var(--gray-400); font-size: 16px; line-height: 1; }
+  .row-del:hover { color: var(--red); }
+  .angle-btns { display: inline-flex; gap: 2px; margin-left: 3px; vertical-align: middle; }
+  .angle-btns button {
+    width: 20px; height: 20px; padding: 0; line-height: 1;
+    border: 1px solid var(--gray-300); background: var(--surface);
+    border-radius: 4px; cursor: pointer; font-size: 11px; color: var(--gray-600);
+  }
+  .angle-btns button:hover { background: var(--blue-light); color: var(--blue-mid); border-color: var(--blue); }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{{ list_url }}">{{ list_label }}</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{{ back_url }}">{{ parent_name }}</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Elementy hali</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Elementy hali — {{ parent_name }}</div>
+    <div class="page-header__sub">Doki, bramy, korytarze, strefy blokowe, strefa zwrotów, stanowiska liderów i inne punkty specjalne, których siatka regałów nie odwzoruje.</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{{ back_url }}" class="btn btn-secondary">Wróć do wizualizacji</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-header__title">Elementy</span>
+    <span class="text-sm text-muted">{{ meta_line }}</span>
+  </div>
+
+  <form method="post" id="feat-form">
+    {% csrf_token %}
+    <input type="hidden" name="deleted_ids" id="deleted-ids" value="">
+
+    <div class="table-wrap">
+      <table class="table feat-table">
+        <thead>
+          <tr>
+            <th>Typ</th>
+            <th>Etykieta</th>
+            <th>Prefiks kodów</th>
+            <th>X&nbsp;[m]</th>
+            <th>Y&nbsp;[m]</th>
+            <th>Szer.&nbsp;[m]</th>
+            <th>Głęb.&nbsp;[m]</th>
+            <th>Kąt&nbsp;[°]</th>
+            <th>Kolor</th>
+            <th>Uwagi</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="feat-body">
+          {% for f in features %}
+          <tr class="feat-row">
+            <td>
+              <input type="hidden" name="row_id" value="{{ f.pk }}">
+              <select aria-label="Rodzaj" name="kind">
+                {% for val, disp in kind_choices %}
+                <option value="{{ val }}" {% if f.kind == val %}selected{% endif %}>{{ disp }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td><input type="text" name="label" value="{{ f.label }}" placeholder="Nazwa"></td>
+            <td><input type="text" name="zone_code" value="{{ f.zone_code }}" placeholder="np. ZWROTY" style="width:90px"></td>
+            <td><input aria-label="X [m]" type="number" name="x_m" value="{{ f.x_m }}" step="0.1" min="0"></td>
+            <td><input aria-label="Y [m]" type="number" name="y_m" value="{{ f.y_m }}" step="0.1" min="0"></td>
+            <td><input aria-label="Szer. [m]" type="number" name="width_m" value="{{ f.width_m }}" step="0.1" min="0.1"></td>
+            <td><input aria-label="Głęb. [m]" type="number" name="depth_m" value="{{ f.depth_m }}" step="0.1" min="0.1"></td>
+            <td>
+              <input aria-label="Kąt [°]" type="number" name="angle_deg" value="{{ f.angle_deg }}" step="5" min="-180" max="180" style="width:58px">
+              <span class="angle-btns">
+                <button type="button" data-set="0" title="Poziomo (0°)">{% icon "arrow-left-right" cls="icon--em" %}</button>
+                <button type="button" data-set="90" title="Pionowo (90°)">{% icon "arrow-up-down" cls="icon--em" %}</button>
+                <button type="button" data-rot="90" title="Obróć o +90°">⟳</button>
+              </span>
+            </td>
+            <td><input aria-label="Kolor" type="color" name="color_hex" value="{{ f.color_hex|default:'#94a3b8' }}"></td>
+            <td><input type="text" name="notes" value="{{ f.notes }}" placeholder="—"></td>
+            <td><button type="button" class="row-del" title="Usuń">&times;</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-footer" style="display:flex;gap:10px;align-items:center">
+      <button type="button" id="add-row" class="btn btn-secondary">+ Dodaj element</button>
+      <button type="submit" class="btn btn-primary">Zapisz elementy</button>
+      <span class="text-sm text-muted" style="margin-left:auto">X = od lewej, Y = od dołu hali</span>
+    </div>
+  </form>
+</div>
+
+<!-- Template wiersza (ukryty) -->
+<template id="row-tpl">
+  <tr class="feat-row">
+    <td>
+      <input type="hidden" name="row_id" value="">
+      <select aria-label="Rodzaj" name="kind">
+        {% for val, disp in kind_choices %}
+        <option value="{{ val }}">{{ disp }}</option>
+        {% endfor %}
+      </select>
+    </td>
+    <td><input type="text" name="label" placeholder="Nazwa"></td>
+    <td><input type="text" name="zone_code" placeholder="np. ZWROTY" style="width:90px"></td>
+    <td><input aria-label="X [m]" type="number" name="x_m" value="0" step="0.1" min="0"></td>
+    <td><input aria-label="Y [m]" type="number" name="y_m" value="0" step="0.1" min="0"></td>
+    <td><input aria-label="Szer. [m]" type="number" name="width_m" value="2" step="0.1" min="0.1"></td>
+    <td><input aria-label="Głęb. [m]" type="number" name="depth_m" value="2" step="0.1" min="0.1"></td>
+    <td>
+      <input aria-label="Kąt [°]" type="number" name="angle_deg" value="0" step="5" min="-180" max="180" style="width:58px">
+      <span class="angle-btns">
+        <button type="button" data-set="0" title="Poziomo (0°)">{% icon "arrow-left-right" cls="icon--em" %}</button>
+        <button type="button" data-set="90" title="Pionowo (90°)">{% icon "arrow-up-down" cls="icon--em" %}</button>
+        <button type="button" data-rot="90" title="Obróć o +90°">⟳</button>
+      </span>
+    </td>
+    <td><input aria-label="Kolor" type="color" name="color_hex" value="#94a3b8"></td>
+    <td><input type="text" name="notes" placeholder="—"></td>
+    <td><button type="button" class="row-del" title="Usuń">&times;</button></td>
+  </tr>
+</template>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  var body = document.getElementById('feat-body');
+  var tpl  = document.getElementById('row-tpl');
+  var deletedInput = document.getElementById('deleted-ids');
+  var deleted = [];
+
+  document.getElementById('add-row').addEventListener('click', function () {
+    body.appendChild(tpl.content.cloneNode(true));
+  });
+
+  // Usuwanie wiersza: istniejący pk → do deleted_ids (skasuje go POST); nowy → tylko z DOM.
+  body.addEventListener('click', function (e) {
+    var delBtn = e.target.closest('.row-del');
+    if (delBtn) {
+      var row = delBtn.closest('tr');
+      var idInput = row.querySelector('input[name="row_id"]');
+      if (idInput && idInput.value) { deleted.push(idInput.value); deletedInput.value = deleted.join(','); }
+      row.remove();
+      return;
+    }
+    // Szybkie kąty ⇔/⇕/⟳ — działają na input w tym samym wierszu.
+    var angBtn = e.target.closest('.angle-btns button');
+    if (angBtn) {
+      var input = angBtn.closest('tr').querySelector('input[name="angle_deg"]');
+      if (!input) return;
+      var val;
+      if (angBtn.dataset.set !== undefined) {
+        val = parseFloat(angBtn.dataset.set);
+      } else {
+        val = (parseFloat(input.value) || 0) + parseFloat(angBtn.dataset.rot || 90);
+        val = ((val + 180) % 360 + 360) % 360 - 180;
+      }
+      input.value = val;
+    }
+  });
+</script>
+{% endblock %}

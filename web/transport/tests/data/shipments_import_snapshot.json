@@ -1,0 +1,1421 @@
+{
+ "basic": {
+  "db": {
+   "customers": [],
+   "lines": [
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 15.0,
+     "shipment": "Dostawa D1",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 1,
+     "product__code": "P2",
+     "product_code": "P2",
+     "quantity": 1.5,
+     "shipment": "Dostawa D1",
+     "source_unit": "KRT",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 2,
+     "product__code": "P3",
+     "product_code": "P3",
+     "quantity": 2.0,
+     "shipment": "Dostawa D1",
+     "source_unit": "PAL",
+     "unit": "pal"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 3.0,
+     "shipment": "Dostawa D2",
+     "source_unit": "CTN",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 1,
+     "product__code": "P2",
+     "product_code": "P2",
+     "quantity": 4.0,
+     "shipment": "Dostawa D2",
+     "source_unit": "PAZ",
+     "unit": "pal"
+    },
+    {
+     "notes": "",
+     "order": 2,
+     "product__code": "P3",
+     "product_code": "P3",
+     "quantity": 7.0,
+     "shipment": "Dostawa D2",
+     "source_unit": "OP",
+     "unit": "szt"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa D3",
+     "source_unit": "CS",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 1,
+     "product__code": "P2",
+     "product_code": "P2",
+     "quantity": 1.0,
+     "shipment": "Dostawa D3",
+     "source_unit": "BOX",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 2,
+     "product__code": "P3",
+     "product_code": "P3",
+     "quantity": 1.0,
+     "shipment": "Dostawa D3",
+     "source_unit": "PLT",
+     "unit": "pal"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa D4",
+     "source_unit": "PL",
+     "unit": "pal"
+    },
+    {
+     "notes": "",
+     "order": 1,
+     "product__code": "P2",
+     "product_code": "P2",
+     "quantity": 1.0,
+     "shipment": "Dostawa D4",
+     "source_unit": "",
+     "unit": "szt"
+    },
+    {
+     "notes": "",
+     "order": 2,
+     "product__code": "P3",
+     "product_code": "P3",
+     "quantity": 1.0,
+     "shipment": "Dostawa D4",
+     "source_unit": "SZT",
+     "unit": "szt"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 2.0,
+     "shipment": "Dostawa bez numeru",
+     "source_unit": "KAR",
+     "unit": "kar"
+    }
+   ],
+   "shipments": [
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa D1",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa D2",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa D3",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa D4",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa bez numeru",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 5 przesyłek (13 linii) z 1 plik(ów). Pominięto 12 nieznanych kodów: X00, X01, X02, X03, X04, X05, X06, X07, X08, X09."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "broken_xlsx": {
+  "db": {
+   "customers": [],
+   "lines": [],
+   "shipments": []
+  },
+  "messages": [
+   [
+    "error",
+    "Nie udało się zaimportować pliku. Sprawdź, czy to poprawny eksport przesyłek (nagłówki, format kolumn) i spróbuj ponownie."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "comma_english": {
+  "db": {
+   "customers": [],
+   "lines": [
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 4.0,
+     "shipment": "Dostawa E1",
+     "source_unit": "CTN",
+     "unit": "kar"
+    }
+   ],
+   "shipments": [
+    {
+     "actual_hu_count": null,
+     "author": "Ann",
+     "author_email": "a@b.pl",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "Berlin",
+     "destination_country": "DE",
+     "destination_postal": "10115",
+     "load_mode": "pallets",
+     "name": "Dostawa E1",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 przesyłek (1 linii) z 1 plik(ów)."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "consolidate": {
+  "db": {
+   "customers": [
+    {
+     "city": "W",
+     "code": "C50",
+     "kind": "consignee",
+     "name": "Pięćdziesiąt",
+     "postal": "00-050"
+    }
+   ],
+   "lines": [
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Konsolidacja — Bez Numeru",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 1,
+     "product__code": "P2",
+     "product_code": "P2",
+     "quantity": 2.0,
+     "shipment": "Konsolidacja — Bez Numeru",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P3",
+     "product_code": "P3",
+     "quantity": 3.0,
+     "shipment": "Konsolidacja — Bez Numeru",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 16.0,
+     "shipment": "Konsolidacja — Pięćdziesiąt",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 1,
+     "product__code": "P2",
+     "product_code": "P2",
+     "quantity": 5.0,
+     "shipment": "Konsolidacja — Pięćdziesiąt",
+     "source_unit": "PAL",
+     "unit": "pal"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P3",
+     "product_code": "P3",
+     "quantity": 1.0,
+     "shipment": "Konsolidacja — Spacja",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P3",
+     "product_code": "P3",
+     "quantity": 1.0,
+     "shipment": "Konsolidacja — odbiorca",
+     "source_unit": "KAR",
+     "unit": "kar"
+    }
+   ],
+   "shipments": [
+    {
+     "actual_hu_count": 1,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "Gdańsk",
+     "destination_country": "",
+     "destination_postal": "80-001",
+     "load_mode": "pallets",
+     "name": "Konsolidacja — Bez Numeru",
+     "notes": "Konsolidacja dokumentów: K3, K4",
+     "recipient_name": "Bez Numeru",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "Gdynia",
+     "destination_country": "",
+     "destination_postal": "81-001",
+     "load_mode": "pallets",
+     "name": "Konsolidacja — Bez Numeru",
+     "notes": "Konsolidacja dokumentów: K5",
+     "recipient_name": "Bez Numeru",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": 5,
+     "author": "Ewa",
+     "author_email": "e@x.pl",
+     "client_requirements": "Wymóg A",
+     "customer__code": "C50",
+     "customer__kind": "consignee",
+     "destination_city": "W",
+     "destination_country": "PL",
+     "destination_postal": "00-050",
+     "load_mode": "pallets",
+     "name": "Konsolidacja — Pięćdziesiąt",
+     "notes": "Konsolidacja dokumentów: K1, K2",
+     "recipient_name": "Pięćdziesiąt",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Konsolidacja — Spacja",
+     "notes": "Konsolidacja dokumentów: K6",
+     "recipient_name": "Spacja",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Konsolidacja — odbiorca",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 5 przesyłek skonsolidowanych (7 linii) z 1 plik(ów). Podpięto odbiorcę w 1 przesyłkach (nowych klientów: 1)."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "customers": {
+  "db": {
+   "customers": [
+    {
+     "city": "A",
+     "code": "C1",
+     "kind": "consignee",
+     "name": "Istniejący",
+     "postal": ""
+    },
+    {
+     "city": "",
+     "code": "C2",
+     "kind": "customer",
+     "name": "Klient (inny typ)",
+     "postal": ""
+    },
+    {
+     "city": "Łódź",
+     "code": "C3",
+     "kind": "consignee",
+     "name": "Trzeci",
+     "postal": "90-001"
+    }
+   ],
+   "lines": [
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa H1",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa H2",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa H3",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa H4",
+     "source_unit": "KAR",
+     "unit": "kar"
+    }
+   ],
+   "shipments": [
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": "C1",
+     "customer__kind": "consignee",
+     "destination_city": "B",
+     "destination_country": "",
+     "destination_postal": "11-111",
+     "load_mode": "pallets",
+     "name": "Dostawa H1",
+     "notes": "",
+     "recipient_name": "Nowa nazwa",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": "C2",
+     "customer__kind": "customer",
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa H2",
+     "notes": "",
+     "recipient_name": "X",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": "C3",
+     "customer__kind": "consignee",
+     "destination_city": "Łódź",
+     "destination_country": "",
+     "destination_postal": "90-001",
+     "load_mode": "pallets",
+     "name": "Dostawa H3",
+     "notes": "",
+     "recipient_name": "Trzeci",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": "C3",
+     "customer__kind": "consignee",
+     "destination_city": "Łódź",
+     "destination_country": "",
+     "destination_postal": "90-001",
+     "load_mode": "pallets",
+     "name": "Dostawa H4",
+     "notes": "",
+     "recipient_name": "Trzeci",
+     "status": "draft",
+     "transport_modes": ""
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 4 przesyłek (4 linii) z 1 plik(ów). Podpięto odbiorcę w 4 przesyłkach (nowych klientów: 1)."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "flags_modes": {
+  "db": {
+   "customers": [],
+   "lines": [
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa T1",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P2",
+     "product_code": "P2",
+     "quantity": 1.0,
+     "shipment": "Dostawa T2",
+     "source_unit": "KAR",
+     "unit": "kar"
+    }
+   ],
+   "shipments": [
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa T1",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": "naczepa"
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa T2",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": "naczepa"
+    }
+   ]
+  },
+  "last": {
+   "messages": [
+    [
+     "success",
+     "Zaimportowano 1 przesyłek skonsolidowanych (2 linii) z 1 plik(ów)."
+    ],
+    [
+     "success",
+     "Zaimportowano 1 przesyłek skonsolidowanych (2 linii) z 1 plik(ów)."
+    ],
+    [
+     "success",
+     "Zaimportowano 2 przesyłek (2 linii) z 1 plik(ów)."
+    ],
+    [
+     "success",
+     "Zaimportowano 2 przesyłek (2 linii) z 1 plik(ów)."
+    ]
+   ],
+   "redirect": "planner_shipments"
+  },
+  "runs": {
+   "1": {
+    "db": {
+     "customers": [],
+     "lines": [
+      {
+       "notes": "",
+       "order": 0,
+       "product__code": "P1",
+       "product_code": "P1",
+       "quantity": 1.0,
+       "shipment": "Konsolidacja — odbiorca",
+       "source_unit": "KAR",
+       "unit": "kar"
+      },
+      {
+       "notes": "",
+       "order": 1,
+       "product__code": "P2",
+       "product_code": "P2",
+       "quantity": 1.0,
+       "shipment": "Konsolidacja — odbiorca",
+       "source_unit": "KAR",
+       "unit": "kar"
+      }
+     ],
+     "shipments": [
+      {
+       "actual_hu_count": null,
+       "author": "",
+       "author_email": "",
+       "client_requirements": "",
+       "customer__code": null,
+       "customer__kind": null,
+       "destination_city": "",
+       "destination_country": "",
+       "destination_postal": "",
+       "load_mode": "loose",
+       "name": "Konsolidacja — odbiorca",
+       "notes": "Konsolidacja dokumentów: T1, T2",
+       "recipient_name": "",
+       "status": "draft",
+       "transport_modes": "mega,cont20"
+      }
+     ]
+    },
+    "messages": [
+     [
+      "success",
+      "Zaimportowano 1 przesyłek skonsolidowanych (2 linii) z 1 plik(ów)."
+     ]
+    ],
+    "redirect": "planner_shipments"
+   },
+   "true": {
+    "db": {
+     "customers": [],
+     "lines": [
+      {
+       "notes": "",
+       "order": 0,
+       "product__code": "P1",
+       "product_code": "P1",
+       "quantity": 1.0,
+       "shipment": "Konsolidacja — odbiorca",
+       "source_unit": "KAR",
+       "unit": "kar"
+      },
+      {
+       "notes": "",
+       "order": 1,
+       "product__code": "P2",
+       "product_code": "P2",
+       "quantity": 1.0,
+       "shipment": "Konsolidacja — odbiorca",
+       "source_unit": "KAR",
+       "unit": "kar"
+      }
+     ],
+     "shipments": [
+      {
+       "actual_hu_count": null,
+       "author": "",
+       "author_email": "",
+       "client_requirements": "",
+       "customer__code": null,
+       "customer__kind": null,
+       "destination_city": "",
+       "destination_country": "",
+       "destination_postal": "",
+       "load_mode": "loose",
+       "name": "Konsolidacja — odbiorca",
+       "notes": "Konsolidacja dokumentów: T1, T2",
+       "recipient_name": "",
+       "status": "draft",
+       "transport_modes": "mega,cont20"
+      }
+     ]
+    },
+    "messages": [
+     [
+      "success",
+      "Zaimportowano 1 przesyłek skonsolidowanych (2 linii) z 1 plik(ów)."
+     ],
+     [
+      "success",
+      "Zaimportowano 1 przesyłek skonsolidowanych (2 linii) z 1 plik(ów)."
+     ]
+    ],
+    "redirect": "planner_shipments"
+   },
+   "yes": {
+    "db": {
+     "customers": [],
+     "lines": [
+      {
+       "notes": "",
+       "order": 0,
+       "product__code": "P1",
+       "product_code": "P1",
+       "quantity": 1.0,
+       "shipment": "Dostawa T1",
+       "source_unit": "KAR",
+       "unit": "kar"
+      },
+      {
+       "notes": "",
+       "order": 0,
+       "product__code": "P2",
+       "product_code": "P2",
+       "quantity": 1.0,
+       "shipment": "Dostawa T2",
+       "source_unit": "KAR",
+       "unit": "kar"
+      }
+     ],
+     "shipments": [
+      {
+       "actual_hu_count": null,
+       "author": "",
+       "author_email": "",
+       "client_requirements": "",
+       "customer__code": null,
+       "customer__kind": null,
+       "destination_city": "",
+       "destination_country": "",
+       "destination_postal": "",
+       "load_mode": "loose",
+       "name": "Dostawa T1",
+       "notes": "",
+       "recipient_name": "",
+       "status": "draft",
+       "transport_modes": "mega,cont20"
+      },
+      {
+       "actual_hu_count": null,
+       "author": "",
+       "author_email": "",
+       "client_requirements": "",
+       "customer__code": null,
+       "customer__kind": null,
+       "destination_city": "",
+       "destination_country": "",
+       "destination_postal": "",
+       "load_mode": "loose",
+       "name": "Dostawa T2",
+       "notes": "",
+       "recipient_name": "",
+       "status": "draft",
+       "transport_modes": "mega,cont20"
+      }
+     ]
+    },
+    "messages": [
+     [
+      "success",
+      "Zaimportowano 1 przesyłek skonsolidowanych (2 linii) z 1 plik(ów)."
+     ],
+     [
+      "success",
+      "Zaimportowano 1 przesyłek skonsolidowanych (2 linii) z 1 plik(ów)."
+     ],
+     [
+      "success",
+      "Zaimportowano 2 przesyłek (2 linii) z 1 plik(ów)."
+     ]
+    ],
+    "redirect": "planner_shipments"
+   }
+  }
+ },
+ "multi_file": {
+  "db": {
+   "customers": [],
+   "lines": [
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa M1",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P2",
+     "product_code": "P2",
+     "quantity": 2.0,
+     "shipment": "Dostawa M2",
+     "source_unit": "PAL",
+     "unit": "pal"
+    }
+   ],
+   "shipments": [
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa M1",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "Ola",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa M2",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 2 przesyłek (2 linii) z 2 plik(ów)."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "no_data": {
+  "db": {
+   "customers": [],
+   "lines": [],
+   "shipments": []
+  },
+  "messages": [
+   [
+    "error",
+    "Pliki nie zawierają danych."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "no_file": {
+  "db": {
+   "customers": [],
+   "lines": [],
+   "shipments": []
+  },
+  "messages": [
+   [
+    "error",
+    "Nie wybrano pliku."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "positional": {
+  "db": {
+   "customers": [],
+   "lines": [
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 3.0,
+     "shipment": "Dostawa F1",
+     "source_unit": "PAL",
+     "unit": "pal"
+    },
+    {
+     "notes": "",
+     "order": 1,
+     "product__code": "P2",
+     "product_code": "P2",
+     "quantity": 2.0,
+     "shipment": "Dostawa F1",
+     "source_unit": "X",
+     "unit": "szt"
+    }
+   ],
+   "shipments": [
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa F1",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 przesyłek (2 linii) z 1 plik(ów)."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "postal_before_product": {
+  "db": {
+   "customers": [],
+   "lines": [
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 5.0,
+     "shipment": "Dostawa G1",
+     "source_unit": "KAR",
+     "unit": "kar"
+    }
+   ],
+   "shipments": [
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "00-001",
+     "load_mode": "pallets",
+     "name": "Dostawa G1",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 przesyłek (1 linii) z 1 plik(ów)."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "reimport": {
+  "db": {
+   "customers": [
+    {
+     "city": "",
+     "code": "C9",
+     "kind": "consignee",
+     "name": "Dziewiąty",
+     "postal": ""
+    }
+   ],
+   "lines": [
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa R1",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa R1",
+     "source_unit": "KAR",
+     "unit": "kar"
+    }
+   ],
+   "shipments": [
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": "C9",
+     "customer__kind": "consignee",
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa R1",
+     "notes": "",
+     "recipient_name": "Dziewiąty",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": "C9",
+     "customer__kind": "consignee",
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa R1",
+     "notes": "",
+     "recipient_name": "Dziewiąty",
+     "status": "draft",
+     "transport_modes": ""
+    }
+   ]
+  },
+  "first": {
+   "messages": [
+    [
+     "success",
+     "Zaimportowano 1 przesyłek (1 linii) z 1 plik(ów). Podpięto odbiorcę w 1 przesyłkach (nowych klientów: 1)."
+    ]
+   ],
+   "redirect": "planner_shipments"
+  },
+  "second": {
+   "messages": [
+    [
+     "success",
+     "Zaimportowano 1 przesyłek (1 linii) z 1 plik(ów). Podpięto odbiorcę w 1 przesyłkach (nowych klientów: 1)."
+    ],
+    [
+     "success",
+     "Zaimportowano 1 przesyłek (1 linii) z 1 plik(ów). Podpięto odbiorcę w 1 przesyłkach."
+    ]
+   ],
+   "redirect": "planner_shipments"
+  }
+ },
+ "rollback": {
+  "db": {
+   "customers": [],
+   "lines": [],
+   "shipments": []
+  },
+  "messages": [
+   [
+    "error",
+    "Nie udało się zaimportować pliku. Sprawdź, czy to poprawny eksport przesyłek (nagłówki, format kolumn) i spróbuj ponownie."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "sap_full": {
+  "db": {
+   "customers": [
+    {
+     "city": "Warszawa",
+     "code": "C100",
+     "kind": "consignee",
+     "name": "Klient Sto",
+     "postal": "00-001"
+    },
+    {
+     "city": "",
+     "code": "C300",
+     "kind": "consignee",
+     "name": "C300",
+     "postal": ""
+    },
+    {
+     "city": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+     "code": "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+     "kind": "consignee",
+     "name": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+     "postal": "99999999999999999999"
+    }
+   ],
+   "lines": [
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 10.0,
+     "shipment": "Dostawa D1",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 1,
+     "product__code": "P2",
+     "product_code": "P2",
+     "quantity": 5.0,
+     "shipment": "Dostawa D1",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa D2",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa D3",
+     "source_unit": "KAR",
+     "unit": "kar"
+    },
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 1.0,
+     "shipment": "Dostawa D4",
+     "source_unit": "KAR",
+     "unit": "kar"
+    }
+   ],
+   "shipments": [
+    {
+     "actual_hu_count": 3,
+     "author": "Jan",
+     "author_email": "jan@x.pl",
+     "client_requirements": "Paleta EURO",
+     "customer__code": "C100",
+     "customer__kind": "consignee",
+     "destination_city": "Warszawa",
+     "destination_country": "PL",
+     "destination_postal": "00-001",
+     "load_mode": "pallets",
+     "name": "Dostawa D1",
+     "notes": "",
+     "recipient_name": "Klient Sto",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": null,
+     "customer__kind": null,
+     "destination_city": "Kraków",
+     "destination_country": "DE",
+     "destination_postal": "30-001",
+     "load_mode": "pallets",
+     "name": "Dostawa D2",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": null,
+     "author": "",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": "C300",
+     "customer__kind": "consignee",
+     "destination_city": "",
+     "destination_country": "",
+     "destination_postal": "",
+     "load_mode": "pallets",
+     "name": "Dostawa D3",
+     "notes": "",
+     "recipient_name": "",
+     "status": "draft",
+     "transport_modes": ""
+    },
+    {
+     "actual_hu_count": 1,
+     "author": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+     "author_email": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+     "client_requirements": "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+     "customer__code": "KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK",
+     "customer__kind": "consignee",
+     "destination_city": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+     "destination_country": "PL",
+     "destination_postal": "99999999999999999999",
+     "load_mode": "pallets",
+     "name": "Dostawa D4",
+     "notes": "",
+     "recipient_name": "NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",
+     "status": "draft",
+     "transport_modes": ""
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 4 przesyłek (5 linii) z 1 plik(ów). Podpięto odbiorcę w 3 przesyłkach (nowych klientów: 3)."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "too_large": {
+  "db": {
+   "customers": [],
+   "lines": [],
+   "shipments": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik „big.csv” zbyt duży (max 10 MB)."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ },
+ "xlsx_numeric": {
+  "db": {
+   "customers": [
+    {
+     "city": "Rvk",
+     "code": "11132232",
+     "kind": "consignee",
+     "name": "Nordmed ehf.",
+     "postal": "203"
+    }
+   ],
+   "lines": [
+    {
+     "notes": "",
+     "order": 0,
+     "product__code": "P1",
+     "product_code": "P1",
+     "quantity": 600.0,
+     "shipment": "Dostawa 81772168",
+     "source_unit": "SZT",
+     "unit": "szt"
+    },
+    {
+     "notes": "",
+     "order": 1,
+     "product__code": "P2",
+     "product_code": "P2",
+     "quantity": 2.5,
+     "shipment": "Dostawa 81772168",
+     "source_unit": "KAR",
+     "unit": "kar"
+    }
+   ],
+   "shipments": [
+    {
+     "actual_hu_count": 3,
+     "author": "ADEMOWY",
+     "author_email": "",
+     "client_requirements": "",
+     "customer__code": "11132232",
+     "customer__kind": "consignee",
+     "destination_city": "Rvk",
+     "destination_country": "IS",
+     "destination_postal": "203",
+     "load_mode": "pallets",
+     "name": "Dostawa 81772168",
+     "notes": "",
+     "recipient_name": "Nordmed ehf.",
+     "status": "draft",
+     "transport_modes": ""
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 przesyłek (2 linii) z 1 plik(ów). Podpięto odbiorcę w 1 przesyłkach (nowych klientów: 1)."
+   ]
+  ],
+  "redirect": "planner_shipments"
+ }
+}

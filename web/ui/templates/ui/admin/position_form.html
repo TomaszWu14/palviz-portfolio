@@ -1,0 +1,36 @@
+{% extends "ui/base.html" %}
+{% block title %}{% if obj %}Edycja stanowiska{% else %}Nowe stanowisko{% endif %} — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_panel' %}">Panel administracyjny</a>
+  <span class="breadcrumb__sep">›</span><a href="{% url 'ui:admin_positions' %}">Stanowiska</a>
+  <span class="breadcrumb__sep">›</span><span>{% if obj %}{{ obj.name }}{% else %}Nowe{% endif %}</span></nav>
+
+<div class="card" style="max-width:640px">
+  {% for e in errors %}<div class="alert alert-error">{{ e }}</div>{% endfor %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-group"><label>Nazwa stanowiska *</label>
+      <input aria-label="Nazwa stanowiska" name="name" maxlength="80" required value="{{ obj.name|default:'' }}"></div>
+    <div class="form-group"><label>Opis</label>
+      <input aria-label="Opis" name="description" maxlength="200" value="{{ obj.description|default:'' }}"></div>
+    <div class="form-group"><label>Kolejność</label>
+      <input aria-label="Kolejność" type="number" name="order" min="0" value="{{ obj.order|default:100 }}"></div>
+    <div class="form-group">
+      <label style="display:flex;gap:8px;align-items:center">
+        <input type="checkbox" name="is_active" value="1"
+               {% if not obj or obj.is_active %}checked{% endif %}> Aktywne</label></div>
+    <div class="form-group"><label>Role (grupy) stanowiska</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        {% for g in groups %}
+        <label style="display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px">
+          <input type="checkbox" name="groups" value="{{ g.pk }}"
+                 {% if g.pk in position_group_ids %}checked{% endif %}> {{ g.name }}</label>
+        {% endfor %}
+      </div>
+      <div style="font-size:11px;color:var(--gray-500);margin-top:4px">
+        Zapis przeliczy grupy wszystkich kont przypisanych do tego stanowiska.</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Zapisz stanowisko</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Status importów — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_panel' %}">Panel administracyjny</a>
+  <span class="breadcrumb__sep">›</span><span>Status importów</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#0e7490;--pcbg:#ecfeff">
+    <div class="panel-head__chip">{% icon "wifi" cls="icon--em" %}</div>
+    <div>
+      <div class="page-header__title">Status importów danych</div>
+      <div class="page-header__sub">Ostatnia aktualizacja każdego źródła; czerwone = starsze niż {{ stale_hours }} h (albo nigdy nie wgrane).</div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="padding:0">
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Źródło danych</th><th>Ostatnia aktualizacja</th><th>Status</th>
+      <th class="text-right">Rekordów</th><th>Uruchomił</th><th>Ostatni błąd</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+    <tr {% if r.stale %}style="background:var(--red-light)"{% endif %}>
+      <td style="font-weight:700">{{ r.label }}
+        {% if r.stale %}<span class="badge badge-red" title="Starszy niż próg {{ stale_hours }} h">nieświeży</span>{% endif %}</td>
+      <td>{% if r.when %}{{ r.when|date:"Y-m-d H:i" }}{% else %}<span style="color:var(--red)">nigdy</span>{% endif %}</td>
+      <td>{% if r.status == "error" %}<span class="badge badge-red">błąd</span>
+          {% elif r.status == "running" %}<span class="badge badge-gray">w toku</span>
+          {% else %}<span class="badge badge-green">OK</span>{% endif %}</td>
+      <td class="text-right">{{ r.count }}</td>
+      <td style="font-size:12px;color:var(--gray-500)">{{ r.who|default:"—" }}</td>
+      <td style="font-size:12px;color:var(--red)">{{ r.error|default:"" }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

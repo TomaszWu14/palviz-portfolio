@@ -1,0 +1,627 @@
+{
+ "full": {
+  "levels": [
+   {
+    "key": "pallet",
+    "title": "Paleta",
+    "subtitle": "Jednostka ładunkowa",
+    "color": "#8B6914",
+    "dims": "120×80×165 cm",
+    "l_cm": 120,
+    "w_cm": 80,
+    "h_cm": 165,
+    "vol_m3": 1.584,
+    "qty": "48 KAR, 6 warstw",
+    "three_data": "{\"type\": \"pallet\", \"pallet\": {\"l\": 120, \"w\": 80, \"base_h\": 15}, \"carton\": {\"l\": 40, \"w\": 30, \"h\": 25}, \"placements\": [{\"x\": 0, \"y\": 0, \"dx\": 40, \"dy\": 30}], \"layers\": 6, \"label\": \"KAR-A\", \"color\": \"#DCC4A0\", \"carton_artwork\": [{\"id\": 0, \"face\": \"front\", \"kind\": \"print\", \"url\": \"/media/a/art.png\", \"thumb\": \"/media/a/art.png\", \"full\": \"/media/a/art.png\", \"name\": \"\", \"x\": 1.0, \"y\": 2.0, \"w\": 50.0, \"h\": 40.0, \"rot\": 0.0, \"z\": 0, \"w_px\": 0, \"h_px\": 0}], \"carton_glb_url\": \"/media/carton_models/k.glb\", \"noRuler\": true}",
+    "has_media": true,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "carton",
+    "title": "Karton",
+    "subtitle": "Jednostka kompletacyjna",
+    "color": "#A07840",
+    "dims": "40×30×25 cm",
+    "l_cm": 40,
+    "w_cm": 30,
+    "h_cm": 25,
+    "vol_m3": 0.03,
+    "ean": "5900000000028",
+    "qty": "12 szt / KAR",
+    "three_data": "{\"type\": \"box_with_units\", \"l\": 40, \"w\": 30, \"h\": 25, \"unit_l\": 20.0, \"unit_w\": 15.0, \"unit_h\": 12.0, \"units\": 2, \"label\": \"KAR-A\", \"color\": \"#DCC4A0\", \"artwork\": [{\"id\": 0, \"face\": \"front\", \"kind\": \"print\", \"url\": \"/media/a/art.png\", \"thumb\": \"/media/a/art.png\", \"full\": \"/media/a/art.png\", \"name\": \"\", \"x\": 1.0, \"y\": 2.0, \"w\": 50.0, \"h\": 40.0, \"rot\": 0.0, \"z\": 0, \"w_px\": 0, \"h_px\": 0}], \"glb_url\": \"/media/carton_models/k.glb\", \"noRuler\": true}",
+    "has_media": true,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "inner_pack",
+    "title": "Opakowanie zbiorcze",
+    "subtitle": "Jednostka dostawy",
+    "color": "#B79B6B",
+    "dims": "20.0×15.0×12.0 cm",
+    "l_cm": 20.0,
+    "w_cm": 15.0,
+    "h_cm": 12.0,
+    "vol_m3": 0.0036,
+    "ean": "5900000000011",
+    "qty": "6 szt / opakowanie",
+    "three_data": "{\"type\": \"box_with_units\", \"l\": 20.0, \"w\": 15.0, \"h\": 12.0, \"unit_l\": 10.0, \"unit_w\": 8.0, \"unit_h\": 5.0, \"units\": 6, \"label\": \"CH-FULL\", \"color\": \"#D8C7A0\", \"artwork\": [{\"id\": 0, \"face\": \"front\", \"kind\": \"print\", \"url\": \"/media/a/art.png\", \"thumb\": \"/media/a/art.png\", \"full\": \"/media/a/art.png\", \"name\": \"\", \"x\": 1.0, \"y\": 2.0, \"w\": 50.0, \"h\": 40.0, \"rot\": 0.0, \"z\": 0, \"w_px\": 0, \"h_px\": 0}], \"noRuler\": true}",
+    "has_media": true,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "unit",
+    "title": "Sztuka",
+    "subtitle": "Jednostka konsumpcyjna",
+    "color": "#B79B6B",
+    "dims": "10.0×8.0×5.0 cm",
+    "l_cm": 10.0,
+    "w_cm": 8.0,
+    "h_cm": 5.0,
+    "vol_m3": 0.0004,
+    "ean": "5900000000035",
+    "qty": "1 szt — 0.0004 m³",
+    "three_data": "{\"type\": \"box\", \"l\": 10.0, \"w\": 8.0, \"h\": 5.0, \"label\": \"CH-FULL\", \"color\": \"#CDBE9A\", \"artwork\": [{\"id\": 0, \"face\": \"front\", \"kind\": \"print\", \"url\": \"/media/a/art.png\", \"thumb\": \"/media/a/art.png\", \"full\": \"/media/a/art.png\", \"name\": \"\", \"x\": 1.0, \"y\": 2.0, \"w\": 50.0, \"h\": 40.0, \"rot\": 0.0, \"z\": 0, \"w_px\": 0, \"h_px\": 0}], \"glb_url\": \"/media/product_models/p.glb\", \"noRuler\": true}",
+    "has_media": true,
+    "uom_kind": "base",
+    "uom_label": "Podstawowa JM"
+   }
+  ],
+  "summary": {
+   "cpp_estimated": false,
+   "pcs_per_pallet": 576,
+   "pallet_unit": "szt",
+   "pallet_unit_desc": "sztuk konsumpcyjnych",
+   "cartons_per_pallet": 48,
+   "pallet_weight_kg": 302.4,
+   "packs_per_pallet": 96,
+   "sales_units_per_pallet": null,
+   "layers": 6,
+   "carton_weight_kg": 6.3,
+   "unit_weight_kg": 0.5
+  },
+  "alerts": []
+ },
+ "full_no_artwork": {
+  "levels": [
+   {
+    "key": "pallet",
+    "title": "Paleta",
+    "subtitle": "Jednostka ładunkowa",
+    "color": "#8B6914",
+    "dims": "120×80×165 cm",
+    "l_cm": 120,
+    "w_cm": 80,
+    "h_cm": 165,
+    "vol_m3": 1.584,
+    "qty": "48 KAR, 6 warstw",
+    "three_data": "{\"type\": \"pallet\", \"pallet\": {\"l\": 120, \"w\": 80, \"base_h\": 15}, \"carton\": {\"l\": 40, \"w\": 30, \"h\": 25}, \"placements\": [{\"x\": 0, \"y\": 0, \"dx\": 40, \"dy\": 30}], \"layers\": 6, \"label\": \"KAR-A\", \"color\": \"#DCC4A0\", \"carton_glb_url\": \"/media/carton_models/k.glb\", \"noRuler\": true}",
+    "has_media": true,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "carton",
+    "title": "Karton",
+    "subtitle": "Jednostka kompletacyjna",
+    "color": "#A07840",
+    "dims": "40×30×25 cm",
+    "l_cm": 40,
+    "w_cm": 30,
+    "h_cm": 25,
+    "vol_m3": 0.03,
+    "ean": "5900000000028",
+    "qty": "12 szt / KAR",
+    "three_data": "{\"type\": \"box_with_units\", \"l\": 40, \"w\": 30, \"h\": 25, \"unit_l\": 20.0, \"unit_w\": 15.0, \"unit_h\": 12.0, \"units\": 2, \"label\": \"KAR-A\", \"color\": \"#DCC4A0\", \"glb_url\": \"/media/carton_models/k.glb\", \"noRuler\": true}",
+    "has_media": true,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "inner_pack",
+    "title": "Opakowanie zbiorcze",
+    "subtitle": "Jednostka dostawy",
+    "color": "#B79B6B",
+    "dims": "20.0×15.0×12.0 cm",
+    "l_cm": 20.0,
+    "w_cm": 15.0,
+    "h_cm": 12.0,
+    "vol_m3": 0.0036,
+    "ean": "5900000000011",
+    "qty": "6 szt / opakowanie",
+    "three_data": "{\"type\": \"box_with_units\", \"l\": 20.0, \"w\": 15.0, \"h\": 12.0, \"unit_l\": 10.0, \"unit_w\": 8.0, \"unit_h\": 5.0, \"units\": 6, \"label\": \"CH-FULL\", \"color\": \"#D8C7A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "unit",
+    "title": "Sztuka",
+    "subtitle": "Jednostka konsumpcyjna",
+    "color": "#B79B6B",
+    "dims": "10.0×8.0×5.0 cm",
+    "l_cm": 10.0,
+    "w_cm": 8.0,
+    "h_cm": 5.0,
+    "vol_m3": 0.0004,
+    "ean": "5900000000035",
+    "qty": "1 szt — 0.0004 m³",
+    "three_data": "{\"type\": \"box\", \"l\": 10.0, \"w\": 8.0, \"h\": 5.0, \"label\": \"CH-FULL\", \"color\": \"#CDBE9A\", \"glb_url\": \"/media/product_models/p.glb\", \"noRuler\": true}",
+    "has_media": true,
+    "uom_kind": "base",
+    "uom_label": "Podstawowa JM"
+   }
+  ],
+  "summary": {
+   "cpp_estimated": false,
+   "pcs_per_pallet": 576,
+   "pallet_unit": "szt",
+   "pallet_unit_desc": "sztuk konsumpcyjnych",
+   "cartons_per_pallet": 48,
+   "pallet_weight_kg": 302.4,
+   "packs_per_pallet": 96,
+   "sales_units_per_pallet": null,
+   "layers": 6,
+   "carton_weight_kg": 6.3,
+   "unit_weight_kg": 0.5
+  },
+  "alerts": []
+ },
+ "split": {
+  "levels": [
+   {
+    "key": "pallet",
+    "title": "Paleta",
+    "subtitle": "Jednostka ładunkowa",
+    "color": "#8B6914",
+    "dims": "120×80×150 cm",
+    "l_cm": 120,
+    "w_cm": 80,
+    "h_cm": 150,
+    "vol_m3": 1.44,
+    "qty": "48 KAR, 6 warstw",
+    "three_data": "{\"type\": \"pallet\", \"pallet\": {\"l\": 120, \"w\": 80, \"base_h\": 0}, \"carton\": {\"l\": 40, \"w\": 30, \"h\": 25}, \"placements\": [{\"x\": 0, \"y\": 0, \"dx\": 40, \"dy\": 30}], \"layers\": 6, \"label\": \"CH-SPLIT\", \"color\": \"#DCC4A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "carton",
+    "title": "Karton",
+    "subtitle": "Jednostka kompletacyjna",
+    "color": "#A07840",
+    "dims": "40×30×25 cm",
+    "l_cm": 40,
+    "w_cm": 30,
+    "h_cm": 25,
+    "vol_m3": 0.03,
+    "ean": "",
+    "qty": "10 OP / KAR",
+    "three_data": "{\"type\": \"box\", \"l\": 40, \"w\": 30, \"h\": 25, \"label\": \"CH-SPLIT\", \"color\": \"#DCC4A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "unit",
+    "title": "OP (opakowanie)",
+    "subtitle": "Opakowanie",
+    "color": "#B79B6B",
+    "dims": "12.0×6.0×3.0 cm",
+    "l_cm": 12.0,
+    "w_cm": 6.0,
+    "h_cm": 3.0,
+    "vol_m3": 0.00022,
+    "ean": "5900000000042",
+    "qty": "3 szt JU w opakowaniu — 0.00022 m³",
+    "three_data": "{\"type\": \"box\", \"l\": 12.0, \"w\": 6.0, \"h\": 3.0, \"label\": \"CH-SPLIT\", \"color\": \"#CDBE9A\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "base",
+    "uom_label": "Podstawowa JM"
+   },
+   {
+    "key": "ju",
+    "title": "Sztuka (JU)",
+    "subtitle": "Jednostka użytkowa",
+    "color": "#C2A878",
+    "dims": "≈ 4.2×4.2×4.2 cm",
+    "l_cm": 4.2,
+    "w_cm": 4.2,
+    "h_cm": 4.2,
+    "vol_m3": 7e-05,
+    "ean": "5900000000042",
+    "qty": "3 szt JU w opakowaniu",
+    "three_data": "{\"type\": \"box_with_units\", \"l\": 12.0, \"w\": 6.0, \"h\": 3.0, \"unit_l\": 4.2, \"unit_w\": 4.2, \"unit_h\": 4.2, \"units\": 3, \"label\": \"CH-SPLIT\", \"color\": \"#CDBE9A\", \"glb_url\": \"/media/product_models/ju.glb\", \"artwork\": [{\"id\": 0, \"face\": \"front\", \"kind\": \"print\", \"url\": \"/media/product_art/ju.png\", \"thumb\": \"/media/product_art/ju.png\", \"full\": \"/media/product_art/ju.png\", \"name\": \"\", \"x\": 0, \"y\": 0, \"w\": 100, \"h\": 100, \"rot\": 0, \"z\": 0, \"w_px\": null, \"h_px\": null}], \"noRuler\": true}",
+    "has_media": true,
+    "uom_kind": "base",
+    "uom_label": "Podstawowa JM"
+   }
+  ],
+  "summary": {
+   "cpp_estimated": false,
+   "pcs_per_pallet": 480,
+   "pallet_unit": "OP",
+   "pallet_unit_desc": "opakowań (OP) na palecie",
+   "cartons_per_pallet": 48,
+   "pallet_weight_kg": 96.0,
+   "packs_per_pallet": null,
+   "sales_units_per_pallet": null,
+   "layers": 6,
+   "carton_weight_kg": 2.0,
+   "unit_weight_kg": 0.2
+  },
+  "alerts": []
+ },
+ "split_no_artwork": {
+  "levels": [
+   {
+    "key": "pallet",
+    "title": "Paleta",
+    "subtitle": "Jednostka ładunkowa",
+    "color": "#8B6914",
+    "dims": "120×80×150 cm",
+    "l_cm": 120,
+    "w_cm": 80,
+    "h_cm": 150,
+    "vol_m3": 1.44,
+    "qty": "48 KAR, 6 warstw",
+    "three_data": "{\"type\": \"pallet\", \"pallet\": {\"l\": 120, \"w\": 80, \"base_h\": 0}, \"carton\": {\"l\": 40, \"w\": 30, \"h\": 25}, \"placements\": [{\"x\": 0, \"y\": 0, \"dx\": 40, \"dy\": 30}], \"layers\": 6, \"label\": \"CH-SPLIT\", \"color\": \"#DCC4A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "carton",
+    "title": "Karton",
+    "subtitle": "Jednostka kompletacyjna",
+    "color": "#A07840",
+    "dims": "40×30×25 cm",
+    "l_cm": 40,
+    "w_cm": 30,
+    "h_cm": 25,
+    "vol_m3": 0.03,
+    "ean": "",
+    "qty": "10 OP / KAR",
+    "three_data": "{\"type\": \"box\", \"l\": 40, \"w\": 30, \"h\": 25, \"label\": \"CH-SPLIT\", \"color\": \"#DCC4A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "unit",
+    "title": "OP (opakowanie)",
+    "subtitle": "Opakowanie",
+    "color": "#B79B6B",
+    "dims": "12.0×6.0×3.0 cm",
+    "l_cm": 12.0,
+    "w_cm": 6.0,
+    "h_cm": 3.0,
+    "vol_m3": 0.00022,
+    "ean": "5900000000042",
+    "qty": "3 szt JU w opakowaniu — 0.00022 m³",
+    "three_data": "{\"type\": \"box\", \"l\": 12.0, \"w\": 6.0, \"h\": 3.0, \"label\": \"CH-SPLIT\", \"color\": \"#CDBE9A\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "base",
+    "uom_label": "Podstawowa JM"
+   },
+   {
+    "key": "ju",
+    "title": "Sztuka (JU)",
+    "subtitle": "Jednostka użytkowa",
+    "color": "#C2A878",
+    "dims": "≈ 4.2×4.2×4.2 cm",
+    "l_cm": 4.2,
+    "w_cm": 4.2,
+    "h_cm": 4.2,
+    "vol_m3": 7e-05,
+    "ean": "5900000000042",
+    "qty": "3 szt JU w opakowaniu",
+    "three_data": "{\"type\": \"box_with_units\", \"l\": 12.0, \"w\": 6.0, \"h\": 3.0, \"unit_l\": 4.2, \"unit_w\": 4.2, \"unit_h\": 4.2, \"units\": 3, \"label\": \"CH-SPLIT\", \"color\": \"#CDBE9A\", \"glb_url\": \"/media/product_models/ju.glb\", \"noRuler\": true}",
+    "has_media": true,
+    "uom_kind": "base",
+    "uom_label": "Podstawowa JM"
+   }
+  ],
+  "summary": {
+   "cpp_estimated": false,
+   "pcs_per_pallet": 480,
+   "pallet_unit": "OP",
+   "pallet_unit_desc": "opakowań (OP) na palecie",
+   "cartons_per_pallet": 48,
+   "pallet_weight_kg": 96.0,
+   "packs_per_pallet": null,
+   "sales_units_per_pallet": null,
+   "layers": 6,
+   "carton_weight_kg": 2.0,
+   "unit_weight_kg": 0.2
+  },
+  "alerts": []
+ },
+ "estimate_fallbacks": {
+  "levels": [
+   {
+    "key": "carton",
+    "title": "Karton",
+    "subtitle": "Jednostka kompletacyjna",
+    "color": "#A07840",
+    "dims": "40×30×25 cm",
+    "l_cm": 40,
+    "w_cm": 30,
+    "h_cm": 25,
+    "vol_m3": 0.03,
+    "ean": "",
+    "qty": "12 szt / KAR",
+    "three_data": "{\"type\": \"box_with_units\", \"l\": 40, \"w\": 30, \"h\": 25, \"unit_l\": 18.0, \"unit_w\": 14.0, \"unit_h\": 10.0, \"units\": 3, \"label\": \"CH-EST\", \"color\": \"#DCC4A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "inner_pack",
+    "title": "Opakowanie zbiorcze",
+    "subtitle": "Jednostka dostawy",
+    "color": "#B79B6B",
+    "dims": "18.0×14.0×10.0 cm",
+    "l_cm": 18.0,
+    "w_cm": 14.0,
+    "h_cm": 10.0,
+    "vol_m3": 0.00252,
+    "ean": "",
+    "qty": "5 szt / opakowanie",
+    "three_data": "{\"type\": \"box_with_units\", \"l\": 18.0, \"w\": 14.0, \"h\": 10.0, \"unit_l\": 10.0, \"unit_w\": 8.0, \"unit_h\": 5.0, \"units\": 5, \"label\": \"CH-EST\", \"color\": \"#D8C7A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "unit",
+    "title": "Sztuka",
+    "subtitle": "Jednostka konsumpcyjna",
+    "color": "#B79B6B",
+    "dims": "10.0×8.0×5.0 cm",
+    "l_cm": 10.0,
+    "w_cm": 8.0,
+    "h_cm": 5.0,
+    "vol_m3": 0.0004,
+    "ean": "",
+    "qty": "1 szt — 0.0004 m³",
+    "three_data": "{\"type\": \"box\", \"l\": 10.0, \"w\": 8.0, \"h\": 5.0, \"label\": \"CH-EST\", \"color\": \"#CDBE9A\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "base",
+    "uom_label": "Podstawowa JM"
+   }
+  ],
+  "summary": {
+   "cpp_estimated": true,
+   "pcs_per_pallet": 768,
+   "pallet_unit": "szt",
+   "pallet_unit_desc": "sztuk konsumpcyjnych",
+   "cartons_per_pallet": 64,
+   "pallet_weight_kg": 192.0,
+   "packs_per_pallet": 192,
+   "sales_units_per_pallet": 384,
+   "layers": null,
+   "carton_weight_kg": 3.0,
+   "unit_weight_kg": 0.25
+  },
+  "alerts": [
+   "Niespójność master daty: 3 OPZ/karton × 5 szt/OPZ = 15 ≠ 12 szt/karton",
+   "Brak przelicznika: karton → paleta (układ palety)"
+  ]
+ },
+ "no_pallet_possible": {
+  "levels": [
+   {
+    "key": "carton",
+    "title": "Karton",
+    "subtitle": "Jednostka kompletacyjna",
+    "color": "#A07840",
+    "dims": "40×30×25 cm",
+    "l_cm": 40,
+    "w_cm": 30,
+    "h_cm": 25,
+    "vol_m3": 0.03,
+    "ean": "",
+    "qty": "8 szt / KAR",
+    "three_data": "{\"type\": \"box_with_units\", \"l\": 40, \"w\": 30, \"h\": 25, \"unit_l\": 18.0, \"unit_w\": 14.0, \"unit_h\": 10.0, \"units\": 4, \"label\": \"KAR-C\", \"color\": \"#DCC4A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "inner_pack",
+    "title": "Opakowanie zbiorcze",
+    "subtitle": "Jednostka dostawy",
+    "color": "#B79B6B",
+    "dims": "18.0×14.0×10.0 cm",
+    "l_cm": 18.0,
+    "w_cm": 14.0,
+    "h_cm": 10.0,
+    "vol_m3": 0.00252,
+    "ean": "",
+    "qty": "18.0×14.0×10.0 cm",
+    "three_data": "{\"type\": \"box\", \"l\": 18.0, \"w\": 14.0, \"h\": 10.0, \"label\": \"CH-NOPAL\", \"color\": \"#D8C7A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   }
+  ],
+  "summary": {
+   "cpp_estimated": false,
+   "pcs_per_pallet": null,
+   "pallet_unit": "szt",
+   "pallet_unit_desc": "sztuk konsumpcyjnych",
+   "cartons_per_pallet": null,
+   "pallet_weight_kg": null,
+   "packs_per_pallet": null,
+   "sales_units_per_pallet": null,
+   "layers": null,
+   "carton_weight_kg": 8.0,
+   "unit_weight_kg": 1.0
+  },
+  "alerts": [
+   "Brak przelicznika: karton → paleta (układ palety)"
+  ]
+ },
+ "no_instruction": {
+  "levels": [
+   {
+    "key": "unit",
+    "title": "Sztuka",
+    "subtitle": "Jednostka konsumpcyjna",
+    "color": "#B79B6B",
+    "dims": "10.0×10.0×10.0 cm",
+    "l_cm": 10.0,
+    "w_cm": 10.0,
+    "h_cm": 10.0,
+    "vol_m3": 0.001,
+    "ean": "5900000000059",
+    "qty": "1 szt — 0.001 m³",
+    "three_data": "{\"type\": \"box\", \"l\": 10.0, \"w\": 10.0, \"h\": 10.0, \"label\": \"CH-NOINS\", \"color\": \"#CDBE9A\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "base",
+    "uom_label": "Podstawowa JM"
+   }
+  ],
+  "summary": null,
+  "alerts": [
+   "Brak instrukcji paletyzacji dla tego indeksu — hierarchia niekompletna"
+  ]
+ },
+ "nothing": {
+  "levels": [],
+  "summary": null,
+  "alerts": [
+   "Brak instrukcji paletyzacji dla tego indeksu — hierarchia niekompletna"
+  ]
+ },
+ "category_missing": {
+  "levels": [
+   {
+    "key": "carton",
+    "title": "Karton",
+    "subtitle": "Jednostka kompletacyjna",
+    "color": "#A07840",
+    "dims": "40×30×25 cm",
+    "l_cm": 40,
+    "w_cm": 30,
+    "h_cm": 25,
+    "vol_m3": 0.03,
+    "ean": "",
+    "qty": "10 szt / KAR",
+    "three_data": "{\"type\": \"box\", \"l\": 40, \"w\": 30, \"h\": 25, \"label\": \"KAR-D\", \"color\": \"#DCC4A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   }
+  ],
+  "summary": {
+   "cpp_estimated": false,
+   "pcs_per_pallet": null,
+   "pallet_unit": "szt",
+   "pallet_unit_desc": "sztuk konsumpcyjnych",
+   "cartons_per_pallet": null,
+   "pallet_weight_kg": null,
+   "packs_per_pallet": null,
+   "sales_units_per_pallet": null,
+   "layers": null,
+   "carton_weight_kg": 1.0,
+   "unit_weight_kg": 0.1
+  },
+  "alerts": [
+   "Brak przelicznika: karton → paleta (układ palety)",
+   "Brak przelicznika: OP → sztuka użytkowa (JU)"
+  ]
+ },
+ "category_subset": {
+  "levels": [
+   {
+    "key": "carton",
+    "title": "Karton",
+    "subtitle": "Jednostka kompletacyjna",
+    "color": "#A07840",
+    "dims": "40×30×25 cm",
+    "l_cm": 40,
+    "w_cm": 30,
+    "h_cm": 25,
+    "vol_m3": 0.03,
+    "ean": "",
+    "qty": "10 szt / KAR",
+    "three_data": "{\"type\": \"box\", \"l\": 40, \"w\": 30, \"h\": 25, \"label\": \"KAR-E\", \"color\": \"#DCC4A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   },
+   {
+    "key": "unit",
+    "title": "Sztuka",
+    "subtitle": "Jednostka konsumpcyjna",
+    "color": "#B79B6B",
+    "dims": "10.0×8.0×5.0 cm",
+    "l_cm": 10.0,
+    "w_cm": 8.0,
+    "h_cm": 5.0,
+    "vol_m3": 0.0004,
+    "ean": "5900000000066",
+    "qty": "1 szt — 0.0004 m³",
+    "three_data": "{\"type\": \"box\", \"l\": 10.0, \"w\": 8.0, \"h\": 5.0, \"label\": \"CH-SUB\", \"color\": \"#CDBE9A\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "base",
+    "uom_label": "Podstawowa JM"
+   }
+  ],
+  "summary": {
+   "cpp_estimated": false,
+   "pcs_per_pallet": 480,
+   "pallet_unit": "szt",
+   "pallet_unit_desc": "sztuk konsumpcyjnych",
+   "cartons_per_pallet": 48,
+   "pallet_weight_kg": 48.0,
+   "packs_per_pallet": null,
+   "sales_units_per_pallet": null,
+   "layers": 6,
+   "carton_weight_kg": 1.0,
+   "unit_weight_kg": 0.1
+  },
+  "alerts": []
+ },
+ "category_invalid_only": {
+  "levels": [
+   {
+    "key": "carton",
+    "title": "Karton",
+    "subtitle": "Jednostka kompletacyjna",
+    "color": "#A07840",
+    "dims": "40×30×25 cm",
+    "l_cm": 40,
+    "w_cm": 30,
+    "h_cm": 25,
+    "vol_m3": 0.03,
+    "ean": "",
+    "qty": "10 szt / KAR",
+    "three_data": "{\"type\": \"box\", \"l\": 40, \"w\": 30, \"h\": 25, \"label\": \"CH-INV\", \"color\": \"#DCC4A0\", \"noRuler\": true}",
+    "has_media": false,
+    "uom_kind": "collective",
+    "uom_label": "Jednostka zbiorcza"
+   }
+  ],
+  "summary": {
+   "cpp_estimated": false,
+   "pcs_per_pallet": null,
+   "pallet_unit": "szt",
+   "pallet_unit_desc": "sztuk konsumpcyjnych",
+   "cartons_per_pallet": null,
+   "pallet_weight_kg": null,
+   "packs_per_pallet": null,
+   "sales_units_per_pallet": null,
+   "layers": null,
+   "carton_weight_kg": 1.0,
+   "unit_weight_kg": 0.1
+  },
+  "alerts": [
+   "Brak przelicznika: karton → paleta (układ palety)"
+  ]
+ }
+}

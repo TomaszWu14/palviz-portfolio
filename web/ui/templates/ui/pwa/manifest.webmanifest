@@ -1,0 +1,22 @@
+{% load static %}{
+  "id": "/scan/",
+  "name": "{{ app_name }} Go",
+  "short_name": "{{ app_name }} Go",
+  "description": "Skaner magazynu: Kontrola HU + MATinfo (podgląd materiału).",
+  "lang": "pl",
+  "dir": "ltr",
+  "categories": ["business", "productivity"],
+  "start_url": "/scan/?app=1",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "prefer_related_applications": false,
+  "background_color": "#eef9f7",
+  "theme_color": "#0f7d79",
+  "icons": [
+    {"src": "{% static 'ui/icons/icon-192.png' %}", "sizes": "192x192", "type": "image/png"},
+    {"src": "{% static 'ui/icons/icon-512.png' %}", "sizes": "512x512", "type": "image/png"},
+    {"src": "{% static 'ui/icons/icon-maskable.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

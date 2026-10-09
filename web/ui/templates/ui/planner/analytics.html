@@ -1,0 +1,261 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% block title %}Analityka paletyzacji — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+{% block subnav %}{% include "ui/planner/_tabs.html" %}{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'ui/js/echarts.min.js' %}"></script>
+<style>
+.kpi-bar { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
+.kpi-card {
+  flex:1; min-width:160px; background:var(--surface);
+  border:1px solid var(--gray-200); border-radius:12px;
+  padding:16px 18px; display:flex; flex-direction:column; gap:4px;
+}
+.kpi-card__val   { font-size:28px; font-weight:900; line-height:1; color:var(--gray-900); }
+.kpi-card__unit  { font-size:11px; font-weight:600; color:var(--gray-500);
+                   text-transform:uppercase; letter-spacing:.5px; }
+.kpi-card__label { font-size:12px; color:var(--gray-400); margin-top:2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Analityka paletyzacji</div>
+    <div class="page-header__sub">Aktywne instrukcje — przegląd wydajności</div>
+  </div>
+</div>
+
+<!-- ── KPI summary banner ──────────────────────────────────────────────────── -->
+<div class="kpi-bar">
+  <div class="kpi-card" style="border-top:3px solid var(--royal)">
+    <div class="kpi-card__val">{{ summary.total_instructions }}</div>
+    <div class="kpi-card__unit">instrukcji</div>
+    <div class="kpi-card__label">aktywnych instrukcji paletyzacji</div>
+  </div>
+  <div class="kpi-card" style="border-top:3px solid var(--green-solid)">
+    <div class="kpi-card__val">{{ summary.avg_area_pct }}</div>
+    <div class="kpi-card__unit">% wypełnienia</div>
+    <div class="kpi-card__label">średnie wypełnienie powierzchni palety</div>
+  </div>
+  <div class="kpi-card" style="border-top:3px solid var(--violet)">
+    <div class="kpi-card__val">{{ summary.avg_pcs_per_pallet }}</div>
+    <div class="kpi-card__unit">szt / paleta</div>
+    <div class="kpi-card__label">średnia liczba sztuk na palecie</div>
+  </div>
+  <div class="kpi-card" style="border-top:3px solid var(--yellow-solid)">
+    <div class="kpi-card__val">{{ summary.best_product }}</div>
+    <div class="kpi-card__unit">najlepszy</div>
+    <div class="kpi-card__label">produkt z największą liczbą szt/paleta</div>
+  </div>
+</div>
+
+<!-- ── Row 2: Area % and Pcs/pallet bar charts ────────────────────────────── -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+  <div class="card">
+    <div style="padding:16px 20px 8px;font-size:13px;font-weight:700;color:var(--gray-900)">
+      Wypełnienie powierzchni palety [%]
+    </div>
+    <div id="chart-area" style="height:320px"></div>
+  </div>
+
+  <div class="card">
+    <div style="padding:16px 20px 8px;font-size:13px;font-weight:700;color:var(--gray-900)">
+      Sztuk konsumpcyjnych / paleta
+    </div>
+    <div id="chart-pcs" style="height:320px"></div>
+  </div>
+
+</div>
+
+<!-- ── Row 3: Scatter and Cartons/pallet ─────────────────────────────────── -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+  <div class="card">
+    <div style="padding:16px 20px 8px;font-size:13px;font-weight:700;color:var(--gray-900)">
+      Wypełnienie vs Waga
+    </div>
+    <div id="chart-scatter" style="height:320px"></div>
+  </div>
+
+  <div class="card">
+    <div style="padding:16px 20px 8px;font-size:13px;font-weight:700;color:var(--gray-900)">
+      Kartonów / paleta
+    </div>
+    <div id="chart-cartons" style="height:320px"></div>
+  </div>
+
+</div>
+
+<script>
+/* Canvas / ECharts / Plotly nie rozwiązują var(--…) — kolor z tokenu czytamy w chwili rysowania
+   (B-014; idzie też za motywem jasny/ciemny). */
+function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+document.addEventListener('DOMContentLoaded', function () {
+(function () {
+  var data = {{ chart_data_json|safe }};
+
+  /* ── helper: sort indices descending by a numeric array ── */
+  function sortedIndices(arr) {
+    return arr
+      .map(function (v, i) { return { v: v, i: i }; })
+      .sort(function (a, b) { return b.v - a.v; })
+      .map(function (x) { return x.i; });
+  }
+
+  function reorder(arr, idxs) {
+    return idxs.map(function (i) { return arr[i]; });
+  }
+
+  /* ── Chart 1: Area % horizontal bar ── */
+  (function () {
+    var idxs = sortedIndices(data.area_pct);
+    var prods = reorder(data.products, idxs);
+    var vals  = reorder(data.area_pct,  idxs);
+
+    var chart = echarts.init(document.getElementById('chart-area'));
+    chart.setOption({
+      grid: { left: 80, right: 48, top: 12, bottom: 32, containLabel: false },
+      tooltip: { trigger: 'axis', formatter: '{b}: {c}%' },
+      xAxis: {
+        type: 'value',
+        min: 0, max: 100,
+        axisLabel: { formatter: '{value}%', fontSize: 11 },
+        splitLine: { lineStyle: { color: cssVar('--gray-100') } }
+      },
+      yAxis: {
+        type: 'category',
+        data: prods,
+        axisLabel: { fontSize: 11, color: cssVar('--gray-700') }
+      },
+      series: [{
+        type: 'bar',
+        data: vals,
+        itemStyle: { color: cssVar('--royal'), borderRadius: [0, 3, 3, 0] },
+        label: { show: true, position: 'right', formatter: '{c}%', fontSize: 10, color: cssVar('--gray-700') },
+        markLine: {
+          silent: true,
+          symbol: 'none',
+          lineStyle: { color: cssVar('--red-solid'), type: 'dashed', width: 1.5 },
+          data: [{ xAxis: 75, label: { formatter: '75%', position: 'start', fontSize: 10, color: cssVar('--red-solid') } }]
+        }
+      }]
+    });
+    window.addEventListener('resize', function () { chart.resize(); });
+  })();
+
+  /* ── Chart 2: Pcs/pallet horizontal bar ── */
+  (function () {
+    var idxs = sortedIndices(data.pcs_per_pallet);
+    var prods = reorder(data.products,       idxs);
+    var vals  = reorder(data.pcs_per_pallet, idxs);
+
+    var chart = echarts.init(document.getElementById('chart-pcs'));
+    chart.setOption({
+      grid: { left: 80, right: 56, top: 12, bottom: 32, containLabel: false },
+      tooltip: { trigger: 'axis', formatter: '{b}: {c} szt' },
+      xAxis: {
+        type: 'value',
+        axisLabel: { fontSize: 11 },
+        splitLine: { lineStyle: { color: cssVar('--gray-100') } }
+      },
+      yAxis: {
+        type: 'category',
+        data: prods,
+        axisLabel: { fontSize: 11, color: cssVar('--gray-700') }
+      },
+      series: [{
+        type: 'bar',
+        data: vals,
+        itemStyle: { color: cssVar('--green-solid'), borderRadius: [0, 3, 3, 0] },
+        label: { show: true, position: 'right', fontSize: 10, color: cssVar('--gray-700') }
+      }]
+    });
+    window.addEventListener('resize', function () { chart.resize(); });
+  })();
+
+  /* ── Chart 3: Scatter — area % vs weight ── */
+  (function () {
+    var scatterData = data.products.map(function (code, i) {
+      return { value: [data.area_pct[i], data.weight_kg[i]], name: code };
+    });
+
+    var chart = echarts.init(document.getElementById('chart-scatter'));
+    chart.setOption({
+      grid: { left: 52, right: 16, top: 16, bottom: 48 },
+      tooltip: {
+        trigger: 'item',
+        formatter: function (p) {
+          return p.data.name + '<br/>Wypełnienie: ' + p.data.value[0] + '%<br/>Waga: ' + p.data.value[1] + ' kg';
+        }
+      },
+      xAxis: {
+        type: 'value',
+        name: 'Wypełnienie [%]',
+        nameLocation: 'middle',
+        nameGap: 28,
+        axisLabel: { fontSize: 11, formatter: '{value}%' },
+        splitLine: { lineStyle: { color: cssVar('--gray-100') } }
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Waga [kg]',
+        nameLocation: 'middle',
+        nameGap: 38,
+        axisLabel: { fontSize: 11 },
+        splitLine: { lineStyle: { color: cssVar('--gray-100') } }
+      },
+      series: [{
+        type: 'scatter',
+        data: scatterData,
+        symbolSize: 10,
+        itemStyle: { color: cssVar('--yellow-solid') },
+        label: {
+          show: true,
+          formatter: function (p) { return p.data.name; },
+          position: 'top',
+          fontSize: 10,
+          color: cssVar('--gray-700')
+        }
+      }]
+    });
+    window.addEventListener('resize', function () { chart.resize(); });
+  })();
+
+  /* ── Chart 4: Cartons/pallet bar ── */
+  (function () {
+    var idxs = sortedIndices(data.cartons_per_pallet);
+    var prods = reorder(data.products,           idxs);
+    var vals  = reorder(data.cartons_per_pallet, idxs);
+
+    var chart = echarts.init(document.getElementById('chart-cartons'));
+    chart.setOption({
+      grid: { left: 80, right: 48, top: 12, bottom: 32, containLabel: false },
+      tooltip: { trigger: 'axis', formatter: '{b}: {c} krt' },
+      xAxis: {
+        type: 'value',
+        axisLabel: { fontSize: 11 },
+        splitLine: { lineStyle: { color: cssVar('--gray-100') } }
+      },
+      yAxis: {
+        type: 'category',
+        data: prods,
+        axisLabel: { fontSize: 11, color: cssVar('--gray-700') }
+      },
+      series: [{
+        type: 'bar',
+        data: vals,
+        itemStyle: { color: cssVar('--violet'), borderRadius: [0, 3, 3, 0] },
+        label: { show: true, position: 'right', fontSize: 10, color: cssVar('--gray-700') }
+      }]
+    });
+    window.addEventListener('resize', function () { chart.resize(); });
+  })();
+
+})();
+}); // DOMContentLoaded
+</script>
+{% endblock %}

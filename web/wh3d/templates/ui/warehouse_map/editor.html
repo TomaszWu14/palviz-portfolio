@@ -1,0 +1,1183 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% load static %}
+{% block title %}Edytor 2D magazynu — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Editor layout ── */
+  .editor-wrap {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 56px);
+    overflow: hidden;
+    margin: 0 -24px;  /* bleed out of .container padding */
+  }
+
+  /* Stats bar */
+  .editor-statsbar {
+    background: #1e293b;
+    color: var(--gray-300);
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 12px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--gray-700);
+    flex-wrap: wrap;
+  }
+  .editor-statsbar__item { display: flex; align-items: center; gap: 6px; }
+  .editor-statsbar__dot {
+    width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
+  }
+  .editor-statsbar__sep { width: 1px; height: 16px; background: var(--gray-700); }
+  .editor-statsbar__count { font-weight: 600; color: var(--gray-100); }
+
+  /* Main area */
+  .editor-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* Canvas area */
+  .editor-canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #0f172a;
+    min-width: 0;
+  }
+  #warehouseCanvas {
+    display: block;
+    cursor: default;
+    position: absolute;
+    top: 0; left: 0;
+  }
+
+  /* Tooltip */
+  .canvas-tooltip {
+    position: fixed;
+    background: #1e293b;
+    border: 1px solid var(--gray-700);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--gray-200);
+    pointer-events: none;
+    z-index: 9999;
+    max-width: 260px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.4);
+    display: none;
+  }
+  .canvas-tooltip__title {
+    font-size: 13px; font-weight: 700; color: var(--gray-50);
+    margin-bottom: 6px; border-bottom: 1px solid var(--gray-700); padding-bottom: 5px;
+  }
+  .canvas-tooltip__row {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 1px 0;
+  }
+  .canvas-tooltip__label { color: var(--gray-400); }
+  .canvas-tooltip__value { font-weight: 600; color: var(--gray-100); text-align: right; }
+  .canvas-tooltip__state {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+  }
+
+  /* Sidebar */
+  .editor-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-left: 1px solid var(--gray-200);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .editor-sidebar__header {
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-900);
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .editor-sidebar__body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 12px 16px;
+  }
+  .filter-section { margin-bottom: 16px; }
+  .filter-section__title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+  }
+  .filter-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .filter-checks--scroll {
+    max-height: 160px;
+    overflow-y: auto;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 6px 8px;
+  }
+  .filter-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+    cursor: pointer;
+    font-size: 12px;
+    color: #374151;
+    user-select: none;
+  }
+  .filter-check input[type=checkbox] {
+    width: 14px; height: 14px;
+    cursor: pointer;
+    accent-color: #1a56db;
+    flex-shrink: 0;
+  }
+  .range-group { display: flex; flex-direction: column; gap: 4px; }
+  .range-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #374151; }
+  .range-row input[type=range] { flex: 1; accent-color: #1a56db; }
+  .range-val { font-weight: 600; min-width: 44px; text-align: right; font-size: 11px; color: #1a56db; }
+  .search-input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 12px;
+    outline: none;
+  }
+  .search-input:focus { border-color: #1a56db; box-shadow: 0 0 0 2px rgba(26,86,219,.1); }
+  .editor-sidebar__footer {
+    padding: 10px 16px;
+    border-top: 1px solid var(--gray-100);
+    flex-shrink: 0;
+  }
+
+  /* Save indicator */
+  .save-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: var(--gray-50);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    z-index: 10000;
+    transition: opacity .3s;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .save-indicator--visible { opacity: 1; }
+  .save-indicator--error { background: #dc2626; }
+  .save-indicator--ok { background: #059669; }
+
+  /* Zoom controls */
+  .zoom-controls {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 10;
+  }
+  .lvl-btn {
+    width: 32px; height: 28px;
+    border: 2px solid var(--gray-300);
+    border-radius: 6px;
+    background: var(--gray-100);
+    color: var(--gray-500);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .lvl-btn--active {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: #fff;
+  }
+  .lvl-btn:hover:not(.lvl-btn--active) { border-color: var(--gray-400); background: var(--gray-200); }
+
+  .zoom-btn {
+    width: 32px; height: 32px;
+    background: rgba(30,41,59,.9);
+    border: 1px solid var(--gray-700);
+    border-radius: 6px;
+    color: var(--gray-100);
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s;
+    user-select: none;
+  }
+  .zoom-btn:hover { background: rgba(51,65,85,.95); }
+
+  /* No layout message */
+  .no-layout-msg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    text-align: center;
+    color: var(--gray-500);
+    gap: 12px;
+  }
+
+  /* override .content padding for full-height editor */
+  .content { padding: 0 !important; }
+</style>
+{% endblock %}
+
+{% block content %}
+{{ locations|json_script:"id_editor_locs" }}
+{% if no_layout %}
+<div class="no-layout-msg" style="padding: 48px;">
+  <div style="font-size: 40px;">{% icon "map" cls="icon--em" %}</div>
+  <div style="font-size: 18px; font-weight: 700; color: var(--gray-900);">Brak aktywnego layoutu</div>
+  <div style="font-size: 14px;">Wgraj najpierw layout fizyczny (plik MAP) aby korzystać z edytora.</div>
+  <a href="{% url 'ui:warehouse_map' %}" class="btn btn-primary">Przejdź do zarządzania layoutem →</a>
+</div>
+{% else %}
+
+<div class="editor-wrap">
+  <!-- Stats bar -->
+  <div class="editor-statsbar" id="statsBar">
+    <div class="editor-statsbar__item">
+      <span>Widoczne:</span>
+      <span class="editor-statsbar__count" id="statVisible">—</span>
+      <span>/ {{ location_count }}</span>
+    </div>
+    <div class="editor-statsbar__sep"></div>
+    <div class="editor-statsbar__item">
+      <span class="editor-statsbar__dot" style="background:#22c55e"></span>
+      <span>Zajęte:</span>
+      <span class="editor-statsbar__count" id="statOccupied">—</span>
+    </div>
+    <div class="editor-statsbar__item">
+      <span class="editor-statsbar__dot" style="background:var(--gray-700)"></span>
+      <span>Puste:</span>
+      <span class="editor-statsbar__count" id="statEmpty">—</span>
+    </div>
+    <div class="editor-statsbar__item">
+      <span class="editor-statsbar__dot" style="background:#f97316"></span>
+      <span>Zablokowane+zajęte:</span>
+      <span class="editor-statsbar__count" id="statBlockedOcc">—</span>
+    </div>
+    <div class="editor-statsbar__item">
+      <span class="editor-statsbar__dot" style="background:#ef4444"></span>
+      <span>Zablokowane+puste:</span>
+      <span class="editor-statsbar__count" id="statBlockedEmp">—</span>
+    </div>
+    {% if latest_snapshot %}
+    <div class="editor-statsbar__sep"></div>
+    <div class="editor-statsbar__item">
+      <span>Snapshot: {{ latest_snapshot.name }}</span>
+    </div>
+    {% endif %}
+    <div style="flex:1"></div>
+    <a href="{% url 'ui:warehouse_map' %}" class="btn btn-ghost btn-sm" style="color:var(--gray-400)">← Powrót</a>
+  </div>
+
+  <!-- Level switcher bar -->
+  <div style="display:flex;align-items:center;gap:8px;padding:6px 16px;background:var(--gray-50);border-bottom:1px solid var(--gray-200)">
+    <span style="font-size:11px;font-weight:700;color:var(--gray-700);text-transform:uppercase;letter-spacing:.4px">Poziom regału:</span>
+    <div style="display:flex;gap:4px" id="levelSwitcher">
+      <button class="lvl-btn lvl-btn--active" data-level="1">1</button>
+      <button class="lvl-btn lvl-btn--active" data-level="2">2</button>
+      <button class="lvl-btn lvl-btn--active" data-level="3">3</button>
+      <button class="lvl-btn lvl-btn--active" data-level="4">4</button>
+    </div>
+    <span style="font-size:11px;color:var(--gray-400);margin-left:8px">A/B/C = poziom 1 · X = poziom 2 · Y = poziom 3 · Z = poziom 4</span>
+    <div style="flex:1"></div>
+    <span style="font-size:11px;color:var(--gray-500)">Widok: góra</span>
+  </div>
+
+  <!-- Main body -->
+  <div class="editor-body">
+    <!-- Canvas area -->
+    <div class="editor-canvas-wrap" id="canvasWrap">
+      <canvas id="warehouseCanvas"></canvas>
+      <div class="zoom-controls">
+        <button class="zoom-btn" id="undoBtn" title="Cofnij (Ctrl+Z)" disabled style="font-size:14px">{% icon "undo-2" cls="icon--em" %}</button>
+        <button class="zoom-btn" id="redoBtn" title="Ponów (Ctrl+Y)" disabled style="font-size:14px">{% icon "redo-2" cls="icon--em" %}</button>
+        <button class="zoom-btn" id="zoomInBtn" title="Przybliż">+</button>
+        <button class="zoom-btn" id="zoomOutBtn" title="Oddal">−</button>
+        <button class="zoom-btn" id="zoomFitBtn" title="Dopasuj" style="font-size:12px">⊞</button>
+      </div>
+    </div>
+
+    <!-- Filter sidebar -->
+    <div class="editor-sidebar">
+      <div class="editor-sidebar__header">
+        <span>Filtry</span>
+        <span id="filterCount" style="font-size:11px;font-weight:400;color:var(--gray-500)"></span>
+      </div>
+      <div class="editor-sidebar__body">
+
+        <!-- Search -->
+        <div class="filter-section">
+          <div class="filter-section__title">Szukaj</div>
+          <input type="text" id="filterSearch" class="search-input" placeholder="Kod lokalizacji...">
+        </div>
+
+        <!-- Level -->
+        <div class="filter-section">
+          <div class="filter-section__title">Poziom</div>
+          <div class="filter-checks" id="filterLevelChecks">
+            <label class="filter-check"><input type="checkbox" value="1" checked class="filter-level"> 1</label>
+            <label class="filter-check"><input type="checkbox" value="2" checked class="filter-level"> 2</label>
+            <label class="filter-check"><input type="checkbox" value="3" checked class="filter-level"> 3</label>
+            <label class="filter-check"><input type="checkbox" value="4" checked class="filter-level"> 4</label>
+          </div>
+        </div>
+
+        <!-- State -->
+        <div class="filter-section">
+          <div class="filter-section__title">Stan</div>
+          <div class="filter-checks" id="filterStateChecks">
+            <label class="filter-check"><input type="checkbox" value="occupied" checked class="filter-state"> Zajęta</label>
+            <label class="filter-check"><input type="checkbox" value="empty" checked class="filter-state"> Pusta</label>
+            <label class="filter-check"><input type="checkbox" value="blocked" checked class="filter-state"> Zablokowana</label>
+          </div>
+        </div>
+
+        <!-- Aisle -->
+        <div class="filter-section">
+          <div class="filter-section__title">Aleja</div>
+          <div class="filter-checks filter-checks--scroll" id="filterAisleChecks">
+            <span style="font-size:11px;color:var(--gray-400)">Ładowanie...</span>
+          </div>
+        </div>
+
+        <!-- Warehouse type -->
+        <div class="filter-section">
+          <div class="filter-section__title">Typ magazynu</div>
+          <div class="filter-checks filter-checks--scroll" id="filterTypeChecks">
+            <span style="font-size:11px;color:var(--gray-400)">Ładowanie...</span>
+          </div>
+        </div>
+
+        <!-- Height range -->
+        <div class="filter-section" id="heightSection" style="display:none">
+          <div class="filter-section__title">Wysokość [mm]</div>
+          <div class="range-group">
+            <div class="range-row">
+              <span>Min</span>
+              <input type="range" id="heightMin" min="0" max="10000" value="0">
+              <span class="range-val" id="heightMinVal">0</span>
+            </div>
+            <div class="range-row">
+              <span>Max</span>
+              <input type="range" id="heightMax" min="0" max="10000" value="10000">
+              <span class="range-val" id="heightMaxVal">10000</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weight range -->
+        <div class="filter-section" id="weightSection" style="display:none">
+          <div class="filter-section__title">Max waga [kg]</div>
+          <div class="range-group">
+            <div class="range-row">
+              <span>Min</span>
+              <input type="range" id="weightMin" min="0" max="5000" value="0">
+              <span class="range-val" id="weightMinVal">0</span>
+            </div>
+            <div class="range-row">
+              <span>Max</span>
+              <input type="range" id="weightMax" min="0" max="5000" value="5000">
+              <span class="range-val" id="weightMaxVal">5000</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="editor-sidebar__footer">
+        <button class="btn btn-secondary w-full" id="resetFiltersBtn" style="justify-content:center">
+          Resetuj filtry
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div class="canvas-tooltip" id="canvasTooltip">
+  <div class="canvas-tooltip__title" id="ttTitle"></div>
+  <div id="ttBody"></div>
+</div>
+
+<!-- Save indicator -->
+<div class="save-indicator" id="saveIndicator"></div>
+
+<script>
+(function() {
+'use strict';
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+const ALL_LOCS = JSON.parse(document.getElementById('id_editor_locs').textContent);
+const MOVE_URL_TPL = '{% url "ui:warehouse_layout_cell_move" cell_id=0 %}'.replace('/0/', '/{id}/');
+const CSRF = '{{ csrf_token }}';
+
+// ── Color scheme ──────────────────────────────────────────────────────────────
+// green=occupied, dark=empty, orange=blocked+occupied, red=blocked+empty
+function getColor(loc) {
+  const blocked = loc.blocked_pick || loc.blocked_put;
+  if (!loc.has_snapshot) return '#1e3a5f';  // unknown
+  if (blocked && !loc.is_empty)  return '#f97316';  // blocked+occupied
+  if (blocked && loc.is_empty)   return '#ef4444';  // blocked+empty
+  if (!loc.is_empty)             return '#22c55e';  // occupied
+  return '#1e3a5f';                                  // empty
+}
+function getColorSelected(loc) {
+  return '#facc15';  // yellow highlight
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let scale = 1;
+let offsetX = 0, offsetY = 0;
+
+const CELL_W = 16;   // base cell width in px (at scale=1)
+const CELL_H = 12;   // base cell height in px
+
+let isPanning = false;
+let panStartX = 0, panStartY = 0;
+let panStartOX = 0, panStartOY = 0;
+
+let selectedId = null;
+let isDragging = false;
+let dragStartGridRow = 0, dragStartGridCol = 0;
+let dragCurrentRow = 0, dragCurrentCol = 0;
+let dragOffsetCellX = 0, dragOffsetCellY = 0;
+
+// Filters
+let filterSearch = '';
+let filterLevels = new Set([1, 2, 3, 4]);
+let filterStates = new Set(['occupied', 'empty', 'blocked']);
+let filterAisles = null;    // null = all
+let filterTypes = null;     // null = all
+let heightMin = 0, heightMax = 999999;
+let weightMin = 0, weightMax = 999999;
+
+// Cached filtered set
+let visibleIds = new Set();
+
+// ── Canvas setup ──────────────────────────────────────────────────────────────
+const wrap = document.getElementById('canvasWrap');
+const canvas = document.getElementById('warehouseCanvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  render();
+}
+
+// ── Derived bounds ────────────────────────────────────────────────────────────
+// px/pz = corrected physical position (base_col+col_idx, base_row)
+// level used for filtering (level switcher)
+let minRow = 0, maxRow = 0, minCol = 0, maxCol = 0;
+function computeBounds() {
+  if (!ALL_LOCS.length) return;
+  minRow = Infinity; maxRow = -Infinity;
+  minCol = Infinity; maxCol = -Infinity;
+  for (const l of ALL_LOCS) {
+    if (l.pz < minRow) minRow = l.pz;
+    if (l.pz > maxRow) maxRow = l.pz;
+    if (l.px < minCol) minCol = l.px;
+    if (l.px > maxCol) maxCol = l.px;
+  }
+}
+
+function fitView() {
+  if (!ALL_LOCS.length) return;
+  computeBounds();
+  const gridW = (maxCol - minCol + 1);
+  const gridH = (maxRow - minRow + 1);
+  const scaleX = canvas.width  / (gridW * CELL_W + 40);
+  const scaleY = canvas.height / (gridH * CELL_H + 40);
+  scale = Math.min(scaleX, scaleY, 4);
+  offsetX = (canvas.width  - gridW * CELL_W * scale) / 2 - minCol * CELL_W * scale;
+  offsetY = (canvas.height - gridH * CELL_H * scale) / 2 - minRow * CELL_H * scale;
+  render();
+}
+
+// ── Rendering ─────────────────────────────────────────────────────────────────
+let gridIndex = new Map();
+
+function buildGridIndex() {
+  gridIndex.clear();
+  for (let i = 0; i < ALL_LOCS.length; i++) {
+    const l = ALL_LOCS[i];
+    gridIndex.set(`${l.pz},${l.px}`, i);
+  }
+}
+
+function render() {
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, w, h);
+
+  if (!ALL_LOCS.length) return;
+
+  // cell size in screen px
+  const cw = CELL_W * scale;
+  const ch = CELL_H * scale;
+  const gap = Math.max(1, Math.round(scale * 0.8));
+
+  // Viewport bounds in grid coords (for culling)
+  const visColMin = Math.floor((-offsetX) / cw) - 1;
+  const visColMax = Math.ceil((w - offsetX) / cw) + 1;
+  const visRowMin = Math.floor((-offsetY) / ch) - 1;
+  const visRowMax = Math.ceil((h - offsetY) / ch) + 1;
+
+  // Draw cells
+  for (const loc of ALL_LOCS) {
+    // Viewport culling using physical coords
+    if (loc.px < visColMin || loc.px > visColMax) continue;
+    if (loc.pz < visRowMin || loc.pz > visRowMax) continue;
+
+    const screenX = Math.round(loc.px * cw + offsetX);
+    const screenY = Math.round(loc.pz * ch + offsetY);
+    const cellW = Math.max(1, cw - gap);
+    const cellH = Math.max(1, ch - gap);
+
+    const isVisible = visibleIds.has(loc.id);
+    const isSelected = loc.id === selectedId;
+
+    // Color
+    let color;
+    if (isSelected) {
+      color = getColorSelected(loc);
+    } else if (!isVisible) {
+      color = '#0f1e2e';  // dimmed out
+    } else {
+      color = getColor(loc);
+    }
+
+    ctx.fillStyle = color;
+    ctx.fillRect(screenX, screenY, cellW, cellH);
+
+    // Selected highlight ring
+    if (isSelected) {
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = Math.max(1, scale * 1.5);
+      ctx.strokeRect(screenX + 0.5, screenY + 0.5, cellW - 1, cellH - 1);
+    }
+
+    // Show location code at high zoom
+    if (scale >= 4 && isVisible) {
+      ctx.fillStyle = isSelected ? '#0f172a' : 'rgba(0,0,0,0.7)';
+      const fontSize = Math.min(cw * 0.22, 9);
+      ctx.font = `${fontSize}px Inter, system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(loc.location_code, screenX + cellW / 2, screenY + cellH / 2);
+    }
+  }
+
+  // Draw drag ghost
+  if (isDragging && selectedId !== null) {
+    const dw = cw - gap;
+    const dh = ch - gap;
+    const gx = Math.round(dragCurrentCol * cw + offsetX);
+    const gy = Math.round(dragCurrentRow * ch + offsetY);
+    ctx.fillStyle = 'rgba(250,204,21,0.35)';
+    ctx.fillRect(gx, gy, dw, dh);
+    ctx.strokeStyle = '#facc15';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 3]);
+    ctx.strokeRect(gx + 0.5, gy + 0.5, dw - 1, dh - 1);
+    ctx.setLineDash([]);
+  }
+}
+
+// ── Filtering ─────────────────────────────────────────────────────────────────
+function applyFilters() {
+  visibleIds.clear();
+  let occ = 0, emp = 0, bOcc = 0, bEmp = 0;
+
+  for (const loc of ALL_LOCS) {
+    if (!passesFilter(loc)) continue;
+    visibleIds.add(loc.id);
+
+    const blocked = loc.blocked_pick || loc.blocked_put;
+    if (blocked && !loc.is_empty) bOcc++;
+    else if (blocked && loc.is_empty) bEmp++;
+    else if (!loc.is_empty) occ++;
+    else emp++;
+  }
+
+  document.getElementById('statVisible').textContent = visibleIds.size;
+  document.getElementById('statOccupied').textContent = occ;
+  document.getElementById('statEmpty').textContent = emp;
+  document.getElementById('statBlockedOcc').textContent = bOcc;
+  document.getElementById('statBlockedEmp').textContent = bEmp;
+
+  const total = ALL_LOCS.length;
+  const hidden = total - visibleIds.size;
+  document.getElementById('filterCount').textContent = hidden > 0 ? `${hidden} ukrytych` : '';
+}
+
+function passesFilter(loc) {
+  // Level
+  if (!filterLevels.has(loc.level)) return false;
+
+  // State
+  const blocked = loc.blocked_pick || loc.blocked_put;
+  const isOcc = !loc.is_empty;
+  if (blocked) {
+    if (!filterStates.has('blocked')) return false;
+  } else if (isOcc) {
+    if (!filterStates.has('occupied')) return false;
+  } else {
+    if (!filterStates.has('empty')) return false;
+  }
+
+  // Aisle
+  if (filterAisles !== null && !filterAisles.has(loc.aisle)) return false;
+
+  // Type
+  if (filterTypes !== null && !filterTypes.has(loc.warehouse_type)) return false;
+
+  // Height
+  if (loc.has_master) {
+    if (loc.height_mm < heightMin || loc.height_mm > heightMax) return false;
+  }
+
+  // Weight
+  if (loc.has_master) {
+    if (loc.max_weight_kg < weightMin || loc.max_weight_kg > weightMax) return false;
+  }
+
+  // Search
+  if (filterSearch && !loc.location_code.toLowerCase().includes(filterSearch)) return false;
+
+  return true;
+}
+
+// ── Sidebar population ────────────────────────────────────────────────────────
+function _esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function _makeCheckbox(val, cls) {
+  const lbl = document.createElement('label');
+  lbl.className = 'filter-check';
+  const inp = document.createElement('input');
+  inp.type = 'checkbox'; inp.value = val; inp.checked = true; inp.className = cls;
+  lbl.appendChild(inp);
+  lbl.appendChild(document.createTextNode(' ' + val));
+  return lbl;
+}
+
+function populateSidebar() {
+  // Aisles
+  const aisles = [...new Set(ALL_LOCS.map(l => l.aisle).filter(Boolean))].sort();
+  const aisleContainer = document.getElementById('filterAisleChecks');
+  aisleContainer.innerHTML = '';
+  if (aisles.length) {
+    aisles.forEach(a => aisleContainer.appendChild(_makeCheckbox(a, 'filter-aisle')));
+  } else {
+    aisleContainer.innerHTML = '<span style="font-size:11px;color:var(--gray-400)">Brak danych</span>';
+  }
+
+  // Types
+  const types = [...new Set(ALL_LOCS.map(l => l.warehouse_type).filter(Boolean))].sort();
+  const typeContainer = document.getElementById('filterTypeChecks');
+  typeContainer.innerHTML = '';
+  if (types.length) {
+    types.forEach(t => typeContainer.appendChild(_makeCheckbox(t, 'filter-type')));
+  } else {
+    typeContainer.innerHTML = '<span style="font-size:11px;color:var(--gray-400)">Brak danych</span>';
+  }
+
+  // Height range
+  const heights = ALL_LOCS.filter(l => l.height_mm > 0).map(l => l.height_mm);
+  if (heights.length) {
+    const hMin = Math.min(...heights);
+    const hMax = Math.max(...heights);
+    const hMinEl = document.getElementById('heightMin');
+    const hMaxEl = document.getElementById('heightMax');
+    hMinEl.min = hMin; hMinEl.max = hMax; hMinEl.value = hMin;
+    hMaxEl.min = hMin; hMaxEl.max = hMax; hMaxEl.value = hMax;
+    document.getElementById('heightMinVal').textContent = hMin;
+    document.getElementById('heightMaxVal').textContent = hMax;
+    heightMin = hMin; heightMax = hMax;
+    document.getElementById('heightSection').style.display = '';
+  }
+
+  // Weight range
+  const weights = ALL_LOCS.filter(l => l.max_weight_kg > 0).map(l => l.max_weight_kg);
+  if (weights.length) {
+    const wMin = Math.min(...weights);
+    const wMax = Math.max(...weights);
+    const wMinEl = document.getElementById('weightMin');
+    const wMaxEl = document.getElementById('weightMax');
+    wMinEl.min = wMin; wMinEl.max = wMax; wMinEl.value = wMin;
+    wMaxEl.min = wMin; wMaxEl.max = wMax; wMaxEl.value = wMax;
+    document.getElementById('weightMinVal').textContent = wMin;
+    document.getElementById('weightMaxVal').textContent = wMax;
+    weightMin = wMin; weightMax = wMax;
+    document.getElementById('weightSection').style.display = '';
+  }
+}
+
+// ── Filter event wiring ───────────────────────────────────────────────────────
+function readFilters() {
+  filterSearch = document.getElementById('filterSearch').value.trim().toLowerCase();
+
+  filterLevels = new Set();
+  document.querySelectorAll('.filter-level:checked').forEach(el => filterLevels.add(Number(el.value)));
+
+  filterStates = new Set();
+  document.querySelectorAll('.filter-state:checked').forEach(el => filterStates.add(el.value));
+
+  const aisleChecks = document.querySelectorAll('.filter-aisle');
+  if (aisleChecks.length) {
+    const checked = [...aisleChecks].filter(el => el.checked).map(el => el.value);
+    filterAisles = checked.length === aisleChecks.length ? null : new Set(checked);
+  }
+
+  const typeChecks = document.querySelectorAll('.filter-type');
+  if (typeChecks.length) {
+    const checked = [...typeChecks].filter(el => el.checked).map(el => el.value);
+    filterTypes = checked.length === typeChecks.length ? null : new Set(checked);
+  }
+
+  const hMinEl = document.getElementById('heightMin');
+  const hMaxEl = document.getElementById('heightMax');
+  if (hMinEl) { heightMin = Number(hMinEl.value); heightMax = Number(hMaxEl.value); }
+
+  const wMinEl = document.getElementById('weightMin');
+  const wMaxEl = document.getElementById('weightMax');
+  if (wMinEl) { weightMin = Number(wMinEl.value); weightMax = Number(wMaxEl.value); }
+}
+
+function onFilterChange() {
+  readFilters();
+  applyFilters();
+  render();
+}
+
+document.getElementById('filterSearch').addEventListener('input', onFilterChange);
+
+document.getElementById('filterLevelChecks').addEventListener('change', onFilterChange);
+document.getElementById('filterStateChecks').addEventListener('change', onFilterChange);
+
+// Delegate for dynamically added checks
+document.getElementById('filterAisleChecks').addEventListener('change', onFilterChange);
+document.getElementById('filterTypeChecks').addEventListener('change', onFilterChange);
+
+['heightMin','heightMax'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => {
+    document.getElementById(id + 'Val').textContent = el.value;
+    onFilterChange();
+  });
+});
+['weightMin','weightMax'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => {
+    document.getElementById(id + 'Val').textContent = el.value;
+    onFilterChange();
+  });
+});
+
+document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+  document.getElementById('filterSearch').value = '';
+  document.querySelectorAll('.filter-level, .filter-state, .filter-aisle, .filter-type')
+    .forEach(el => { el.checked = true; });
+  // Reset range sliders
+  ['heightMin','heightMax','weightMin','weightMax'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.value = id.endsWith('Min') ? el.min : el.max;
+      document.getElementById(id + 'Val').textContent = el.value;
+    }
+  });
+  onFilterChange();
+});
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+const tooltip = document.getElementById('canvasTooltip');
+
+function showTooltip(loc, screenX, screenY) {
+  document.getElementById('ttTitle').textContent = loc.location_code;
+
+  const blocked = loc.blocked_pick || loc.blocked_put;
+  let stateLabel, stateBg, stateColor;
+  if (blocked && !loc.is_empty)  { stateLabel='Zablokowana + zajęta'; stateBg='#7c2d12'; stateColor='#fed7aa'; }
+  else if (blocked && loc.is_empty)   { stateLabel='Zablokowana + pusta'; stateBg='#7f1d1d'; stateColor='#fca5a5'; }
+  else if (!loc.is_empty)             { stateLabel='Zajęta'; stateBg='#14532d'; stateColor='#86efac'; }
+  else                                 { stateLabel='Pusta'; stateBg='#1e293b'; stateColor='var(--gray-400)'; }
+
+  const rows = [
+    ['Aleja', loc.aisle || '—'],
+    ['Stos', loc.stack || '—'],
+    ['Poziom', loc.level],
+    ['Kol. fizyczna', loc.px],
+    ['Typ magazynu', loc.warehouse_type || '—'],
+  ];
+  if (loc.has_master) {
+    rows.push(['Wysokość', loc.height_mm ? `${loc.height_mm} mm` : '—']);
+    rows.push(['Max objętość', loc.max_volume_m3 ? `${loc.max_volume_m3} m³` : '—']);
+    rows.push(['Max waga', loc.max_weight_kg ? `${loc.max_weight_kg} kg` : '—']);
+  }
+
+  {# SEC-006: pola lokalizacji idą ze snapshotu/importu — budujemy DOM przez textContent, bez innerHTML. #}
+  const _el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = String(text); return e; };
+  const stateWrap = _el('div');
+  stateWrap.style.marginBottom = '6px';
+  const stateEl = _el('span', 'canvas-tooltip__state', stateLabel);
+  stateEl.style.background = stateBg;
+  stateEl.style.color = stateColor;
+  stateWrap.appendChild(stateEl);
+  const frag = [stateWrap];
+  for (const [label, val] of rows) {
+    const row = _el('div', 'canvas-tooltip__row');
+    row.append(_el('span', 'canvas-tooltip__label', label), _el('span', 'canvas-tooltip__value', val));
+    frag.push(row);
+  }
+  document.getElementById('ttBody').replaceChildren(...frag);
+
+  tooltip.style.display = 'block';
+  // position near cursor, keep on screen
+  const tx = Math.min(screenX + 14, window.innerWidth - 280);
+  const ty = Math.min(screenY + 10, window.innerHeight - 280);
+  tooltip.style.left = tx + 'px';
+  tooltip.style.top  = ty + 'px';
+}
+
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
+// ── Hit test ──────────────────────────────────────────────────────────────────
+function screenToGrid(sx, sy) {
+  const cw = CELL_W * scale;
+  const ch = CELL_H * scale;
+  return {
+    col: Math.floor((sx - offsetX) / cw),
+    row: Math.floor((sy - offsetY) / ch),
+  };
+}
+
+function findLocAtScreen(sx, sy) {
+  const { col, row } = screenToGrid(sx, sy);
+  // Prefer selected level; fallback to any level at position
+  const byLevel = ALL_LOCS.filter(l => l.px === col && l.pz === row && visibleIds.has(l.id));
+  return byLevel[0] || ALL_LOCS.find(l => l.px === col && l.pz === row) || null;
+}
+
+// ── Mouse events ──────────────────────────────────────────────────────────────
+let lastHoverId = null;
+let mouseDownX = 0, mouseDownY = 0;
+const DRAG_THRESHOLD = 4;
+
+canvas.addEventListener('mousedown', (e) => {
+  mouseDownX = e.clientX;
+  mouseDownY = e.clientY;
+
+  const rect = canvas.getBoundingClientRect();
+  const sx = e.clientX - rect.left;
+  const sy = e.clientY - rect.top;
+
+  // Middle mouse or Ctrl+left → pan
+  if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
+    e.preventDefault();
+    isPanning = true;
+    panStartX = e.clientX; panStartY = e.clientY;
+    panStartOX = offsetX; panStartOY = offsetY;
+    canvas.style.cursor = 'grabbing';
+    return;
+  }
+
+  if (e.button !== 0) return;
+
+  const loc = findLocAtScreen(sx, sy);
+
+  if (loc && loc.id === selectedId) {
+    // Start drag
+    isDragging = true;
+    const { col, row } = screenToGrid(sx, sy);
+    dragStartGridRow = loc.pz;
+    dragStartGridCol = loc.px;
+    dragCurrentRow = loc.pz;
+    dragCurrentCol = loc.px;
+    dragOffsetCellX = (sx - offsetX) / (CELL_W * scale) - col;
+    dragOffsetCellY = (sy - offsetY) / (CELL_H * scale) - row;
+    canvas.style.cursor = 'grabbing';
+  } else if (loc) {
+    selectedId = loc.id;
+    render();
+  } else {
+    // Click on empty — start pan
+    isPanning = true;
+    panStartX = e.clientX; panStartY = e.clientY;
+    panStartOX = offsetX; panStartOY = offsetY;
+    canvas.style.cursor = 'grabbing';
+  }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const sx = e.clientX - rect.left;
+  const sy = e.clientY - rect.top;
+
+  if (isPanning) {
+    offsetX = panStartOX + (e.clientX - panStartX);
+    offsetY = panStartOY + (e.clientY - panStartY);
+    render();
+    return;
+  }
+
+  if (isDragging) {
+    const { col, row } = screenToGrid(sx, sy);
+    dragCurrentRow = row;
+    dragCurrentCol = col;
+    render();
+    return;
+  }
+
+  // Hover tooltip
+  const loc = findLocAtScreen(sx, sy);
+  if (loc) {
+    if (loc.id !== lastHoverId) {
+      lastHoverId = loc.id;
+      showTooltip(loc, e.clientX, e.clientY);
+    } else {
+      // Update position
+      const tx = Math.min(e.clientX + 14, window.innerWidth - 280);
+      const ty = Math.min(e.clientY + 10, window.innerHeight - 280);
+      tooltip.style.left = tx + 'px';
+      tooltip.style.top = ty + 'px';
+    }
+    canvas.style.cursor = loc.id === selectedId ? 'grab' : 'pointer';
+  } else {
+    if (lastHoverId !== null) {
+      hideTooltip();
+      lastHoverId = null;
+    }
+    canvas.style.cursor = 'default';
+  }
+});
+
+canvas.addEventListener('mouseup', (e) => {
+  if (isPanning) {
+    isPanning = false;
+    canvas.style.cursor = 'default';
+    return;
+  }
+
+  if (isDragging) {
+    isDragging = false;
+    canvas.style.cursor = 'default';
+
+    // Check if actually moved
+    if (dragCurrentRow !== dragStartGridRow || dragCurrentCol !== dragStartGridCol) {
+      const loc = ALL_LOCS.find(l => l.id === selectedId);
+      if (loc) {
+        // The drag delta is measured in px/pz render space. Apply it to the TRUE
+        // grid coords (loc.grid_row/col) — in physical layouts px = base_col+col_idx
+        // != grid_col, so writing px straight into grid_col would corrupt the cell.
+        const dRow = dragCurrentRow - dragStartGridRow;
+        const dCol = dragCurrentCol - dragStartGridCol;
+        const before = { px: loc.px, pz: loc.pz, grid_row: loc.grid_row, grid_col: loc.grid_col };
+        const after = { px: dragCurrentCol, pz: dragCurrentRow,
+                        grid_row: loc.grid_row + dRow, grid_col: loc.grid_col + dCol };
+        // Zapis (persist grid coords, nie render coords) + wpis do historii undo.
+        doMove(loc.id, after, before).then(ok => {
+          if (ok) { pushUndo({ cellId: loc.id, before, after }); }
+        });
+      }
+    } else {
+      render();
+    }
+  }
+});
+
+canvas.addEventListener('mouseleave', () => {
+  hideTooltip();
+  lastHoverId = null;
+  if (isPanning) { isPanning = false; canvas.style.cursor = 'default'; }
+  if (isDragging) { isDragging = false; canvas.style.cursor = 'default'; render(); }
+});
+
+// Prevent context menu on middle click
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+// ── Scroll zoom ───────────────────────────────────────────────────────────────
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  const factor = e.deltaY < 0 ? 1.12 : (1 / 1.12);
+  const newScale = Math.min(Math.max(scale * factor, 0.1), 40);
+
+  // Zoom around mouse
+  offsetX = mx - (mx - offsetX) * (newScale / scale);
+  offsetY = my - (my - offsetY) * (newScale / scale);
+  scale = newScale;
+  render();
+}, { passive: false });
+
+// ── Zoom buttons ──────────────────────────────────────────────────────────────
+document.getElementById('zoomInBtn').addEventListener('click', () => {
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const ns = Math.min(scale * 1.5, 40);
+  offsetX = cx - (cx - offsetX) * (ns / scale);
+  offsetY = cy - (cy - offsetY) * (ns / scale);
+  scale = ns;
+  render();
+});
+document.getElementById('zoomOutBtn').addEventListener('click', () => {
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const ns = Math.max(scale / 1.5, 0.1);
+  offsetX = cx - (cx - offsetX) * (ns / scale);
+  offsetY = cy - (cy - offsetY) * (ns / scale);
+  scale = ns;
+  render();
+});
+document.getElementById('zoomFitBtn').addEventListener('click', fitView);
+
+// ── AJAX save ────────────────────────────────────────────────────────────────
+const saveInd = document.getElementById('saveIndicator');
+let saveTimer = null;
+
+function showSave(msg, cls) {
+  saveInd.textContent = msg;
+  saveInd.className = 'save-indicator save-indicator--visible ' + cls;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { saveInd.className = 'save-indicator'; }, 2500);
+}
+
+// Zastosuj snapshot pozycji (px/pz/grid_row/grid_col) lokalnie i zapisz na serwerze.
+// `opposite` = stan do przywrócenia, jeśli serwer odrzuci (rollback). Zwraca Promise<bool>.
+async function doMove(cellId, target, opposite) {
+  const loc = ALL_LOCS.find(l => l.id === cellId);
+  if (!loc) return false;
+  Object.assign(loc, target);          // optimistic
+  buildGridIndex(); applyFilters(); render();
+  const url = MOVE_URL_TPL.replace('{id}', cellId);
+  showSave('Zapisywanie…', '');
+  function rollback() { Object.assign(loc, opposite); buildGridIndex(); applyFilters(); render(); }
+  try {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+      body: JSON.stringify({ grid_row: target.grid_row, grid_col: target.grid_col }),
+    });
+    const data = await resp.json();
+    if (data.ok) { showSave('Zapisano ✓', 'save-indicator--ok'); return true; }
+    showSave('Błąd: ' + (data.error || 'nieznany'), 'save-indicator--error');
+    rollback();
+    return false;
+  } catch (err) {
+    showSave('Błąd sieci', 'save-indicator--error');
+    rollback();
+    return false;
+  }
+}
+
+// ── Undo / Redo (Ctrl+Z / Ctrl+Y) ─────────────────────────────────────────────
+// Jedyna edycja to przeniesienie komórki; historia trzyma snapshoty before/after,
+// więc cofnięcie/ponowienie to po prostu doMove w drugą stronę (z zapisem na serwer).
+const undoStack = [], redoStack = [];
+const MAX_UNDO = 100;
+const undoBtn = document.getElementById('undoBtn');
+const redoBtn = document.getElementById('redoBtn');
+
+function syncUndoButtons() {
+  undoBtn.disabled = undoStack.length === 0;
+  redoBtn.disabled = redoStack.length === 0;
+}
+function pushUndo(entry) {
+  undoStack.push(entry);
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  redoStack.length = 0;                // nowa akcja kasuje redo
+  syncUndoButtons();
+}
+async function undo() {
+  const e = undoStack.pop();
+  if (!e) return;
+  syncUndoButtons();
+  const ok = await doMove(e.cellId, e.before, e.after);   // wróć do 'before'
+  if (ok) { redoStack.push(e); } else { undoStack.push(e); }  // fail → nie gub wpisu
+  syncUndoButtons();
+}
+async function redo() {
+  const e = redoStack.pop();
+  if (!e) return;
+  syncUndoButtons();
+  const ok = await doMove(e.cellId, e.after, e.before);   // ponów do 'after'
+  if (ok) { undoStack.push(e); } else { redoStack.push(e); }
+  syncUndoButtons();
+}
+undoBtn.addEventListener('click', undo);
+redoBtn.addEventListener('click', redo);
+document.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if ((e.ctrlKey || e.metaKey) && (k === 'y' || (k === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+});
+
+// ── Level switcher ────────────────────────────────────────────────────────────
+document.getElementById('levelSwitcher').addEventListener('click', e => {
+  const btn = e.target.closest('.lvl-btn');
+  if (!btn) return;
+  btn.classList.toggle('lvl-btn--active');
+  // Sync with sidebar level checkboxes (they use class="filter-level", not name="level")
+  const lv = btn.dataset.level;
+  const cb = document.querySelector(`.filter-level[value="${lv}"]`);
+  if (cb) { cb.checked = btn.classList.contains('lvl-btn--active'); }
+  readFilters();   // rebuild filterLevels from the checkboxes before filtering
+  applyFilters();
+  render();
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function init() {
+  computeBounds();
+  buildGridIndex();
+  populateSidebar();
+  readFilters();
+  applyFilters();
+  resizeCanvas();
+  fitView();
+}
+
+window.addEventListener('resize', resizeCanvas);
+init();
+
+})();
+</script>
+{% endif %}
+{% endblock %}

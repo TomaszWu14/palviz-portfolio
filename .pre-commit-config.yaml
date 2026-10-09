@@ -1,0 +1,75 @@
+# Pre-commit hooks — run lint/format/type checks BEFORE the commit, not only in CI.
+# Install once:  pip install pre-commit && pre-commit install
+# Run on everything:  pre-commit run --all-files
+#
+# Config for the tools themselves lives in pyproject.toml ([tool.ruff], [tool.mypy]),
+# so these hooks stay in sync with `ruff`/`mypy` run by hand or in CI.
+minimum_pre_commit_version: "3.5.0"
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.(md|csv)$'
+      - id: end-of-file-fixer
+        exclude: '\.(min\.js|csv)$|static/ui/vendor/'
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        # 5 MB: the vendored plotly.min.js (~4.7 MB) is a legit committed asset;
+        # this still catches accidental huge data dumps.
+        args: ["--maxkb=5120"]
+      - id: check-merge-conflict
+      - id: debug-statements          # no stray breakpoint()/pdb
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff                      # lint (autofix) — mirrors [tool.ruff]
+        args: ["--fix"]
+      - id: ruff-format               # format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+      - id: mypy                      # lenient static typing — mirrors [tool.mypy]
+        # Only the framework-free packing library: the Django app needs plugins/stubs
+        # to type-check cleanly, so keep the fast, high-signal surface here.
+        files: '^palletizer/'
+        additional_dependencies: []
+
+  - repo: local
+    hooks:
+      - id: django-migrations-check
+        name: django makemigrations --check
+        entry: python web/scripts/migrations_check.py
+        language: system
+        pass_filenames: false
+        files: '(^|/)models[^/]*\.py$|(^|/)models/'
+
+      # Best-effort local feedback only — CI (`.github/workflows/ci.yml`, `test` job)
+      # is the authoritative gate. This hook is bypassed by devs on
+      # `git config core.hooksPath .githooks` (graphify/Obsidian sync), so it cannot
+      # be relied on to block a breach.
+      - id: file-size-limit
+        name: 500-line file size limit
+        entry: python web/scripts/file_size_check.py
+        language: system
+        pass_filenames: false
+        files: '\.py$'
+
+  # ── Security hooks (mirror the CI Security workflow, caught pre-commit) ───────
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks                  # block secrets before they enter history
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit                    # Python static security — mirrors [tool.bandit]
+        # Block the commit only on HIGH-severity/HIGH-confidence findings so pre-existing
+        # low/medium notes don't gate everyday edits; CI (Security workflow) reports all.
+        args: ["-c", "pyproject.toml", "--severity-level", "high", "--confidence-level", "high"]
+        additional_dependencies: ["bandit[toml]"]
+        exclude: '(^|/)(tests|migrations)/|static/ui/vendor/'

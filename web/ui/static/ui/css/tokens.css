@@ -1,0 +1,84 @@
+/* GROOVE — tokeny design systemu (etap 3 audytu UX; źródło: audit/design-system/tokens.css).
+   Ładowany PRZED app.css (czcionka: fonts.css). Konwencja jak w app.css: :root = motyw CIEMNY (domyślny),
+   :root[data-theme="light"] = jasny. Stare nazwy (--blue, --gray-*, --green-solid…) żyją
+   w app.css i wskazują tu, gdzie mają odpowiednik — widoki nie pękają.
+   Każda para tekst/tło ≥ 4,5:1 (WCAG AA) — tabela: audit/DESIGN-SYSTEM.html. */
+
+:root {
+  /* Typografia — pełne piksele, 4 grubości, cyfry tabelaryczne w danych */
+  --font-sans: "Inter", "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --fs-xs: 12px; --fs-sm: 13px; --fs-md: 14px; --fs-lg: 16px; --fs-xl: 18px; --fs-2xl: 20px; --fs-3xl: 24px; --fs-4xl: 30px;
+  --fw-regular: 400; --fw-medium: 500; --fw-semibold: 600; --fw-bold: 700;
+  --lh-tight: 1.2; --lh-snug: 1.35; --lh-normal: 1.5;
+
+  /* Odstępy (siatka 4 px) i układ */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px;
+  --gutter: 16px;                 /* margines boczny treści; 24 px od 1024 px */
+  --hit-min: 44px;                /* minimalny cel dotyku (telefon, skaner MC330L) */
+
+  /* Kształt */
+  --radius-sm: 4px; --radius: 8px; --radius-lg: 12px; --radius-pill: 999px;
+
+  /* Ikony — Lucide SVG, obrys 2 */
+  --icon-sm: 16px; --icon-md: 20px; --icon-lg: 24px; --icon-stroke: 2;
+
+  /* Ruch — krótko, tylko transform/opacity */
+  --dur-fast: 150ms; --dur: 200ms; --dur-slow: 250ms; --ease: cubic-bezier(.2, 0, 0, 1);
+
+  /* ── Kolory: motyw CIEMNY (domyślny) ── */
+  color-scheme: dark;
+  --bg: #0b1220;            --surface: #141e33;       --surface-2: #1b2740;   --field: #0f1930;
+  --border: #243352;        --border-strong: #31446e;
+  --fg: #f1f5fd;            --fg-muted: #cdd8ec;      --fg-subtle: #a9b8d4;
+  --fg-disabled: #6b7a99;   --bg-disabled: #1b2740;   /* stan nieaktywny kolorem, nie opacity */
+  --primary: #2f5ecc;       --primary-hover: #264fb0; --primary-fg: #ffffff;  --primary-soft: #1c2c50;
+  --link: #8fb3ff;          --focus: #8fb3ff;
+
+  /* Znaczeniowe: tło miękkie / tekst na nim / pełne tło z białym tekstem */
+  --ok-bg: #0c2b21;     --ok-fg: #6ee7b7;     --ok-solid: #047857;
+  --warn-bg: #2c2010;   --warn-fg: #fcd34d;   --warn-solid: #b45309;
+  --danger-bg: #321214; --danger-fg: #fca5a5; --danger-solid: #dc2626;
+  --info-bg: #08303a;   --info-fg: #67e8f9;   --info-solid: #0e7490;
+  --neutral-bg: #1b2740;--neutral-fg: #cdd8ec;
+
+  /* Statusy kontroli HU (planned / in_control / ok / to_recheck / escaped) */
+  --hu-planned-bg: var(--neutral-bg); --hu-planned-fg: var(--neutral-fg);
+  --hu-control-bg: var(--primary-soft); --hu-control-fg: #a5c0ff;
+  --hu-ok-bg: var(--ok-bg);           --hu-ok-fg: var(--ok-fg);
+  --hu-recheck-bg: var(--warn-bg);    --hu-recheck-fg: var(--warn-fg);
+  --hu-escaped-bg: var(--danger-bg);  --hu-escaped-fg: var(--danger-fg);
+
+  /* Magazyny (Wysyłka UKRAINA): ACME / DLT / inny — ten sam kolor wszędzie */
+  --wh-acme: #0f766e; --wh-acme-bg: #0b2f2c; --wh-acme-fg: #5eead4;
+  --wh-dlt: #6d28d9;   --wh-dlt-bg: #231544;   --wh-dlt-fg: #c4b5fd;
+  --wh-other: #64748b; --wh-other-bg: #1b2740; --wh-other-fg: #cdd8ec;
+
+  /* Kategoria dodatkowa (np. żeton paletyzacji) — fiolet z parą AA */
+  --violet-bg: #231544; --violet-fg: #c4b5fd;
+
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / .35); --shadow: 0 2px 10px rgb(0 0 0 / .4); --shadow-lg: 0 8px 28px rgb(0 0 0 / .5);
+}
+@media (min-width: 1024px) { :root { --gutter: 24px; } }
+
+/* ── Motyw JASNY (opt-in data-theme="light" — ustawia pre-paint w base.html) ── */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f8fafc;            --surface: #ffffff;       --surface-2: #f1f5f9;   --field: #ffffff;
+  --border: #e2e8f0;        --border-strong: #cbd5e1;
+  --fg: #0f172a;            --fg-muted: #475569;      --fg-subtle: #56657a;   /* AA także na --surface-2 i tłach przyciemnionych; NIGDY #94a3b8 na tekst */
+  --fg-disabled: #94a3b8;   --bg-disabled: #f1f5f9;
+  --primary-soft: #e8eefc;
+  --link: #2f5ecc;          --focus: #2f5ecc;
+  --ok-bg: #ecfdf5;     --ok-fg: #065f46;
+  --warn-bg: #fffbeb;   --warn-fg: #92400e;
+  --danger-bg: #fef2f2; --danger-fg: #991b1b;
+  --info-bg: #ecfeff;   --info-fg: #155e75;
+  --neutral-bg: #f1f5f9;--neutral-fg: #334155;
+  --hu-control-fg: #1e40af;
+  --wh-acme-bg: #f0fdfa; --wh-acme-fg: #115e59;
+  --wh-dlt-bg: #f5f3ff;   --wh-dlt-fg: #5b21b6;
+  --wh-other-bg: #f1f5f9; --wh-other-fg: #334155;
+  --violet-bg: #f5f3ff;   --violet-fg: #5b21b6;
+  --shadow-sm: 0 1px 2px rgb(2 6 23 / .06); --shadow: 0 2px 8px rgb(2 6 23 / .08); --shadow-lg: 0 8px 28px rgb(2 6 23 / .12);
+}

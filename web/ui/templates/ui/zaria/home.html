@@ -1,0 +1,123 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% load i18n %}
+{% block title %}ZARIA — {{ app_name }}{% endblock %}
+{% block extra_head %}{% include "ui/zaria/_head.html" %}{% endblock %}
+{% block content %}
+<div class="zaria zaria--nocontext" data-side="closed">
+  {% include "ui/zaria/_sidebar.html" %}
+
+  <section class="z-main">
+    <div class="z-head">
+      <button type="button" class="btn btn-ghost btn-sm z-drawerbtn" onclick="zariaDrawer('side')" aria-label="{% trans 'Menu rozmów' %}">{% icon "menu" cls="icon--em" %}</button>
+      <div class="z-head__title">ZARIA</div>
+      <div class="z-head__meta">{% trans "Wewnętrzny asystent AI" %}</div>
+      {% if role_is_admin %}
+      <div style="margin-left:auto"><a href="{% url 'ui:admin_zaria_panel' %}" class="btn btn-secondary btn-sm">{% trans "Panel administracyjny" %}</a></div>
+      {% endif %}
+    </div>
+
+    <div class="z-scroll">
+      {% if models %}
+      <div style="text-align:center;max-width:640px;margin:12px auto 0">
+        <div style="font-size:40px;font-weight:700;letter-spacing:-.02em;color:var(--gray-900)">ZARIA</div>
+        <div style="color:var(--gray-500);margin-top:6px">{% trans "Zadaj pytanie, przetłumacz, streść albo napisz maila — wybierz model i zacznij." %}</div>
+      </div>
+
+      <form method="post" action="{% url 'ui:zaria_new_conversation' %}" id="z-newform"
+            style="display:flex;gap:10px;align-items:flex-end;justify-content:center;flex-wrap:wrap;max-width:680px;margin:8px auto 0">
+        {% csrf_token %}
+        <input type="hidden" name="compare" id="z-compare-flag" value="0">
+        {% comment %}Pojedynczy model (domyślnie){% endcomment %}
+        <div id="z-single">
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:4px" for="z-sel-model">{% trans "Model" %}</label>
+          <select name="model" id="z-sel-model">
+            <option value="auto">{% trans "Auto — dobierz model do pytania" %}</option>
+            {% for m in models %}<option value="{{ m.id }}"{% if not m.available %} disabled{% endif %}>{{ m.display_name }}{% if not m.available %} — {% trans "Niedostępny" %} ({{ m.health_detail }}){% endif %}</option>{% endfor %}
+          </select>
+        </div>
+        {% if can_compare %}
+        {% comment %}Dwa modele (tryb porównania){% endcomment %}
+        {% comment %}A = zawsze lokalny (Ollama), B = chmurowy — porównanie lokalny vs chmura.{% endcomment %}
+        <div id="z-dual" hidden style="display:flex;gap:10px">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:4px" for="z-sel-model_a">{% trans "Model A (lokalny)" %}</label>
+            <select name="model_a" id="z-sel-model_a" disabled>
+              {% for m in models_local %}<option value="{{ m.id }}"{% if not m.available %} disabled{% endif %}>{{ m.display_name }}{% if not m.available %} — {% trans "Niedostępny" %}{% endif %}</option>{% empty %}<option value="" disabled selected>{% trans "Brak modelu lokalnego (Ollama)" %}</option>{% endfor %}
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:4px" for="z-sel-model_b">{% trans "Model B (chmurowy)" %}</label>
+            <select name="model_b" id="z-sel-model_b" disabled>
+              {% for m in models_cloud %}<option value="{{ m.id }}"{% if not m.available %} disabled{% endif %}>{{ m.display_name }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+        {% endif %}
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:4px" for="z-sel-effort">{% trans "Wysiłek" %}</label>
+          <select name="effort" id="z-sel-effort">
+            <option value="auto">{% trans "Auto" %}</option>
+            <option value="low">{% trans "Niski" %}</option>
+            <option value="medium">{% trans "Średni" %}</option>
+            <option value="high">{% trans "Wysoki" %}</option>
+          </select>
+        </div>
+        {% if prompt_templates %}
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--gray-600);margin-bottom:4px">{% trans "Szablon" %}</label>
+          <select aria-label="{% trans "Szablon" %}" name="template">
+            <option value="">{% trans "Domyślny" %}</option>
+            {% for tpl in prompt_templates %}<option value="{{ tpl.pk }}">{{ tpl.name }}</option>{% endfor %}
+          </select>
+        </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary">{% trans "Rozpocznij rozmowę" %}</button>
+      </form>
+      {% if can_compare %}
+      <label style="display:flex;gap:8px;align-items:center;justify-content:center;font-size:13px;color:var(--gray-600);max-width:680px;margin:8px auto 0;cursor:pointer">
+        <input type="checkbox" id="z-compare-toggle" onchange="zariaToggleCompare(this)"> {% trans "Porównaj dwa modele obok siebie" %}
+      </label>
+      {% endif %}
+
+      <div class="z-tiles" style="max-width:640px;margin:8px auto 0">
+        {% for t in prompt_tiles %}
+        <button type="button" class="z-tile" onclick="zariaStart(this)" data-tpl="{{ t.tpl }}">
+          <div class="z-tile__t">{{ t.title }}</div>
+          <div class="z-tile__d">{{ t.desc }}</div>
+        </button>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="z-empty" style="margin:auto">
+        <div style="font-size:16px;font-weight:600;color:var(--gray-800);margin-bottom:6px">
+          {% if can_manage_users %}{% trans "Brak dostępnych modeli" %}{% else %}{% trans "Brak dostępu do modelu" %}{% endif %}
+        </div>
+        {% if can_manage_users %}
+        <div>{% blocktrans %}Dodaj modele i nadaj dostęp rolom w panelu administracyjnym → Katalog modeli.{% endblocktrans %}
+          <a href="{% url 'ui:admin_zaria_models' %}">{% trans "Otwórz katalog modeli" %}</a></div>
+        {% else %}
+        <div>{% trans "Poproś administratora o nadanie dostępu do modelu ZARIA" %}{% if admin_contact_email %}: <a href="mailto:{{ admin_contact_email }}">{{ admin_contact_email }}</a>{% endif %}.</div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<script>
+  // Kafelek promptu → wybór modelu i przejście do nowej rozmowy z wklejonym początkiem.
+  // Prompt niesiemy w sessionStorage; conversation.html wkleja go do pola po otwarciu.
+  function zariaStart(btn){
+    try { sessionStorage.setItem('zaria-seed', btn.getAttribute('data-tpl')); } catch(e){}
+    document.getElementById('z-newform').submit();
+  }
+  function zariaToggleCompare(cb){
+    var on = cb.checked;
+    document.getElementById('z-compare-flag').value = on ? '1' : '0';
+    var single = document.getElementById('z-single'), dual = document.getElementById('z-dual');
+    single.hidden = on; single.querySelector('select').disabled = on;
+    dual.hidden = !on; dual.querySelectorAll('select').forEach(function(s){ s.disabled = !on; });
+  }
+</script>
+{% endblock %}

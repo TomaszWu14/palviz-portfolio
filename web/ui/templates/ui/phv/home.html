@@ -1,0 +1,722 @@
+{% extends "ui/scanner/base.html" %}
+{% load palviz_extras %}
+{% block title %}MATinfo{% endblock %}
+{% block bar %}MATinfo{% endblock %}
+{% block back %}<a href="{% url 'ui:home' %}">‹</a>{% endblock %}
+{% block content %}
+
+<form method="get" id="phv-search" style="display:flex;gap:8px;align-items:stretch;margin-bottom:10px;position:relative">
+  <input type="search" name="q" id="phv-q" value="{{ q }}" autofocus autocomplete="off"
+         placeholder="REF / EAN — wpisz lub zeskanuj"
+         style="flex:1;min-width:0;padding:13px;font-size:17px;font-family:monospace;border:2px solid var(--line-strong);border-radius:10px;background:var(--paper);color:var(--ink)">
+  <button type="button" onclick="palvizScan('phv-q')" aria-label="Skanuj aparatem"
+          style="flex:0 0 auto;width:52px;border:2px solid var(--line-strong);border-radius:10px;background:var(--wash);color:var(--teal-deep);font-size:20px">
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2M20 8V6a2 2 0 00-2-2h-2M20 16v2a2 2 0 01-2 2h-2"/><path d="M4 12h16"/></svg>
+  </button>
+  <button type="submit" class="btn btn--accent" style="flex:0 0 auto;width:auto;margin:0;padding:0 18px">Szukaj</button>
+  {# Podpowiedzi indeksu (typeahead od pierwszej litery) — wypełniane przez fetch. #}
+  <div id="phv-ac" role="listbox" hidden
+       style="position:absolute;top:100%;left:0;right:0;z-index:30;margin-top:4px;
+              background:var(--paper);border:2px solid var(--line-strong);border-radius:10px;
+              box-shadow:0 8px 24px rgba(13,60,58,.18);overflow:hidden"></div>
+</form>
+
+<script>
+(function () {
+  var input = document.getElementById('phv-q');
+  var box = document.getElementById('phv-ac');
+  var form = document.getElementById('phv-search');
+  if (!input || !box || !form) return;
+  var timer = null, active = -1, items = [];
+
+  function hide() { box.hidden = true; box.innerHTML = ''; active = -1; items = []; }
+
+  function pick(code) { input.value = code; hide(); form.submit(); }
+
+  function render(results) {
+    items = results;
+    if (!results.length) { hide(); return; }
+    box.innerHTML = '';
+    results.forEach(function (r, i) {
+      var el = document.createElement('div');
+      el.setAttribute('role', 'option');
+      el.style.cssText = 'padding:11px 13px;cursor:pointer;border-bottom:1px solid var(--tint-cool);'
+        + 'display:flex;gap:8px;align-items:baseline';
+      // textContent, nie innerHTML — nazwy produktów przychodzą z importów (Excel/SAP);
+      // HTML w nazwie wykonywałby się u każdego operatora wyszukiwarki (stored XSS).
+      var s1 = document.createElement('strong');
+      s1.style.cssText = 'font-family:monospace;font-size:15px;color:var(--teal-deep)';
+      s1.textContent = r.code;
+      var s2 = document.createElement('span');
+      s2.style.cssText = 'font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+      s2.textContent = r.name || '';
+      el.appendChild(s1); el.appendChild(s2);
+      el.addEventListener('mousedown', function (e) { e.preventDefault(); pick(r.code); });
+      el.addEventListener('mouseenter', function () { setActive(i); });
+      box.appendChild(el);
+    });
+    box.hidden = false;
+  }
+
+  function setActive(i) {
+    active = i;
+    Array.prototype.forEach.call(box.children, function (c, j) {
+      c.style.background = (j === i) ? 'var(--wash)' : '';
+    });
+  }
+
+  function fetchSuggest(q) {
+    fetch('{% url "ui:phv_suggest" %}?q=' + encodeURIComponent(q), { headers: { 'X-Requested-With': 'fetch' } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { if (input.value.trim() === q) render(d.results || []); })
+      .catch(function () { /* cicho — brak podpowiedzi nie blokuje wpisywania */ });
+  }
+
+  input.addEventListener('input', function () {
+    var q = input.value.trim();
+    clearTimeout(timer);
+    if (!q) { hide(); return; }
+    timer = setTimeout(function () { fetchSuggest(q); }, 150);
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (box.hidden || !items.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setActive((active + 1) % items.length); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setActive((active - 1 + items.length) % items.length); }
+    else if (e.key === 'Enter' && active >= 0) { e.preventDefault(); pick(items[active].code); }
+    else if (e.key === 'Escape') { hide(); }
+  });
+
+  input.addEventListener('blur', function () { setTimeout(hide, 120); });
+})();
+</script>
+
+{% if q and not product and not location %}
+<div class="msg msg--warning">REF „{{ q }}" nie znaleziony w master dacie.{% if not suggestions %} Sprawdź numer lub zgłoś brak niżej.{% endif %}</div>
+{% if suggestions %}
+<div class="card">
+  <div style="font-size:11px;font-weight:800;color:var(--label);margin-bottom:4px">CZY CHODZIŁO O:</div>
+  {% for s in suggestions %}
+  <a href="?q={{ s.code|urlencode }}" style="display:block;padding:9px 0;border-bottom:1px solid var(--tint-cool);text-decoration:none;color:var(--ink)">
+    <strong style="font-family:monospace;font-size:16px">{{ s.code }}</strong>
+    <span style="font-size:13px;color:var(--muted)"> — {{ s.name }}</span></a>
+  {% endfor %}
+</div>
+{% endif %}
+{% endif %}
+
+{% if location %}
+{# ── Karta LOKALIZACJI (skan kodu lokalizacji zamiast REF) ─────────────── #}
+<div class="card">
+  <div style="font-size:11px;font-weight:800;color:var(--label)">LOKALIZACJA</div>
+  <div style="font-size:22px;font-weight:900;font-family:monospace;line-height:1.15">{{ location.code }}</div>
+  <div style="font-size:13px;color:var(--muted);margin-top:2px">
+    {% if location.zone %}Strefa <strong>{{ location.zone }}</strong>{% endif %}
+    {% if location.master %} · Typ {{ location.master.warehouse_type|default:"—" }}{% endif %}</div>
+</div>
+
+{% if location.master.blocked_pick or location.master.blocked_put %}
+<div class="msg msg--error"><strong>Lokalizacja zablokowana</strong>{% if location.master.blocked_pick %} · wydanie{% endif %}{% if location.master.blocked_put %} · umieszczanie{% endif %}</div>
+{% endif %}
+{% if not location.in_master %}
+<div class="msg msg--warning">Lokalizacja spoza aktywnej master daty — pokazuję tylko zawartość ze stanu.</div>
+{% endif %}
+
+{% if location.master %}
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:8px;margin-bottom:10px">
+  {% if location.master.max_volume_m3 %}
+  <div class="card" style="margin:0;padding:12px 6px;text-align:center">
+    <div style="font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--teal-deep)">{{ location.master.max_volume_m3 }}</div>
+    <div style="font-size:11px;font-weight:800;color:var(--muted)">m³ maks.</div></div>
+  {% endif %}
+  {% if location.master.max_weight_kg %}
+  <div class="card" style="margin:0;padding:12px 6px;text-align:center">
+    <div style="font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--teal-deep)">{{ location.master.max_weight_kg }}</div>
+    <div style="font-size:11px;font-weight:800;color:var(--muted)">kg maks.</div></div>
+  {% endif %}
+  {% if location.master.height_mm %}
+  <div class="card" style="margin:0;padding:12px 6px;text-align:center">
+    <div style="font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--teal-deep)">{{ location.master.height_mm }}</div>
+    <div style="font-size:11px;font-weight:800;color:var(--muted)">mm wys.</div></div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if location.products %}
+{# BLOK C: produkty w lokalizacji w formacie MATINFO — grafika + poziomy AJM. #}
+<div class="card">
+  <div style="font-size:11px;font-weight:800;color:var(--label);margin-bottom:6px">PRODUKTY W LOKALIZACJI ({{ location.products|length }})</div>
+  {% for pi in location.products %}
+  <a href="?q={{ pi.product.code|urlencode }}" style="display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--tint-cool);text-decoration:none;color:var(--ink)">
+    {% if pi.artwork_url %}
+    <img src="{{ pi.artwork_url }}" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:8px;flex:none;border:1px solid #dbe7e5">
+    {% elif pi.ju_image_url %}
+    <img src="{{ pi.ju_image_url }}" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:8px;flex:none;border:1px solid #dbe7e5;background:#fff">
+    {% else %}
+    <div style="width:44px;height:44px;border-radius:8px;flex:none;background:var(--wash);display:flex;align-items:center;justify-content:center;font-size:20px">{% icon "package" cls="icon--em" %}</div>
+    {% endif %}
+    <div style="flex:1;min-width:0">
+      <strong style="font-family:monospace;font-size:15px;color:var(--teal-deep)">{{ pi.product.code }}</strong>
+      <div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ pi.product.name }}</div>
+      <div style="font-size:12px;font-variant-numeric:tabular-nums;margin-top:1px">
+        {% if pi.factors.opz %}<span>OPZ&nbsp;<strong>{{ pi.factors.opz|floatformat:0 }}</strong> szt</span> · {% endif %}
+        {% if pi.factors.kar %}<span>KAR&nbsp;<strong>{{ pi.factors.kar|floatformat:0 }}</strong> szt</span> · {% endif %}
+        {% if pi.factors.pal %}<span>PAL&nbsp;<strong>{{ pi.factors.pal|floatformat:0 }}</strong> szt{% if pi.factors.estimated %} <span title="szacunek geometryczny — brak layoutu">≈</span>{% endif %}</span>
+        {% elif not pi.factors.kar %}<span style="color:var(--brick)">brak przeliczników</span>{% endif %}
+      </div>
+    </div>
+    <span style="color:var(--label);font-weight:800">›</span>
+  </a>
+  {% endfor %}
+  {% if location.products_skipped %}
+  <div style="font-size:12px;color:var(--accent-deep);margin-top:6px">Pokazano {{ location.products|length }} produktów — {{ location.products_skipped }} kolejnych pominięto (zawęź do HU niżej).</div>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="card">
+  <div style="font-size:11px;font-weight:800;color:var(--label);margin-bottom:6px">ZAWARTOŚĆ ({{ location.contents|length }} poz.)</div>
+  {% for it in location.contents %}
+  <div style="padding:8px 0;border-bottom:1px solid var(--tint-cool)">
+    <div style="display:flex;justify-content:space-between;gap:8px">
+      <strong style="font-family:monospace;font-size:15px">{{ it.code }}</strong>
+      <span style="font-weight:800;font-variant-numeric:tabular-nums">{{ it.qty }} {{ it.unit }}</span></div>
+    <div style="font-size:12px;color:var(--muted)">{{ it.name }}{% if it.lot %} · seria {{ it.lot }}{% endif %} · HU {{ it.hu_ref }} ({{ it.status }})</div>
+  </div>
+  {% empty %}
+  <div style="font-size:13px;color:var(--muted)">Brak HU w tej lokalizacji.</div>
+  {% endfor %}
+</div>
+
+<details class="card" id="phv-loc-report">
+  <summary style="font-weight:800;cursor:pointer;font-size:15px;color:var(--teal-deep)">Zgłoś problem lokalizacji</summary>
+  <form method="post" action="{% url 'ui:phv_location_report' %}" enctype="multipart/form-data"
+        style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+    {% csrf_token %}
+    <input type="hidden" name="location_code" value="{{ location.code }}">
+    <div class="field"><label>Typ problemu *</label>
+      <select aria-label="Typ problemu" name="issue_type" required style="width:100%;padding:13px;font-size:16px;border:2px solid var(--line-strong);border-radius:10px;background:var(--paper);color:var(--ink)">
+        {% for val, lbl in location_issue_types %}<option value="{{ val }}">{{ lbl }}</option>{% endfor %}
+      </select></div>
+    <div class="field"><label>Opis</label>
+      <textarea aria-label="Opis" name="description" maxlength="500" rows="3" placeholder="Co się dzieje z lokalizacją?"
+                style="width:100%;padding:13px;font-size:16px;border:2px solid var(--line-strong);border-radius:10px;background:var(--paper);color:var(--ink);box-sizing:border-box"></textarea></div>
+    <div class="field"><label>Zdjęcie (dowód)</label>
+      <input aria-label="Zdjęcie (dowód)" type="file" name="photo" accept="image/*" capture="environment"></div>
+    <button type="submit" class="btn btn--primary" style="margin:0">Wyślij zgłoszenie</button>
+  </form>
+</details>
+
+<a href="{% url 'ui:phv_my_issues' %}" class="btn btn--ghost" style="margin-top:10px">Moje zgłoszenia</a>
+{% endif %}
+
+{% if product %}
+{# Karta produktu (design „Konsolidacja widoku produktu"): kod + pill statusu master daty + opis z MARA. #}
+<div style="background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:12px 14px;box-shadow:0 2px 8px rgba(13,60,58,.10);margin-bottom:10px">
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Produkt</div>
+      <div style="font-size:24px;font-weight:900;color:var(--teal-deep);letter-spacing:.5px;line-height:1.15;font-family:ui-monospace,Menlo,monospace">{{ product.code }}</div>
+    </div>
+    <span style="padding:5px 11px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap;{% if hierarchy.alerts or not material_desc %}background:var(--alert-bg);color:var(--alert){% else %}background:var(--ok-bg);color:var(--ok){% endif %}">{% if hierarchy.alerts or not material_desc %}Master data niekompletna{% else %}Master data OK{% endif %}</span>
+    {# E2: obowiązujący wariant paletyzacji + sygnał, że istnieje alternatywny. #}
+    {% if product.active_variant == "B" %}
+    <span style="padding:5px 11px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap;background:#e0e7ff;color:#3730a3">Wariant B paletyzacji</span>
+    {% endif %}
+    {% if has_variant_b %}
+    <span style="padding:5px 11px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap;background:#fef3c7;color:#92400e" title="Dostępny alternatywny wariant paletyzacji — przełączenie w Planner → Produkty">Jest wariant alternatywny</span>
+    {% endif %}
+  </div>
+  {# Opis materiału z master daty (MARA/MAKTX) — pełny, autorytatywny. #}
+  <div style="font-size:13px;color:var(--muted);margin-top:3px;line-height:1.3">{{ material_desc|default:"— brak opisu —" }}</div>
+  {% if assistant_enabled %}
+  <button type="button" id="phvAiBtn" onclick="phvAiToggle()"
+          style="margin-top:10px;font-size:13px;font-weight:800;color:var(--teal-deep);background:#e7f6f3;border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer">
+    {% icon "bot" %} Asystent produktu (AI, lokalnie)
+  </button>
+  {% endif %}
+</div>
+
+{% if assistant_enabled %}
+<div class="card" id="phvAi" style="display:none;border-left:5px solid var(--teal-deep)">
+  <div style="font-size:11px;font-weight:800;color:var(--label)">ASYSTENT PRODUKTU</div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+    Model lokalny (Ollama) — odpowiada wyłącznie z danych systemu o tym REF. Nic nie wychodzi do chmury.
+  </div>
+  <textarea id="phvAiQ" rows="2" placeholder="Zapytaj o produkt (albo zostaw puste — streści wszystko)…"
+            style="width:100%;font:inherit;padding:8px;border:1px solid var(--gray-300);border-radius:8px"></textarea>
+  <button type="button" id="phvAiAsk" onclick="phvAiAsk()"
+          style="margin-top:8px;font-size:13px;font-weight:800;color:#fff;background:var(--teal-deep);border:0;border-radius:8px;padding:9px 16px;cursor:pointer">Zapytaj</button>
+  <div id="phvAiOut" style="margin-top:12px;white-space:pre-wrap;line-height:1.5;font-size:14px"></div>
+</div>
+<script>
+  function phvAiToggle() { var b = document.getElementById("phvAi"); b.style.display = b.style.display === "none" ? "" : "none"; }
+  function phvAiAsk() {
+    var out = document.getElementById("phvAiOut"), btn = document.getElementById("phvAiAsk");
+    out.textContent = "Model myśli…"; btn.disabled = true;
+    var fd = new FormData();
+    fd.append("ref", "{{ product.code|escapejs }}");
+    fd.append("question", document.getElementById("phvAiQ").value);
+    fetch("{% url 'ui:phv_assistant' %}", {
+      method: "POST", headers: { "X-CSRFToken": "{{ csrf_token }}" }, body: fd })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { out.textContent = d.ok ? d.answer : ("⚠ " + (d.error || "Błąd.")); })
+      .catch(function () { out.textContent = "⚠ Błąd sieci."; })
+      .finally(function () { btn.disabled = false; });
+  }
+</script>
+{% endif %}
+
+{# Status master daty pokazuje pill na karcie produktu; tu tylko szczegóły alertów, gdy są. #}
+{% if hierarchy.alerts %}
+<div class="msg msg--error">
+  {% for a in hierarchy.alerts %}<div>{{ a }}</div>{% endfor %}
+  {% if prefill_missing %}<a href="#phv-report" onclick="phvReport('{{ product.code|default:q|escapejs }}','','missing_conversion')"
+     style="display:inline-block;margin-top:8px;font-weight:800;color:#fff;background:var(--brick);border-radius:8px;padding:8px 14px;text-decoration:none">{% icon "flag" %} Zgłoś brak do Master Data</a>{% endif %}
+</div>
+{% endif %}
+
+{% if strategy and not levels_only %}
+{# DANE MAGAZYNOWE (design „Konsolidacja widoku produktu"): strefa wydawcza (fix) + pozostały stock per typ, rozwijany. #}
+<details data-phv-panel style="background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:0 2px 8px rgba(13,60,58,.10);overflow:hidden;margin-bottom:10px">
+  <summary style="display:flex;align-items:center;gap:8px;padding:11px 14px 9px;cursor:pointer;list-style:none">
+    <span style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--teal-deep)">Dane magazynowe</span>
+    {% if strategy.stock_total %}<span id="phv-sum"
+        data-pal="{{ strategy.stock_total.count }}" data-szt="{{ strategy.stock_total.base_qty|default:0 }}"
+        data-blocked="{{ strategy.stock_total.blocked_qty|default:0 }}"
+        style="font-size:11px;font-weight:800;color:var(--teal-deep);background:#e7f6f3;border:1px solid var(--line);border-radius:999px;padding:2px 8px">Σ {{ strategy.stock_total.count }} pal.{% if strategy.stock_total.base_qty %} · {{ strategy.stock_total.base_qty }} szt{% endif %}{% if strategy.stock_total.blocked_qty %} · <span style="color:#b45309">{{ strategy.stock_total.blocked_qty }} niepobieralne</span>{% endif %}</span>{% endif %}
+    <span style="font-size:11px;color:var(--teal-grey);width:12px;text-align:center;margin-left:auto">▾</span>
+  </summary>
+
+  {% if strategy.fixes %}
+  {# Fixy z SAP: bieżący zapas / minimum. Czerwony tag = poniżej minimum (uzupełnić). #}
+  {% for fx in strategy.fixes %}
+  <div style="border-top:1px solid var(--tint);padding:10px 14px;display:flex;align-items:center;gap:9px">
+    <span style="width:44px;flex:0 0 auto;text-align:center;background:var(--teal);color:#fff;font:900 12px ui-monospace,Menlo,monospace;padding:5px 0;border-radius:8px">{{ fx.wh }}</span>
+    <span style="font:800 15px ui-monospace,Menlo,monospace;color:var(--teal-deepest)">{{ fx.location }}</span>
+    <span style="margin-left:auto;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;{% if fx.below_min %}background:var(--alert-bg);color:var(--alert){% else %}background:var(--wash);color:var(--teal-deep){% endif %}">{{ fx.current }} / {{ fx.min_qty }} {{ fx.uom }}</span>
+  </div>
+  {% endfor %}
+  {% else %}
+  {% for p in strategy.processes %}{% for loc in p.locations %}
+  <div style="border-top:1px solid var(--tint);padding:10px 14px;display:flex;align-items:center;gap:9px">
+    <span style="width:44px;flex:0 0 auto;text-align:center;background:var(--teal);color:#fff;font:900 12px ui-monospace,Menlo,monospace;padding:5px 0;border-radius:8px">{{ p.code }}</span>
+    <span style="font:800 15px ui-monospace,Menlo,monospace;color:var(--teal-deepest)">{{ loc.code }}</span>
+    <span style="margin-left:auto;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:800;background:var(--wash);color:var(--teal-deep)">{% if loc.qty %}{{ loc.qty }} szt{% else %}{{ p.name }}{% endif %}</span>
+  </div>
+  {% endfor %}{% endfor %}
+  {% endif %}
+
+  {% if not strategy.has_process %}
+  <div style="border-top:1px solid var(--tint);padding:10px 14px">
+    <div style="font-size:13px;font-weight:800;color:#b91c1c">{% if strategy.stock_groups %}Brak procesu magazynowego{% else %}Brak zapasu w magazynie{% endif %}</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">{% if strategy.stock_groups %}Indeks nie ma stocku w strefie wydawczej.{% if strategy.other_types %} Stock w typach: {% for t in strategy.other_types %}<strong>{{ t }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}.{% endif %}{% else %}Ten indeks nie ma żadnego zapasu w systemie (brak HU). Zgłoś, jeśli powinien mieć proces lub lokalizację.{% endif %}</div>
+    <form method="post" action="{% url 'ui:phv_report' %}" style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      {% csrf_token %}
+      <input type="hidden" name="ref_code" value="{{ product.code }}">
+      <input type="hidden" name="issue_type" value="missing_process">
+      <select name="correct_value" required style="flex:1;min-width:170px;padding:10px;font-size:14px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--teal-deepest)">
+        {% for val, lbl in process_choices %}<option value="{{ val }}">{{ lbl }}</option>{% endfor %}
+      </select>
+      <button type="submit" style="border:0;background:var(--teal);color:#fff;font:800 13px system-ui;padding:0 16px;border-radius:10px;cursor:pointer">{% icon "flag" %} Zgłoś</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% if strategy.stock_groups %}
+  {# Filtry typów magazynu + „strefa wydawcza” po prawej stronie tej samej linii (zamiast nagłówka). #}
+  <div class="phv-cat-bar" style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:9px 14px;border-top:1px solid var(--tint)">
+    {% if strategy.stock_categories|length > 1 %}
+    <button type="button" class="phv-cat-chip" data-cat="all" data-active="1" onclick="phvFilterCat(this,'all')"
+            style="border:1px solid var(--line);background:var(--teal);color:#fff;font:800 11px system-ui;padding:5px 11px;border-radius:999px;cursor:pointer">Wszystko</button>
+    {% for c in strategy.stock_categories %}
+    <button type="button" class="phv-cat-chip" data-cat="{{ c.key }}" data-active="0" onclick="phvFilterCat(this,'{{ c.key }}')"
+            style="border:1px solid var(--line);background:var(--paper);color:var(--teal-deep);font:800 11px system-ui;padding:5px 11px;border-radius:999px;cursor:pointer">{{ c.label }}</button>
+    {% endfor %}
+    {% endif %}
+    <span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap">{% if strategy.has_process %}strefa wydawcza{% else %}poza strefą wydawczą{% endif %}</span>
+  </div>
+  {% endif %}
+
+  {% for g in strategy.stock_groups %}
+  <details class="phv-stock-row" data-cat="{{ g.category }}" data-count="{{ g.count }}" data-qty="{{ g.base_qty|default:0 }}" style="border-top:1px solid #c5ddd8">
+    <summary style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:9px;list-style:none">
+      <span style="width:44px;flex:0 0 auto;text-align:center;background:var(--teal);color:#fff;font:900 12px ui-monospace,Menlo,monospace;padding:5px 0;border-radius:8px">{{ g.code }}</span>
+      <span style="margin-left:auto;font-size:12px;font-weight:800;color:var(--teal-deep)">{{ g.count }} {{ g.count|pl_palety }}{% if g.base_qty %} · {{ g.base_qty }} szt{% endif %}{% if g.total_volume_m3 %} · ≈ {{ g.total_volume_m3 }} m³{% endif %}</span>
+      <span style="font-size:11px;color:var(--teal-grey);width:12px;text-align:center">▾</span>
+    </summary>
+    <div style="padding:0 14px 10px 53px">
+      {# Drill-down w kolejności FEFO (najkrótsza ważność u góry); „blok" = lokalizacja zablokowana. #}
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr>
+          <th style="text-align:left;font-size:10px;font-weight:800;color:var(--teal-grey);padding:2px 4px">Lokalizacja</th>
+          <th style="text-align:left;font-size:10px;font-weight:800;color:var(--teal-grey);padding:2px 4px">Ważność</th>
+          <th style="text-align:right;font-size:10px;font-weight:800;color:var(--teal-grey);padding:2px 4px">Objętość</th>
+          <th style="text-align:left;font-size:10px;font-weight:800;color:var(--teal-grey);padding:2px 4px">HU / LOT</th>
+          <th style="text-align:left;font-size:10px;font-weight:800;color:var(--teal-grey);padding:2px 4px">Status</th>
+        </tr></thead>
+        <tbody>
+          {% for r in g.rows %}<tr style="border-top:1px solid #f1fbf9">
+            <td style="padding:3px 4px;font-family:ui-monospace,Menlo,monospace;color:var(--teal-deepest)">{{ r.location }}{% if r.blocked %} <span style="font:800 9px system-ui;background:var(--alert-bg);color:var(--alert);border-radius:5px;padding:1px 5px">blok</span>{% endif %}</td>
+            <td style="padding:3px 4px;font-variant-numeric:tabular-nums;color:var(--teal-deepest)">{% if r.expiry %}{{ r.expiry|date:"Y-m-d" }}{% else %}—{% endif %}</td>
+            <td style="padding:3px 4px;text-align:right;font-variant-numeric:tabular-nums">{% if r.volume_m3 %}{{ r.volume_m3 }} m³{% else %}—{% endif %}</td>
+            <td style="padding:3px 4px;font-family:ui-monospace,Menlo,monospace">{{ r.hu_code }}{% if r.lot %}<div style="font-size:10px;color:var(--teal-grey)">LOT {{ r.lot }}</div>{% endif %}</td>
+            <td style="padding:3px 4px;font-family:ui-monospace,Menlo,monospace">{{ r.status|default:"—" }}{% if r.status_kind == 'blocked' %} <span style="font:800 9px system-ui;background:var(--alert-bg);color:var(--alert);border-radius:5px;padding:1px 5px">blok</span>{% elif r.status_kind == 'quality' %} <span style="font:800 9px system-ui;background:#fde7cf;color:#8a5a10;border-radius:5px;padding:1px 5px">jakość</span>{% elif r.status_kind == 'returns' %} <span style="font:800 9px system-ui;background:var(--alert-bg);color:var(--alert);border-radius:5px;padding:1px 5px">zwrot</span>{% endif %}</td>
+          </tr>{% endfor %}
+        </tbody>
+      </table>
+      {% if g.count > 60 %}<div style="font-size:11px;color:var(--teal-grey);padding:4px 4px 0">Pokazano 60 z {{ g.count }} palet — zawęź skanem lokalizacji.</div>{% endif %}
+    </div>
+  </details>
+  {% endfor %}
+
+  {% if strategy.stock_groups %}
+  <div style="padding:10px 14px;border-top:1px solid var(--tint)">
+    <button type="button" onclick="phvExpandAll(this)" style="width:100%;border:1px solid var(--line);background:var(--paper);color:var(--teal-deep);font:800 13px system-ui;padding:10px;border-radius:12px;cursor:pointer">Rozwiń szczegóły</button>
+  </div>
+  {% endif %}
+</details>
+<script>
+/* Σ dynamiczna: przelicza sumę palet + szt dla WIDOCZNYCH grup (aktywny filtr). */
+function phvSumUpdate(panel){
+  var sum=panel.querySelector("#phv-sum"); if(!sum) return;
+  var rows=panel.querySelectorAll("details.phv-stock-row");
+  var hidden=false;
+  rows.forEach(function(d){ if(d.style.display==="none") hidden=true; });
+  if(!hidden){                                    // „wszystko" → serwerowy total (proces + kubły + zablokowane)
+    var szt=parseInt(sum.dataset.szt||"0",10)||0, bl=parseInt(sum.dataset.blocked||"0",10)||0;
+    sum.innerHTML = "Σ " + (parseInt(sum.dataset.pal||"0",10)||0) + " pal." + (szt?(" · "+szt+" szt"):"")
+      + (bl?(" · <span style=\"color:#b45309\">"+bl+" niepobieralne</span>"):"");
+    return;
+  }
+  var pal=0, szt=0;                               // aktywny filtr → suma widocznych kubłów
+  rows.forEach(function(d){
+    if(d.style.display==="none") return;
+    pal += parseInt(d.dataset.count||"0",10)||0;
+    szt += parseInt(d.dataset.qty||"0",10)||0;
+  });
+  sum.textContent = "Σ " + pal + " pal." + (szt ? (" · " + szt + " szt") : "");
+}
+function phvFilterCat(btn, cat){
+  var panel=btn.closest("[data-phv-panel]"); if(!panel) return;
+  panel.querySelectorAll("details.phv-stock-row").forEach(function(d){
+    d.style.display = (cat==="all" || d.dataset.cat===cat) ? "" : "none";
+  });
+  panel.querySelectorAll(".phv-cat-chip").forEach(function(c){
+    var on = c===btn; c.dataset.active = on ? "1" : "0";
+    c.style.background = on ? "var(--teal)" : "var(--paper)";
+    c.style.color = on ? "#fff" : "var(--teal-deep)";
+  });
+  phvSumUpdate(panel);
+}
+/* Policz Σ na starcie (stan „Wszystko") — zgodnie z tym co renderuje serwer. */
+document.querySelectorAll("[data-phv-panel]").forEach(phvSumUpdate);
+function phvExpandAll(btn){
+  var panel=btn.closest("[data-phv-panel]"); if(!panel) return;
+  var rows=panel.querySelectorAll("details.phv-stock-row"), anyClosed=false;
+  rows.forEach(function(d){ if(!d.open) anyClosed=true; });
+  rows.forEach(function(d){ d.open=anyClosed; });
+  btn.textContent=anyClosed ? "Zwiń szczegóły" : "Rozwiń szczegóły";
+}
+</script>
+{% endif %}
+
+{% if issue_stat %}
+{# Podpowiedź z reguł (bez AI): najczęstsza JM wydania z historii pobrań. #}
+<div class="card" style="display:flex;gap:10px;align-items:center;background:var(--wash)">
+  <div style="font-size:22px">{% icon "package" cls="icon--em" %}</div>
+  <div style="font-size:14px;line-height:1.35">Najczęściej wydawany w JM
+    <strong style="font-family:monospace">{{ issue_stat.unit }}</strong> —
+    <strong>{{ issue_stat.pct }}%</strong> pobrań
+    <span style="color:var(--muted)">({{ issue_stat.total }} operacji)</span></div>
+</div>
+{% endif %}
+
+{# Karty poziomów: wspólny renderer 3D (renderPalVizLevel) — pełna szerokość ekranu. #}
+{% for l in hierarchy.levels %}
+<div class="card phv-level" data-title="{{ l.title }}" data-dims="{{ l.dims }}" style="display:flex;gap:12px;align-items:center;border-left:5px solid {{ l.color }}">
+  <canvas data-three="{{ l.three_data }}" width="120" height="104"
+          style="width:120px;height:104px;flex:0 0 auto;border-radius:8px;background:#0b1220"></canvas>
+  <div style="flex:1;min-width:0">
+    <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+      <span style="font-weight:800;font-size:17px">{{ l.title }}</span>
+      {% if l.uom_label %}<span style="font-size:10px;font-weight:800;color:var(--label);background:var(--wash);border-radius:6px;padding:2px 6px">{{ l.uom_label }}</span>{% endif %}
+    </div>
+    <div style="font-size:12px;color:var(--muted)">{{ l.subtitle }}</div>
+    <div style="font-size:17px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums">{{ l.qty }}</div>
+    <div style="font-size:12px;color:var(--muted)">{{ l.dims }}{% if l.vol_m3 %} · {{ l.vol_m3 }} m³{% endif %}{% if l.mult %} · ×{{ l.mult }} → niżej{% endif %}</div>
+    {# EAN na każdym poziomie opakowania (paleta nie ma katalogowego EAN); „—" = brak w master dacie. #}
+    {% if l.key != 'pallet' %}<div style="font-size:12px;color:var(--muted);font-family:monospace">EAN: <span style="font-weight:800;color:{% if l.ean %}var(--ink){% else %}var(--brick){% endif %}">{{ l.ean|default:"—" }}</span></div>{% endif %}
+    {% if l.key == 'pallet' and hierarchy.summary %}
+    {# Liczby palety TYLKO tutaj (nagłówek pokazuje strategię, nie duplikat KPI). #}
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:5px;font-size:14px;font-variant-numeric:tabular-nums">
+      {% if hierarchy.summary.pcs_per_pallet %}<span><strong>{{ hierarchy.summary.pcs_per_pallet }}</strong> {{ hierarchy.summary.pallet_unit }}/pal.</span>{% endif %}
+      {% if hierarchy.summary.pallet_weight_kg %}<span><strong>{{ hierarchy.summary.pallet_weight_kg }}</strong> kg</span>{% endif %}
+      {% if vol_pct %}<span style="color:{% if vol_pct < 60 %}var(--brick){% else %}var(--teal-deep){% endif %}"><strong>{{ vol_pct }}%</strong> wypełnienia</span>{% endif %}
+    </div>
+    {% endif %}
+    {# B4: przyciski przy kartach 3D usunięte — zgłoszenie tylko przez okno na dole. #}
+  </div>
+  {# Fakty do zoomu 3D (klonowane pod duży model po dwukliku) — ukryte na karcie. #}
+  <div class="phv-facts" hidden>
+    <div><b>{{ l.qty }}</b></div>
+    <div>Wymiary: <b>{{ l.dims }}</b>{% if l.vol_m3 %} · {{ l.vol_m3 }} m³{% endif %}</div>
+    {% if l.key == 'pallet' and hierarchy.summary %}
+      {% if hierarchy.summary.pcs_per_pallet %}<div>Łącznie: <b>{{ hierarchy.summary.pcs_per_pallet }} {{ hierarchy.summary.pallet_unit }}</b> na palecie</div>{% endif %}
+      {% if hierarchy.summary.pallet_weight_kg %}<div>Waga: <b>{{ hierarchy.summary.pallet_weight_kg }} kg</b></div>{% endif %}
+    {% elif l.key == 'carton' and hierarchy.summary %}
+      {% if hierarchy.summary.carton_weight_kg %}<div>Waga: <b>{{ hierarchy.summary.carton_weight_kg }} kg</b></div>{% endif %}
+    {% elif l.key == 'unit' and hierarchy.summary.unit_weight_kg %}
+      <div>Waga: <b>{{ hierarchy.summary.unit_weight_kg }} kg</b></div>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+
+<script type="importmap">
+{ "imports": { "three": "/static/ui/vendor/three.module.js" } }
+</script>
+<script type="module">
+import { renderPalVizLevel } from "/static/ui/js/palviz-three.js";
+
+/* Kafle poziomów budujemy dopiero, gdy karta wjeżdża w kadr — na terminalu skanera
+   kilka kontekstów WebGL naraz (każdy z grafikami opakowania) zauważalnie opóźniało
+   pierwsze wyświetlenie. dataset.three zostaje nietknięty: korzysta z niego zoom niżej. */
+function phvBuild(canvas){
+  try { renderPalVizLevel(canvas, JSON.parse(canvas.dataset.three)); }
+  catch(e) { console.warn("PalViz Three.js render error:", e); }
+}
+var phvCanvases = document.querySelectorAll(".phv-level canvas[data-three]");
+if("IntersectionObserver" in window){
+  var phvIO = new IntersectionObserver(function(entries, obs){
+    entries.forEach(function(entry){
+      if(!entry.isIntersecting) return;
+      obs.unobserve(entry.target);
+      phvBuild(entry.target);
+    });
+  }, { rootMargin: "200px" });
+  phvCanvases.forEach(function(c){ phvIO.observe(c); });
+} else {
+  phvCanvases.forEach(phvBuild);
+}
+
+/* Dwuklik na karcie poziomu → pełnoekranowe zbliżenie 3D (każdy poziom: paleta,
+   karton, OP, sztuka). Zamknięcie: ✕ / tło / Esc / dwuklik. Tylko karty skanera —
+   nawigacja i inne elementy bez zmian. */
+function phvZoom(card){
+  var canvas = card.querySelector("canvas[data-three]");
+  if(!canvas) return;
+  var ov = document.createElement("div");
+  ov.style.cssText = "position:fixed;inset:0;z-index:200;background:rgba(4,10,22,.94);" +
+    "display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 3vw 14px";
+  var head = document.createElement("div");
+  head.style.cssText = "color:#fff;font-weight:800;font-size:18px;text-align:center;flex:0 0 auto";
+  head.textContent = (card.dataset.title || "") + " · " + (card.dataset.dims || "");
+  // KWADRATOWY bufor = poprawne proporcje modelu (aspect 1:1, brak rozciągnięcia).
+  // Odejmujemy miejsce na nagłówek, panel danych i przycisk. (Wersja z width:94vw +
+  // canvas 100%×100% dawała bufor szeroki-i-niski → paleta była sztucznie rozciągnięta.)
+  // Bufor kwadratowy, ~18% większy niż bazowy (poprzednio za mały po duplikacie),
+  // ale nigdy szerszy niż ekran − 48 px, żeby nie wychodził poza kadr.
+  function _fitSize(){
+    var minSide = Math.min(window.innerWidth, window.innerHeight);
+    return Math.min(Math.round((minSide - 180) * 1.18), minSide - 48);
+  }
+  var size = _fitSize();
+  var big = document.createElement("canvas");
+  big.width = size; big.height = size;
+  big.style.cssText = "width:" + size + "px;height:" + size + "px;border-radius:12px;background:#0b1220";
+  // Obrót ekranu / zmiana okna w trakcie podglądu → dopasuj canvas (viewer sam koryguje
+  // bufor i aspekt przez ResizeObserver). Każdy ekran renderuje do wymiarów urządzenia.
+  var onOvResize = function(){
+    var s = _fitSize();
+    big.style.width = s + "px"; big.style.height = s + "px";
+  };
+  window.addEventListener("resize", onOvResize);
+  var close = document.createElement("button");
+  close.type = "button";
+  close.textContent = "✕ Zamknij";
+  close.style.cssText = "flex:0 0 auto;padding:10px 22px;font-size:15px;font-weight:800;" +
+    "border:0;border-radius:10px;background:#fff;color:#0f172a";
+  ov.appendChild(head); ov.appendChild(big);
+  // Panel danych pod modelem: ilości, suma podstawowej JM, wymiary, waga (z karty).
+  var facts = card.querySelector(".phv-facts");
+  if(facts){
+    var panel = facts.cloneNode(true);
+    panel.hidden = false;
+    panel.style.cssText = "flex:0 0 auto;color:#e8f2f0;font-size:15px;line-height:1.5;" +
+      "text-align:center;background:rgba(255,255,255,.08);border-radius:10px;" +
+      "padding:8px 16px;max-width:90vw;box-sizing:border-box";
+    ov.appendChild(panel);
+  }
+  ov.appendChild(close);
+  document.body.appendChild(ov);
+  var viewer = null;
+  try {
+    var d3 = JSON.parse(canvas.dataset.three);
+    // Zbliżenie = fit POJEDYNCZEGO obiektu: usuń refSize (wspólną skalę hierarchii),
+    // inaczej kadr liczony wg palety → karton z artworkiem źle wycentrowany/za blisko.
+    delete d3.refSize;
+    // Kadr dalej niż domyślne 1.6× — inaczej przy fov 42° karton wychodził poza kadr
+    // (za duże zbliżenie po dwukliku). 2.6× = cały obiekt widoczny z marginesem.
+    d3.frameK = 2.6;
+    viewer = renderPalVizLevel(big, d3);
+  }
+  catch(e) { console.warn("PalViz zoom render error:", e); }
+  function shut(){
+    // destroy() = anulowanie rAF + zwolnienie kontekstu WebGL — bez tego po
+    // kilkunastu zoomach przeglądarka ubija konteksty i miniaturki gasną.
+    if(viewer && viewer.destroy) { try { viewer.destroy(); } catch(e) {} }
+    ov.remove(); document.removeEventListener("keydown", onKey);
+    window.removeEventListener("resize", onOvResize);
+  }
+  function onKey(e){ if(e.key === "Escape") shut(); }
+  close.addEventListener("click", shut);
+  // Dwuklik zamyka tylko POZA modelem — szybkie tapy przy obracaniu/zoomowaniu canvasu
+  // liczyły się jako dblclick i ubijały podgląd w trakcie manipulacji.
+  ov.addEventListener("dblclick", function(e){ if(!e.target.closest("canvas")) shut(); });
+  ov.addEventListener("click", function(e){ if(e.target === ov) shut(); });
+  document.addEventListener("keydown", onKey);
+}
+document.querySelectorAll(".phv-level").forEach(function(card){
+  card.addEventListener("dblclick", function(e){
+    if(e.target.closest("a,button,form")) return;   // linki "Zgłoś" itd. bez zmian
+    phvZoom(card);
+  });
+});
+</script>
+{% endif %}
+
+{% if q %}
+<details class="card" id="phv-report" {% if product and hierarchy.alerts %}open{% endif %}>
+  <summary style="font-weight:800;cursor:pointer;font-size:15px;color:var(--teal-deep)">Zgłoś problem z master datą</summary>
+  <form method="post" action="{% url 'ui:phv_report' %}" enctype="multipart/form-data"
+        style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+    {% csrf_token %}
+    <input type="hidden" name="ref_code" value="{{ product.code|default:q }}">
+    <div class="field"><label>Typ problemu *</label>
+      <select aria-label="Typ problemu" name="issue_type" id="pf-type" required onchange="phvApplyType(this.value)" style="width:100%;padding:13px;font-size:16px;border:2px solid var(--line-strong);border-radius:10px;background:var(--paper);color:var(--ink)">
+        {% for val, lbl in issue_types %}<option value="{{ val }}" {% if prefill_missing and val == 'missing_conversion' %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+      </select></div>
+    {# Para wartości (aktualna/poprawna) — pokazywana i etykietowana wg typu (JS). Ukryte pola disabled → nie submitują się. #}
+    <div id="pf-values" style="display:none;flex-direction:column;gap:8px">
+      <div class="field" id="pf-current-wrap" style="margin:0"><label id="pf-current-label">Wartość aktualna</label>
+        <input aria-label="Wartość aktualna" name="current_value" id="pf-current" maxlength="80" disabled></div>
+      <div class="field" id="pf-correct-wrap" style="margin:0"><label id="pf-correct-label">Wartość poprawna</label>
+        <input aria-label="Wartość poprawna" name="correct_value" id="pf-correct" maxlength="80" disabled></div>
+    </div>
+    {# Brak przelicznika — której jednostki dotyczy (PAZ/KAR/OPZ). Wymagane dla missing_conversion. #}
+    <div class="field" id="pf-unit" style="display:none"><label>Której jednostki dotyczy? *</label>
+      <select aria-label="Której jednostki dotyczy?" name="unit" id="pf-unit-sel" disabled style="width:100%;padding:13px;font-size:16px;border:2px solid var(--line-strong);border-radius:10px;background:var(--paper);color:var(--ink)">
+        <option value="">— wybierz jednostkę —</option>
+        <option value="PAZ">PAZ</option>
+        <option value="KAR">KAR</option>
+        <option value="OPZ">OPZ</option>
+      </select></div>
+    {# Zmień lokalizację — lista klas (correct_value); widoczna tylko dla change_location. #}
+    <div class="field" id="pf-location" style="display:none"><label>Zmień lokalizację na *</label>
+      <select aria-label="Zmień lokalizację na" name="correct_value" id="pf-location-sel" disabled style="width:100%;padding:13px;font-size:16px;border:2px solid var(--line-strong);border-radius:10px;background:var(--paper);color:var(--ink)">
+        <option value="">— wybierz lokalizację —</option>
+        {% for val, lbl in location_suggestions %}<option value="{{ val }}">{{ lbl }}</option>{% endfor %}
+      </select></div>
+    {# Proces magazynowy — tylko dla missing_process. #}
+    <div class="field" id="pf-reason" style="display:none"><label>Powód zmiany paletyzacji *</label>
+      <select aria-label="Powód zmiany paletyzacji" name="correct_value" id="pf-reason-sel" disabled style="width:100%;padding:13px;font-size:16px;border:2px solid var(--line-strong);border-radius:10px;background:var(--paper);color:var(--ink)">
+        <option value="">— wybierz powód —</option>
+        {% for val, lbl in palletization_reasons %}<option value="{{ val }}">{{ lbl }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field" id="pf-process" style="display:none"><label>Proces magazynowy *</label>
+      <select aria-label="Proces magazynowy" name="correct_value" id="pf-process-sel" disabled style="width:100%;padding:13px;font-size:16px;border:2px solid var(--line-strong);border-radius:10px;background:var(--paper);color:var(--ink)">
+        {% for val, lbl in process_choices %}<option value="{{ val }}">{{ lbl }}</option>{% endfor %}
+      </select></div>
+    <div class="field" id="pf-desc" style="display:none"><label id="pf-desc-label">Opis</label>
+      <textarea aria-label="Opis" name="description" id="pf-desc-ta" maxlength="500" rows="3" disabled placeholder="Co się nie zgadza?"
+                style="width:100%;padding:13px;font-size:16px;border:2px solid var(--line-strong);border-radius:10px;background:var(--paper);color:var(--ink);box-sizing:border-box"></textarea></div>
+    <div class="field"><label>Zdjęcie (opcjonalne — skaner może nie mieć aparatu)</label>
+      <input aria-label="Zdjęcie (opcjonalne — skaner może nie mieć aparatu)" type="file" name="photo" accept="image/*" capture="environment"></div>
+    <button type="submit" class="btn btn--primary" style="margin:0">Wyślij zgłoszenie</button>
+  </form>
+</details>
+{% endif %}
+
+<script>
+/* Formularz zgłoszenia zależny od typu: każdy typ pokazuje tylko właściwe pola. */
+var PHV_FIELDS = {
+  missing_conversion: { unit:true, correct:{label:"Wartość poprawna", ph:"np. 30 szt/karton"}, desc:true },
+  wrong_conversion:   { current:{label:"Wartość aktualna", ph:"np. 30 szt/karton"}, correct:{label:"Wartość poprawna", ph:"np. 50 szt/karton"}, desc:true },
+  wrong_name:         { current:{label:"Nazwa aktualna", ph:"obecna nazwa"}, correct:{label:"Nazwa poprawna", ph:"poprawna nazwa"}, desc:true },
+  wrong_date:         { current:{label:"Data na etykiecie", type:"date"}, correct:{label:"Data poprawna", type:"date"}, desc:true },
+  change_location:    { location:true, desc:true },
+  carton_underfilled: { desc:true },
+  carton_fit_pallet:  { desc:true },
+  missing_process:    { process:true },
+  missing_render:     { desc:true },   // zdjęcie robi pole photo (zawsze widoczne w formie)
+  change_palletization: { reason:true, desc:true },   // B6: powód ze słownika (E1)
+  verify_volume:      { desc:true },                  // B6
+  other:              { desc:true, descReq:true }
+};
+function _pf(id){ return document.getElementById(id); }
+function phvApplyType(type){
+  var cfg = PHV_FIELDS[type] || {};
+  // Wyłącz + ukryj wszystko (disabled = nie submituje się; brak kolizji name=correct_value).
+  ["pf-current","pf-correct","pf-unit-sel","pf-location-sel","pf-process-sel","pf-reason-sel","pf-desc-ta"].forEach(function(id){
+    var el=_pf(id); if(el){ el.disabled=true; el.required=false; }
+  });
+  ["pf-values","pf-unit","pf-location","pf-process","pf-reason","pf-desc"].forEach(function(id){ var el=_pf(id); if(el) el.style.display="none"; });
+  if(cfg.unit){ _pf("pf-unit").style.display=""; var us=_pf("pf-unit-sel"); us.disabled=false; us.required=true; }
+
+  if(cfg.current || cfg.correct){
+    _pf("pf-values").style.display="flex";
+    var cw=_pf("pf-current-wrap");
+    if(cfg.current){ cw.style.display=""; var c=_pf("pf-current"); c.disabled=false; c.type=cfg.current.type||"text"; c.placeholder=cfg.current.ph||""; _pf("pf-current-label").textContent=cfg.current.label; }
+    else cw.style.display="none";
+    var ow=_pf("pf-correct-wrap");
+    if(cfg.correct){ ow.style.display=""; var o=_pf("pf-correct"); o.disabled=false; o.type=cfg.correct.type||"text"; o.placeholder=cfg.correct.ph||""; _pf("pf-correct-label").textContent=cfg.correct.label; }
+    else ow.style.display="none";
+  }
+  if(cfg.location){ _pf("pf-location").style.display=""; var ls=_pf("pf-location-sel"); ls.disabled=false; ls.required=true; }
+  if(cfg.reason){ _pf("pf-reason").style.display=""; var rs=_pf("pf-reason-sel"); rs.disabled=false; rs.required=true; }
+  if(cfg.process){ _pf("pf-process").style.display=""; var ps=_pf("pf-process-sel"); ps.disabled=false; ps.required=true; }
+  if(cfg.desc){ _pf("pf-desc").style.display=""; var ta=_pf("pf-desc-ta"); ta.disabled=false; ta.required=!!cfg.descReq; }
+}
+/* Per-poziom / nagłówek „Zgłoś": otwórz formularz, ustaw typ, dopasuj pola, prewypełnij. */
+function phvReport(ref, cur, type){
+  var d=_pf("phv-report"); if(!d) return;
+  d.open=true;
+  var t=_pf("pf-type"); if(t && type){ t.value=type; }
+  phvApplyType(t ? t.value : type);
+  var c=_pf("pf-current"); if(c && cur && !c.disabled) c.value=cur;
+  d.scrollIntoView({behavior:"smooth",block:"center"});
+}
+/* Inicjalizacja: dopasuj pola do wybranego typu przy wejściu na stronę. */
+(function(){ var t=_pf("pf-type"); if(t) phvApplyType(t.value); })();
+</script>
+
+<a href="{% url 'ui:phv_my_issues' %}" class="btn btn--ghost" style="margin-top:10px">Moje zgłoszenia</a>
+
+{% comment %}B1: historia per USER z serwera (ProductViewHistory) — localStorage
+zastąpione (współdzielone terminale mieszały operatorów, czyszczenie kasowało).{% endcomment %}
+{% if recent %}
+<script>
+(function(){
+  var host=document.createElement("div");
+  host.className="card";
+  var head=document.createElement("div");
+  head.style.cssText="font-size:11px;font-weight:800;color:var(--label);margin-bottom:4px";
+  head.textContent="OSTATNIO PRZEGLĄDANE";
+  host.appendChild(head);
+  /* SEC-006: kod produktu (dane z importu) wstawiamy tylko jako textContent (bez składania HTML). */
+  [{% for r in recent %}"{{ r.product.code|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}]
+    .forEach(function(c){
+      var a=document.createElement("a");
+      a.href="?q="+encodeURIComponent(c);
+      a.style.cssText="display:inline-block;margin:3px 10px 3px 0;font-family:monospace;font-size:16px";
+      a.textContent=c;
+      host.appendChild(a);
+    });
+  /* Celowo po ID — pierwszy <form> na stronie to formularz wylogowania w pasku. */
+  document.getElementById("phv-search").after(host);
+})();
+</script>
+{% endif %}
+{% endblock %}

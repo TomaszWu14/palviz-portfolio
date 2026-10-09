@@ -1,0 +1,131 @@
+name: CI
+
+# Test gate for PRs into main. `test` is meant to be a REQUIRED status check in the
+# branch-protection rule; when it passes, the auto-merge job arms GitHub's native
+# auto-merge so the PR merges itself THROUGH the PR (no direct push to a protected main).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    # `ready_for_review` jest KONIECZNY: konwencja repo mówi „otwórz PR jako draft", a
+    # domyślne typy (opened/synchronize/reopened) nie obejmują wyjścia z draftu. Bez tego
+    # PR oznaczony jako gotowy nigdy nie dostaje przebiegu, który uzbraja auto-merge —
+    # wisi zielony i nie merguje się (patrz #367).
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+
+# A newer push to the same PR supersedes an in-flight run (saves Actions minutes).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Gate: run the test suites; merging only happens once this is green ───────
+  # Django tests run against PostgreSQL (prod parity) — SQLite tolerated różnice, które
+  # wybuchały dopiero na produkcji (np. filter(pk="") albo brak konfiguracji FTS 'polish').
+  test:
+    # Runner GitHuba; PostgreSQL 16 jako kontener usługi (prod parity, nie SQLite).
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: palviz
+          POSTGRES_PASSWORD: palviz
+          POSTGRES_DB: palviz_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U palviz" --health-interval 5s --health-timeout 5s --health-retries 10
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.11'
+          cache: pip
+
+      # Fast-fail w sekundach, bez zależności — zanim ruszy `pip install`.
+      - name: File size limit gate (STRUCT-04)
+        run: python web/scripts/file_size_check.py
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # SZYBKI GATE (decyzja 2026-08-18): lint/mypy/security/coverage USUNIĘTE z gate'a
+      # PR, żeby merge był szybki (coverage wrócił — TEST-003). Były i tak nieblokujące (informacyjne) — pełne skany
+      # bezpieczeństwa robi security.yml/codeql.yml poza ścieżką merge. Zostaje to, co
+      # naprawdę chroni prod: testy (palletizer + ui.tests) + `manage.py check`.
+      # tblib: bez niego `manage.py test --parallel` nie umie przesłać tracebacku padniętego
+      # testu z procesu roboczego („TypeError: cannot pickle 'traceback' object”) — CI jest
+      # czerwone, ale nie widać KTÓRY test padł.
+      # requirements-test.txt: hypothesis, tblib (tracebacki z --parallel), factory_boy,
+      # time-machine, PyYAML — infrastruktura testów web/testkit (Etap 1 systemu regresji).
+      - name: Install test dependencies
+        run: pip install -r requirements-test.txt
+
+      - name: Palletizer tests (packing logic + hypothesis)
+        # Pod coverage (TEST-003): `source` w pyproject obejmuje palletizer/, więc bez tego
+        # przebiegu biblioteka pakowania zaniżałaby łączne pokrycie.
+        run: |
+          python -m coverage erase
+          python -m coverage run -m unittest discover -s palletizer/tests -p "test_*.py"
+
+      - name: Django check + UI tests (with coverage)
+        env:
+          DJANGO_SECRET_KEY: ci-test-secret
+          DJANGO_DEBUG: 'true'
+          DJANGO_ALLOWED_HOSTS: '*'
+          PYTHONPATH: ${{ github.workspace }}/web:${{ github.workspace }}
+        run: |
+          set -o pipefail
+          # Prod-parity: testy na PostgreSQL (kontener usługi joba), nie SQLite.
+          export DATABASE_URL="postgresql://palviz:palviz@127.0.0.1:5432/palviz_ci"
+          python web/manage.py check
+          # --noinput: bez pytania o usunięcie bazy testowej z poprzedniego biegu.
+          # coverage run (TEST-003): parallel=true + concurrency=multiprocessing w pyproject.toml
+          # zbiera dane z procesów --parallel do plików .coverage.* — łączy je krok niżej.
+          python -m coverage run web/manage.py test ui.tests wh3d.tests huctl.tests transport.tests -v 1 --parallel 2 --noinput 2>&1 | tee "$RUNNER_TEMP/test_output.log"
+
+      # TEST-003: próg pokrycia (lokalnie ~84%). Łączy dane palletizer + Django (--parallel).
+      - name: Coverage report (próg 80%)
+        run: |
+          python -m coverage combine -q
+          python -m coverage report --skip-covered --sort=cover | tail -25
+          TOTAL=$(python -m coverage report --format=total)
+          echo "### Pokrycie testami: ${TOTAL}% (próg 80%)" >> "$GITHUB_STEP_SUMMARY"
+          python -m coverage report --fail-under=80 --format=total
+
+      # Parses the log tee'd by the step above — does NOT re-run the suite (would
+      # roughly double this job's wall-clock time for no benefit, TEST-02 Pitfall 4).
+      - name: Test count floor guard (TEST-02)
+        run: python web/scripts/test_count_check.py "$RUNNER_TEMP/test_output.log"
+
+      - name: Ruff — no star-imports outside views facades (IMP-01/IMP-02)
+        run: |
+          pip install "ruff==0.16.9"
+          python -m ruff check web/ui/views web/wh3d/views web/huctl/views web/transport/views --select F403,F405
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '20'
+
+      - name: Auto-merge guards — ścieżki ryzyka (CICD-002)
+        run: node --test .github/scripts/risky_paths.test.js
+
+      # CICD-006: blokujący na WARNING. Świadome wyjątki = SILENCED_SYSTEM_CHECKS w settings.py
+      # (tylko security.W019 — X_FRAME_OPTIONS=SAMEORIGIN celowo).
+      - name: Django deploy check
+        env:
+          DJANGO_SECRET_KEY: a-sufficiently-long-random-ci-only-secret-key-000000
+          DJANGO_DEBUG: 'false'
+          DJANGO_ALLOWED_HOSTS: 'groove.example.com'
+          DJANGO_SSL_REDIRECT: 'true'
+          PYTHONPATH: ${{ github.workspace }}/web:${{ github.workspace }}
+        run: python web/manage.py check --deploy --fail-level WARNING
+
+  # ── Arm GitHub-native auto-merge for claude/** PRs once tests pass ───────────
+  # This merges THROUGH the pull request (respecting branch protection) instead of a
+  # direct push to main. Requires: Settings ▸ General ▸ "Allow auto-merge" enabled, and
+  # `test` set as a required status check on the main branch-protection rule.

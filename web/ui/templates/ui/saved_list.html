@@ -1,0 +1,71 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Zapisane paletyzacje — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_calc_index' %}">Paletyzacja</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Zapisane</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Zapisane batch'e</div>
+    <div class="page-header__sub">Historia zapisanych obliczeń paletyzacji</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:planner_calc_index' %}" class="btn btn-primary">+ Nowe obliczenie</a>
+  </div>
+</div>
+
+<form method="get" action="{% url 'ui:saved_list' %}"
+      style="display:flex;gap:8px;margin-bottom:16px;align-items:center">
+  <input type="text" name="q" value="{{ q }}" placeholder="Szukaj po nazwie, palecie, SKU…"
+         style="height:36px;border:1px solid var(--gray-300);border-radius:8px;padding:0 12px;min-width:300px">
+  <button type="submit" class="btn btn-secondary">Szukaj</button>
+  {% if q %}<a href="{% url 'ui:saved_list' %}" class="btn btn-ghost">{% icon "x" %} Wyczyść</a>{% endif %}
+</form>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr>
+        <th>ID</th><th>Nazwa</th><th>Paleta</th><th>Wys. total</th><th>Data</th><th>SKU</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for b in batches %}
+        <tr>
+          <td class="text-muted">{{ b.id }}</td>
+          <td><a href="{% url 'ui:batch_detail' b.id %}" style="font-weight:700">{{ b.name }}</a></td>
+          <td>{{ b.pallet_code }} ({{ b.pallet_length_cm }}×{{ b.pallet_width_cm }})</td>
+          <td>{{ b.max_height_total_cm }} cm</td>
+          <td class="text-sm text-muted">{{ b.created_at|date:"d.m.Y H:i" }}</td>
+          <td class="text-muted">{{ b.items_cnt }} SKU</td>
+          <td style="display:flex;gap:6px;align-items:center;justify-content:flex-end">
+            <a href="{% url 'ui:batch_detail' b.id %}" class="btn btn-ghost btn-sm">Otwórz</a>
+            <form method="post" action="{% url 'ui:delete_batch' b.id %}"
+                  onsubmit="return confirm('Usunąć batch #{{ b.id }}?');" style="margin:0">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger btn-sm">Usuń</button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7"><div class="empty-state"><div class="empty-state__desc">Brak zapisów{% if q %} dla „{{ q }}"{% endif %}.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if batches.paginator.num_pages > 1 %}
+  <div style="display:flex;justify-content:center;align-items:center;gap:10px;padding:12px">
+    {% if batches.has_previous %}
+    <a class="btn btn-ghost btn-sm" href="?page={{ batches.previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}">‹ Poprzednia</a>
+    {% endif %}
+    <span class="text-sm text-muted">Strona {{ batches.number }} / {{ batches.paginator.num_pages }} · {{ batches.paginator.count }} zapisów</span>
+    {% if batches.has_next %}
+    <a class="btn btn-ghost btn-sm" href="?page={{ batches.next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}">Następna ›</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

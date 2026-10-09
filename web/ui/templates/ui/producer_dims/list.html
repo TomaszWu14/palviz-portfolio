@@ -1,0 +1,84 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Wymiary producenta — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:data_center' %}">Data Center</a> <span>· Wymiary producenta</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#f97316;--pcbg:#fff7ed">
+    <div class="panel-head__chip">{% icon "ruler" cls="icon--em" %}</div>
+    <div>
+      <div class="page-header__title">Wymiary producenta</div>
+      <div class="page-header__sub">Porównanie wymiarów kartonu deklarowanych przez producentów z naszą master data.</div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <form method="post" action="{% url 'ui:producer_dims_upload' %}" enctype="multipart/form-data"
+          style="display:flex;gap:8px;align-items:center;margin:0">
+      {% csrf_token %}
+      <input aria-label="Pliki wymiarów producenta" type="file" name="files" multiple accept=".xlsx,.xls,.csv" required>
+      <button type="submit" class="btn btn-primary">Wgraj pliki dostawców</button>
+    </form>
+  </div>
+</div>
+
+<div class="card mb-4" style="display:flex;gap:8px;flex-wrap:wrap;padding:14px 18px">
+  <span class="badge badge-green">OK: {{ counts.ok }}</span>
+  <span class="badge badge-red">Rozjazdy: {{ counts.mismatch }}</span>
+  <span class="badge badge-gray">Brak danych: {{ counts.no_data }}</span>
+</div>
+
+<form method="get" class="card" style="padding:12px 16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+  <div>
+    <label class="text-sm text-muted">Dostawca</label>
+    <select aria-label="Dostawca" name="supplier" class="form-control" onchange="this.form.requestSubmit()">
+      <option value="">— wszyscy —</option>
+      {% for s in suppliers %}<option value="{{ s }}" {% if s == f_supplier %}selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </div>
+  <div>
+    <label class="text-sm text-muted">Status</label>
+    <select aria-label="Status" name="status" class="form-control" onchange="this.form.requestSubmit()">
+      <option value="">— wszystkie —</option>
+      <option value="mismatch" {% if f_status == 'mismatch' %}selected{% endif %}>Rozjazd</option>
+      <option value="ok" {% if f_status == 'ok' %}selected{% endif %}>OK</option>
+      <option value="no_data" {% if f_status == 'no_data' %}selected{% endif %}>Brak danych</option>
+    </select>
+  </div>
+</form>
+
+<div class="card" style="padding:0">
+  <div class="table-wrap"><table class="table">
+    <thead><tr>
+      <th>REF</th><th>Dostawca</th><th>Producent L×W×H</th><th>Nasze L×W×H</th>
+      <th class="text-right">Δ cm</th><th>Status</th>
+    </tr></thead>
+    <tbody>
+    {% for it in page_obj %}
+      <tr {% if it.verdict == 'mismatch' %}style="background:#fef2f2"{% endif %}>
+        <td style="font-family:monospace;font-weight:700">{{ it.r.ref_code }}</td>
+        <td>{{ it.r.supplier }}</td>
+        <td>{{ it.r.carton_l|default:"—" }}×{{ it.r.carton_w|default:"—" }}×{{ it.r.carton_h|default:"—" }}</td>
+        <td>{% if it.ours %}{{ it.ours.0 }}×{{ it.ours.1 }}×{{ it.ours.2 }}{% else %}—{% endif %}</td>
+        <td class="text-right">{{ it.delta|default:"—" }}</td>
+        <td>
+          {% if it.verdict == 'ok' %}<span class="badge badge-green">OK</span>
+          {% elif it.verdict == 'mismatch' %}<span class="badge badge-red">rozjazd</span>
+          {% else %}<span class="badge badge-gray">brak danych</span>{% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="text-muted">Brak danych — wgraj pliki dostawców.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination" style="margin-top:14px">
+  {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&supplier={{ f_supplier }}&status={{ f_status }}">‹ poprzednia</a>{% endif %}
+  <span>{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&supplier={{ f_supplier }}&status={{ f_status }}">następna ›</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

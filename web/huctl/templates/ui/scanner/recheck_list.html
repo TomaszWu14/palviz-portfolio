@@ -1,0 +1,44 @@
+{% extends "ui/scanner/base.html" %}{% load palviz_extras %}
+{% block bar %}Rekontrola{% endblock %}
+{% block back %}<a href="{% url 'ui:hu_control_menu' %}">‹</a>{% endblock %}
+{% block content %}
+  <form method="post" action="{% url 'ui:hu_control_scan' %}" style="margin-bottom:12px">
+    {% csrf_token %}
+    <div class="field">
+      <label>Skan etykiety HU do rekontroli</label>
+      <input aria-label="Skan etykiety HU do rekontroli" type="text" id="hu-code" name="code" autofocus autocomplete="off" placeholder="zeskanuj skanerem lub wpisz pickHU">
+    </div>
+    <button type="submit" class="btn btn--primary">Otwórz HU</button>
+  </form>
+  <button type="button" class="btn btn--ghost" onclick="palvizScan('hu-code')" style="margin-bottom:12px"><svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> Skanuj aparatem (QR / kod)</button>
+
+  {% if wh_types %}
+  <form method="get" style="margin-bottom:12px">
+    <div class="field">
+      <label>Typ magazynu</label>
+      <select name="wh" aria-label="Typ magazynu" onchange="this.form.submit()">
+        <option value="">Wszystkie typy</option>
+        {% for t in wh_types %}<option value="{{ t }}" {% if t == wh %}selected{% endif %}>{{ t }}</option>{% endfor %}
+      </select>
+    </div>
+  </form>
+  {% endif %}
+
+  {% for hu in hus %}
+  <a class="card" style="display:flex;justify-content:space-between;text-decoration:none;color:inherit"
+     href="{% url 'ui:hu_control_detail' hu.pk %}">
+    <div>
+      <div style="font-weight:800">HU: {{ hu.ref }}</div>
+      <div style="font-size:12px;color:#475569">{{ hu.shipment.recipient_name|default:hu.recipient_type }} · {{ hu.location|default:"—" }}{% if hu.warehouse_type %} · {{ hu.warehouse_type }}{% endif %}</div>
+      {% if hu.recheck_hours is not None %}
+      <div style="font-size:12px;font-weight:800;color:{% if hu.recheck_overdue %}#b3402f{% else %}#0c5c58{% endif %}">
+        czeka {{ hu.recheck_hours }} h{% if hu.recheck_overdue %} — ZALEGŁA{% endif %}
+      </div>
+      {% endif %}
+    </div>
+    <span class="pill pill--to_recheck">Do rekontroli</span>
+  </a>
+  {% empty %}
+  <div class="card" style="text-align:center;color:#475569">{% if wh %}Brak HU do rekontroli dla typu „{{ wh }}".{% else %}Brak HU do rekontroli {% icon "party-popper" %}{% endif %}</div>
+  {% endfor %}
+{% endblock %}

@@ -1,0 +1,10 @@
+# Development / CI tooling (not required at runtime). Install with:
+#   pip install -r requirements-dev.txt
+-r requirements-test.txt   # testy (w tym requirements.txt)
+ruff==0.16.9                # linter + formatter (replaces flake8/black/isort)
+mypy==2.3.1                # static type checking
+pytest-cov==7.1.0          # coverage integration
+django-extensions==4.1   # shell_plus, runserver_plus, model graphs
+django-debug-toolbar==8.0.0 # query/profiling panel (dev only, env-gated)
+bandit==1.9.4              # security static analysis
+pip-audit==2.10.1           # dependency vulnerability scan

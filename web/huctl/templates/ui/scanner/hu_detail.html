@@ -1,0 +1,683 @@
+{% extends "ui/scanner/base.html" %}
+{% load palviz_extras %}
+{% block bar %}HU {{ hu.ref }}{% endblock %}
+{% block back %}<a href="{% url 'ui:hu_control_menu' %}">‹</a>{% endblock %}
+{% block content %}
+  <div class="hu-head">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="hu-head__code">HU {{ hu.code|default:hu.ref }}</div>
+      {% if customer.is_vip %}<span style="background:#fbbf24;color:#78350f;font-size:11px;font-weight:900;padding:2px 9px;border-radius:999px;white-space:nowrap">{% icon "star" %} VIP</span>{% endif %}
+      {% if hu.recipient_type %}<span class="vip">● {{ hu.recipient_type }}</span>{% endif %}
+      <a href="{% url 'ui:hu_control_history' hu.pk %}" style="margin-left:auto;font-size:13px;color:#bdeee7;text-decoration:underline;min-height:44px;display:inline-flex;align-items:center;padding:0 4px">Historia</a>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:6px">
+      <div style="font-size:15px;font-weight:800;white-space:nowrap">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" style="vertical-align:-2px"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1116 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        {{ hu.location|default:"—" }}
+      </div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;font-size:11px;opacity:.85;margin-bottom:3px">
+          {# Licznik „ile HU wisi" (grill 2026-09-05, pyt. 27) — widoczny czas od startu kontroli. #}
+          <span>{% if hu.status == "in_control" and hu.control_started_at %}⏱ w kontroli {{ hu.control_started_at|timesince }}{% else %}spr./suma{% endif %}</span><strong>{{ done }}/{{ total }}</strong>
+        </div>
+        <div class="prog"><div style="width:{% if total %}{% widthratio done total 100 %}{% else %}0{% endif %}%"></div></div>
+      </div>
+    </div>
+    {# Suma jednostek / waga / objętość CELOWO nieukazywane przed zliczeniem — #}
+    {# podpowiadały spodziewaną ilość i zachęcały do zgadywania zamiast liczenia. #}
+    {# Liczby są w panelu lidera i na ekranie listy HU. #}
+    <div style="margin-top:7px">
+      {% if customer and customer.has_requirements %}
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        {% if customer.requires_fumigated_pallet %}<span class="cond cond--fum"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 019.8 6.1C15.5 5 17 4.5 19 2c1 2 2 4.2 2 8 0 5.5-4.8 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg>Paleta fumigowana (IPPC)</span>{% endif %}
+        {% if customer.max_pallet_height_cm %}<span class="cond cond--h">↥ Max wys. {{ customer.max_pallet_height_cm }} cm</span>{% endif %}
+        {% if customer.pallet_type %}<span class="cond cond--pal">▦ {{ customer.get_pallet_type_display }}</span>{% endif %}
+        {% if customer.max_pallet_weight_kg %}<span class="cond cond--w"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><path d="M6.5 8h11l2 12a1.8 1.8 0 01-1.8 2H6.3a1.8 1.8 0 01-1.8-2z"/></svg>Max {{ customer.max_pallet_weight_kg }} kg</span>{% endif %}
+      </div>
+      {% if customer.requirements_notes %}<div style="font-size:12px;margin-top:5px;color:#eafaf6;font-weight:600"><svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg> {{ customer.requirements_notes }}</div>{% endif %}
+      {% else %}
+      <span class="cond" style="background:rgba(255,255,255,.16);color:#eafaf6">{% icon "check" %} Brak specyficznych wymagań klienta</span>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if shipment_cancelled %}
+  <div class="msg msg--error" style="font-weight:700">{% icon "x" %} Wysyłka anulowana — ta HU nie jest w kolejce kontroli.</div>
+  {% endif %}
+  {% if shipment_incomplete %}
+  <div class="msg msg--warning">{% icon "triangle-alert" %} Sprawdzasz NIEKOMPLETNĄ przesyłkę do klienta — picking jeszcze trwa.
+    {% if hu.shipment.picking_eta_note %}<br>⏱ Status pickingu: <strong>{{ hu.shipment.picking_eta_note }}</strong>
+      {% if hu.shipment.picking_eta_by %}<span style="opacity:.8">({{ hu.shipment.picking_eta_by.username }}{% if hu.shipment.picking_eta_at %}, {{ hu.shipment.picking_eta_at|date:"H:i" }}{% endif %})</span>{% endif %}
+    {% endif %}
+  </div>
+  {% endif %}
+  {% if takeover_by %}
+  <div class="msg msg--warning" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <span>Kontroluje już <strong>{{ takeover_by.get_full_name|default:takeover_by.username }}</strong>.</span>
+    <form method="post" action="{% url 'ui:hu_control_takeover' hu.pk %}" style="margin:0;display:flex;gap:6px;align-items:center">
+      {% csrf_token %}
+      <input type="text" name="reason" required maxlength="120" placeholder="Powód przejęcia"
+             style="padding:5px 8px;font-size:12px;border:1px solid #cbd5e1;border-radius:6px;width:150px">
+      <button type="submit" class="btn btn--ghost" style="margin:0;padding:6px 12px">Przejmij kontrolę</button>
+    </form>
+  </div>
+  {% endif %}
+  {% if reserved_by %}
+  <div class="msg msg--warning" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <span>Zarezerwowana przez <strong>{{ reserved_by.get_full_name|default:reserved_by.username }}</strong>.</span>
+    <form method="post" action="{% url 'ui:hu_reserve_takeover' hu.pk %}" style="margin:0"
+          onsubmit="return confirm('Przejąć rezerwację od {{ reserved_by.get_full_name|default:reserved_by.username|escapejs }}?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--ghost" style="margin:0;padding:6px 12px">Przejmij rezerwację</button>
+    </form>
+  </div>
+  {% endif %}
+  {% if can_start %}
+  <div class="msg msg--warning" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <span>HU zaplanowana — rozpocznij kontrolę, aby liczyć pozycje.</span>
+    <form method="post" action="{% url 'ui:hu_control_start' hu.pk %}" style="margin:0">
+      {% csrf_token %}<button type="submit" class="btn btn--ok" style="margin:0;padding:6px 14px"><svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24" style="vertical-align:-2px"><path d="M6 4l14 8-14 8V4z"/></svg> Rozpocznij kontrolę</button>
+    </form>
+  </div>
+  {# Pomiar rozjazdu system↔hala (duchy): jawne zgłoszenie zamiast cichej odmowy. #}
+  <form method="post" action="{% url 'ui:hu_release' hu.pk %}" style="margin:0 0 10px"
+        onsubmit="return confirm('Zgłosić, że palety nie ma na lokalizacji {{ hu.location|default:'—'|escapejs }}? Lider dostanie alarm, paleta zostanie odłożona na 4 h.')">
+    {% csrf_token %}<input type="hidden" name="not_found" value="1">
+    <button type="submit" class="btn btn--ghost" style="width:100%;margin:0">{% icon "circle-x" %} Nie znaleziono palety na lokalizacji</button>
+  </form>
+  {% endif %}
+  {% if is_leader and not locked and hu.status != "escaped" %}
+  {# Pilne wyjęcie (lider): auto czeka — paleta na czoło kolejki + ack-powiadomienie kontrolera. #}
+  {% if hu.is_priority %}
+  <div class="msg msg--warning">{% icon "flame" %} Paleta oznaczona jako PILNA — jest na czole kolejki.</div>
+  {% else %}
+  <form method="post" action="{% url 'ui:hu_urgent_pull' hu.pk %}" style="margin:0 0 10px"
+        onsubmit="return confirm('Oznaczyć HU {{ hu.ref|escapejs }} jako PILNĄ (czoło kolejki + alarm do kontrolera)?')">
+    {% csrf_token %}
+    <button type="submit" class="btn btn--ghost" style="width:100%;margin:0">{% icon "flame" %} Pilne — wyciągnij teraz</button>
+  </form>
+  {% endif %}
+  {% endif %}
+  {% if locked %}
+  {% if customer and customer.requires_logistics_label %}
+  <a class="btn btn--p6" href="{% url 'ui:hu_logistics_label' hu.pk %}">
+    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+    Drukuj etykietę logistyczną (ZPL)
+  </a>
+  {% endif %}
+  <div class="msg msg--ok" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <span>{% icon "check" %} HU zgodny — tylko podgląd (kontrola zaksięgowana).</span>
+    {% if is_leader %}
+      {% if dispatched %}
+      <span class="text-sm text-muted">Wysłane — nie można otworzyć ponownie.</span>
+      {% else %}
+      <form method="post" action="{% url 'ui:hu_control_reopen' hu.pk %}" style="margin:0;display:flex;gap:6px;align-items:center">
+        {% csrf_token %}
+        <input type="text" name="reason" required maxlength="120" placeholder="Powód otwarcia"
+               style="padding:5px 8px;font-size:12px;border:1px solid #cbd5e1;border-radius:6px;width:150px">
+        <button type="submit" class="btn btn--ghost" style="margin:0;padding:6px 12px">Otwórz ponownie</button>
+      </form>
+      {% endif %}
+    {% endif %}
+  </div>
+  {% endif %}
+  {# Zdjęcia obecności (bramka foto) — widoczne tylko dla lidera (kontekst je filtruje). #}
+  {% if control_photos %}
+  <div class="pcard">
+    <div style="font-weight:800;font-size:13px;color:var(--teal-deep);margin-bottom:8px">{% icon "camera" %} Zdjęcia obecności</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">
+      {% for ph in control_photos %}
+      <a href="{{ ph.photo.url }}" target="_blank" rel="noopener"
+         style="flex:0 0 auto;text-align:center;text-decoration:none">
+        <img src="{{ ph.photo.url }}" alt="Zdjęcie kontroli" loading="lazy"
+             style="width:88px;height:88px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1">
+        <div style="font-size:10px;color:#64748b;margin-top:2px">
+          {{ ph.created_at|date:"d.m H:i" }}{% if ph.user %}<br>{{ ph.user.username }}{% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% if recheck %}
+  <div class="msg msg--warning" style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+    <span>Rekontrola — {% if full %}wszystkie pozycje{% else %}tylko błędne pozycje{% endif %}. Widać oczekiwaną ilość.</span>
+    {% if not full %}<a href="?full=1" class="btn btn--ghost" style="margin:0;padding:6px 12px"
+         onclick="return palvizConfirmFull(this)">Przelicz całość</a>{% endif %}
+  </div>
+  {% endif %}
+
+  {# „Napisz do lidera" przeniesione do paska obok dzwonka (base.html, leader_msg_url). #}
+
+  {# Grupa do odb. — inne HU tego samego odbiorcy (ta/inna strefa), z akcją przypisania. #}
+  {% if sibling_hus %}
+  <details class="pcard" style="margin-bottom:10px">
+    <summary style="cursor:pointer;font-weight:800;font-size:13px;color:var(--teal-deep);display:flex;align-items:center;gap:8px;list-style:none">
+      <span>{% icon "package" %} Grupa do odb. {% if recipient_kunnr %}{{ recipient_kunnr }}{% if recipient_label and recipient_label != recipient_kunnr %} · {{ recipient_label }}{% endif %}{% else %}{{ recipient_label }}{% endif %}</span>
+      <span style="margin-left:auto;font-size:12px;color:#64748b">{{ sibling_hus|length }} HU ▾</span>
+    </summary>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+      {% for s in sibling_hus %}
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;padding:6px 8px;border:1px solid var(--line);border-radius:8px{% if s.is_done %};opacity:.55{% endif %}">
+        <span style="font-weight:800">{{ s.code|default:s.ref }}</span>
+        <span style="color:#64748b">{{ s.warehouse_type|default:"—" }} · {% icon "map-pin" %}{{ s.location|default:"—" }} · {{ s.n_items }} poz.{% if s.vol_m3 %} · {{ s.vol_m3|floatformat:2 }} m³{% endif %}</span>
+        {% if s.out_of_zone %}<form method="post" action="{% url 'ui:hu_request_bring' s.pk %}" style="margin:0 0 0 auto">{% csrf_token %}<button class="btn btn--ghost" style="margin:0;padding:4px 10px;font-size:12px" title="Inny proces — poproś magazyn o dostarczenie na Twoją strefę">{% icon "package" %} Poproś o przyniesienie</button></form>
+        {% elif s.action == 'act' %}
+        <form method="post" action="{{ s.action_url }}" style="margin:0 0 0 auto">{% csrf_token %}<button class="btn btn--ghost" style="margin:0;padding:4px 10px;font-size:12px">{{ s.action_label }}</button></form>
+        {% elif s.action == 'mine' %}<span style="margin-left:auto;color:#16a34a;font-weight:700">moje</span>
+        {% elif s.holder_name %}<span style="margin-left:auto;color:#7c3aed;font-weight:700">{{ s.holder_name }}</span>
+        {% elif s.is_done %}<span style="margin-left:auto;color:#16a34a">{% icon "check" label="Zrobione" %}</span>{% endif %}
+      </div>
+      {% endfor %}
+      <form method="post" action="{% url 'ui:hu_reserve_group' hu.pk %}" style="margin-top:4px"
+            onsubmit="return confirm('Przypisać do siebie wszystkie palety odbiorcy w Twojej strefie?')">
+        {% csrf_token %}
+        <button class="btn btn--ok" style="margin:0;width:100%;padding:8px">Przypisz całą grupę do mnie</button>
+      </form>
+    </div>
+  </details>
+  {% endif %}
+
+  {# Wyjaśnianie błędu (spec UX §3): banner trwającego + start po potwierdzonym błędzie. #}
+  {% if open_investigation %}
+  <div class="card" style="border-left:4px solid #b45309;background:#fff7ed">
+    <div style="font-weight:900;color:#8a4b0f">{% icon "wrench" %} Wyjaśnianie błędu — {{ open_investigation.get_error_type_display }}</div>
+    <div style="font-size:13px;color:#475569;margin-top:2px">
+      od {{ open_investigation.started_at|date:"H:i" }} · licznik kontroli zatrzymany ·
+      {% if open_investigation.confirmed_at %}{% icon "check" %} potwierdzone przez {{ open_investigation.confirmed_by.get_username }}{% else %}{% icon "hourglass" %} czeka na potwierdzenie pickera/lidera{% endif %}
+    </div>
+    <div style="font-size:12px;color:#475569;margin-top:4px">HU stoi: {{ hu.location|default:"—" }} · picker: {{ hu.picker|default:"—" }}{# lokalizacja ŹRÓDŁOWA pobrania dojdzie z pickTasks (CPI) #}</div>
+    <form method="post" action="{% url 'ui:hu_investigation_end' open_investigation.pk %}" style="margin-top:8px">
+      {% csrf_token %}
+      <button class="btn btn--ok" style="width:100%;margin:0">Zakończ wyjaśnianie (błąd odkręcony)</button>
+    </form>
+  </div>
+  {% elif has_confirmed_error and not locked %}
+  <form method="post" action="{% url 'ui:hu_investigation_start' hu.pk %}" class="card" style="border-left:4px solid #b45309">
+    {% csrf_token %}
+    <div style="font-weight:800;font-size:13px;margin-bottom:6px">Potwierdzony błąd — rozpocznij wyjaśnianie (pauza licznika, wymaga potwierdzenia pickera/lidera):</div>
+    <select name="error_type" style="width:100%;margin-bottom:8px">
+      {% for k, label in investigation_types %}<option value="{{ k }}">{{ label }}</option>{% endfor %}
+    </select>
+    <button class="btn btn--err" style="width:100%;margin:0">{% icon "wrench" %} Rozpocznij wyjaśnianie</button>
+  </form>
+  {% endif %}
+
+  {# Sticky pasek postępu liczenia (spec UX §2.4): poz. done/total + błędne; liczony w JS z DOM. #}
+  {% if items %}
+  <div id="pv-progress" style="position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;background:#0c5c58;color:#d7f5ef;padding:7px 12px;border-radius:10px;margin-bottom:10px;font-weight:800;font-size:13px">
+    <span>poz. <span id="pvp-done">0</span>/<span id="pvp-total">0</span></span>
+    <span id="pvp-err" style="display:none;color:#ffd0c4">błędne: <span id="pvp-errn">0</span></span>
+    <span style="margin-left:auto;height:6px;flex:0 0 90px;background:#0f7d79;border-radius:999px;overflow:hidden"><span id="pvp-bar" style="display:block;height:100%;width:0;background:#7fe3d8"></span></span>
+  </div>
+  {% endif %}
+
+  {% for it in items %}
+  {# Rozwinięta przy needs_confirm — inaczej ostrzeżenie o niezgodnej ilości schowałoby się w zwiniętym rekordzie. #}
+  <div class="pos-wrap">
+  <details class="pcard pos" id="pos-{{ it.pk }}"{% if it.needs_confirm or it.auto_open %} open{% endif %}{% if it.controlled and it.result != 'error' %} data-done{% endif %}{% if it.controlled and it.result == 'error' %} data-err{% endif %}>
+    <summary class="pos-sum{% if md_preview_base %} pos-sum--md{% endif %}">
+      <span class="pnum">{{ forloop.counter }}</span>
+      <span class="pos-ref">{{ it.ref_code }}</span>
+      {% if it.controlled %}{% if it.result == 'error' %}<span class="pill pill--to_recheck" style="margin-left:auto">do rekontroli</span>{% else %}<span class="pos-ok" style="margin-left:auto;color:#16a34a;font-weight:800;font-size:18px" title="Sprawdzone">{% icon "check" 20 label="Sprawdzone" %}</span>{% endif %}{% else %}<span class="pill pill--planned" style="margin-left:auto">do sprawdzenia</span>{% endif %}
+    </summary>
+    <form method="post" action="{% url 'ui:hu_control_count' hu.pk it.pk %}"
+          data-count-form data-item="{{ it.pk }}" data-src="{{ scan_src }}" enctype="multipart/form-data"
+          data-ppc="{{ it.conv_ppc }}" style="margin-top:12px">
+      {% csrf_token %}
+      <div style="font-size:13px;color:#64748b;margin-bottom:10px">{{ it.description|truncatechars:60 }}</div>
+
+    {% if it.pack_rule %}
+    {# Wymaganie pakowania tego klienta dla tego indeksu — czerwone, nie do przeoczenia. #}
+    <div class="msg msg--error" style="font-weight:800;display:flex;align-items:center;gap:6px">
+      {% icon "package" %} Wymaganie klienta: pakować po <strong>{{ it.pack_rule.units_per_pack }} szt/opak.</strong>
+      {% if it.pack_rule.note %}<span style="font-weight:600">— {{ it.pack_rule.note }}</span>{% endif %}
+    </div>
+    {% endif %}
+
+    {% if it.needs_confirm %}
+    <div class="msg msg--error" style="font-weight:700;display:flex;align-items:center;gap:6px">
+      {% icon "triangle-alert" %} Wpisana ilość różni się od ilości na HU. <strong>Przelicz ponownie.</strong>
+      Jeśli na pewno — kliknij „Tak, jestem pewien" (zostanie zapisane jako błąd pickera → rekontrola).
+    </div>
+    {% endif %}
+
+    {% if recheck or locked %}
+    <div style="background:#d8f0ec;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:13px;color:#0c5c58;font-weight:600">
+      <strong>Oczekiwano:</strong> {{ it.base_qty|floatformat:'-2' }} {{ it.base_unit|default:"OP" }} · {{ it.alt_qty|floatformat:'-2' }} {{ it.alt_unit|default:"KAR" }}
+      {% if it.controlled %}<div style="color:#b91c1c;margin-top:2px">Poprzednio zliczono: {{ it.counted_qty|floatformat:'-2' }} {{ it.counted_unit }}</div>{% endif %}
+    </div>
+    {% endif %}
+
+    <div style="display:flex;gap:10px;margin-bottom:12px">
+      {# Partia producenta (z etykiety) na wierzchu; LOT/seria SAP schowany — dwuklik odsłania. #}
+      <div class="chip chip--lot" style="flex:1" title="Dwuklik: pokaż LOT (SAP)"
+           ondblclick="var s=this.querySelector('.lot-sap');if(s)s.hidden=!s.hidden">
+        <div style="font-size:12px;color:#64748b;font-weight:700">PARTIA PRODUCENTA</div>
+        <div style="font-weight:800;font-size:19px">{{ it.vendor_batch|default:"—" }}</div>
+        <div class="lot-sap" hidden><div style="font-size:11px;color:#64748b;font-weight:700;margin-top:3px">LOT (SAP)</div><div style="font-weight:800;font-size:15px">{{ it.lot|default:"—" }}</div></div>
+      </div>
+      <div class="chip chip--exp{% if it.exp_alert %} exp-alert exp-alert--{{ it.exp_alert }}{% endif %}" style="flex:1">
+        <div class="exp-lbl" style="font-size:12px;font-weight:700">EXP{% if it.exp_alert == 'red' %} {% icon "triangle-alert" %} &lt;{{ min_shelf_months }} mc{% elif it.exp_alert == 'orange' %} ● &lt;12 mc{% endif %}</div>
+        <div class="exp-val" style="font-weight:800;font-size:19px">{{ it.expiry|date:"d.m.Y"|default:"—" }}</div>
+      </div>
+    </div>
+
+    {# Liczenie „w ciemno": zgodność partii/daty domyślna; niezgodność = flaga błędu (Błędna seria / Błędna data ważności). #}
+
+    {% if it.picked_label %}
+    <div class="picked-hint" style="font-size:13px;font-weight:700;color:#2f6f6b;margin-bottom:6px">{% icon "package" %} Pobierano w: {{ it.picked_label }}</div>
+    {% endif %}
+    {# Domyślnie tylko jednostki pobrane przez pikera; reszta pod „+ inne jednostki”. #}
+    <div class="utiles">
+      {% for t in it.tiles_shown %}{% include "ui/scanner/_utile.html" with t=t locked=locked %}{% endfor %}
+    </div>
+    {% if it.tiles_hidden %}
+    <details class="utiles-more" style="margin-bottom:10px">
+      <summary style="font-size:12px;color:#2f6f6b;font-weight:700;cursor:pointer;padding:2px 0">+ inne jednostki</summary>
+      <div class="utiles" style="margin-top:8px">
+        {% for t in it.tiles_hidden %}{% include "ui/scanner/_utile.html" with t=t locked=locked %}{% endfor %}
+      </div>
+    </details>
+    {% endif %}
+    {% if not locked %}
+    {# Bez zdania-instrukcji („Wpisz ile zliczyłeś…") — na Zebrze zjadało 2 wiersze. #}
+    <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+      <button type="button" class="uclear" onclick="palvizClearUnits(this)">{% icon "x" %} Wyczyść</button>
+    </div>
+    <div class="count-sum" data-expected="{{ it.base_qty|stringformat:'g' }}"
+         style="margin-bottom:10px;padding:8px 11px;border-radius:10px;font-size:13px;font-weight:800;background:#eef6f4;color:#4a6660">
+      Zliczono <span class="count-sum__got">0</span> {% with bu=it.factors.base_unit|default:"OP" %}{% if 'zt' in bu or 'ZT' in bu %}szt.{% else %}{{ bu }}{% endif %}{% endwith %}
+    </div>
+    {% endif %}
+
+    {# Error flags are rare — folded into a thin bar; auto-opens if a flag is already set. #}
+    <details class="vbox"{% if it.error_flags %} open{% endif %}>
+      {# Grill 2026-09-05 (pyt. 10): przycisk zgłaszania był „ukryty" — bursztynowe tło
+         odróżnia go od zwykłych wierszy bez rozpychania ekranu. #}
+      <summary class="vbox__sum" style="background:#fef3c7;border-radius:8px;color:#92400e">
+        <span>{% icon "triangle-alert" %} Zgłoś błędy</span>
+        <span class="vbox__hint" style="color:#b45309">rozłóż, jeśli coś się nie zgadza</span>
+      </summary>
+      <div style="padding:0 12px 6px">
+      {% for key, label in flags %}
+      <label class="vrow{% if it.error_flags|get_item:key or key in it.confirm_flags %} vrow--on{% endif %}">
+        <span>{{ label }}</span>
+        <span class="tg"><input type="checkbox" name="flag_{{ key }}" {% if it.error_flags|get_item:key or key in it.confirm_flags %}checked{% endif %}><span></span></span>
+      </label>
+      {% endfor %}
+      </div>
+    </details>
+
+    <div class="ph-req" style="display:none;margin-bottom:10px">
+      <div style="font-size:12px;color:#b91c1c;font-weight:800;margin-bottom:4px"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> Wymagane zdjęcie — uszkodzenie / nieprawidłowe ułożenie</div>
+      <input aria-label="Zdjęcie (dowód)" type="file" name="photo" accept="image/*" capture="environment" style="font-size:12px;width:100%">
+    </div>
+    {% if not locked %}
+    {% if it.needs_confirm %}
+    <input type="hidden" name="sure" value="">
+    <div style="display:flex;gap:10px">
+      <button type="submit" name="action" value="confirm" class="btn btn--ghost" style="flex:1;margin:0">{% icon "refresh-cw" %} Przelicz ponownie</button>
+      <button type="submit" name="action" value="confirm" class="btn btn--err" style="flex:1;margin:0"
+              onclick="this.form.sure.value='1'">Tak, jestem pewien</button>
+    </div>
+    {% elif it.controlled and it.result == 'error' and not recheck %}
+    {# Niezgodność (błąd pickera) — zablokowane dla autora; rekontroluje inny kontroler. #}
+    <div class="msg msg--warning" style="margin:0;font-size:13px">{% icon "lock" %} Niezgodność — rekontrolę wykona <strong>inny kontroler</strong> po zaksięgowaniu HU. Tu tylko podgląd.</div>
+    {% else %}
+    <div style="display:flex;gap:10px">
+      <button type="submit" name="action" value="confirm" class="btn btn--ok" style="flex:2;margin:0">Potwierdź</button>
+      <button type="submit" name="action" value="edit" class="btn btn--ghost" style="flex:1;margin:0">Edytuj</button>
+    </div>
+    {% endif %}
+    {% endif %}
+  </form>
+  {% if it.md_exception %}
+  <div style="padding:6px 12px;font-size:12px;color:#92400e;background:#fef3c7;border-radius:6px;margin:0 8px 8px">
+    {% icon "clipboard-list" %} Wyjątek master daty{% if it.md_exception_note %}: {{ it.md_exception_note }}{% endif %} — czeka na Master Datę / lidera.
+  </div>
+  {% endif %}
+  {# Niezgodność master daty = regularne zgłoszenie na wzór MATINFO (NIE kod błędu, nie blokuje kontroli). #}
+  {% if not locked %}
+  <details style="margin:0 8px 8px">
+    <summary style="font-size:12px;color:#64748b;cursor:pointer">{% icon "clipboard-list" %} Zgłoś niezgodność master daty (MATINFO)</summary>
+    <form method="post" action="{% url 'ui:hu_md_report' it.pk %}" enctype="multipart/form-data" style="margin-top:6px;display:flex;flex-direction:column;gap:6px">
+      {% csrf_token %}
+      <select aria-label="Rodzaj niezgodności master daty" name="md_aspect" onchange="this.closest('form').querySelector('.md-ajm').style.display=this.value=='ajm'?'flex':'none'"
+              style="font-size:13px;padding:8px;border:1px solid #cbd5e1;border-radius:8px">
+        {% for val, lab in md_aspects %}<option value="{{ val }}">{{ lab }}</option>{% endfor %}
+      </select>
+      {# AJM: wskaż przelicznik — 1 [KARTON] = [10] [OP]. Widoczne po wybraniu „AJM". #}
+      <div class="md-ajm" style="display:none;gap:6px;align-items:center;font-size:13px;font-weight:700;color:#2f6f6b">
+        1 <input type="text" name="md_unit" placeholder="KARTON" style="width:78px;font-size:13px;padding:7px;border:1px solid #cbd5e1;border-radius:8px">
+        = <input type="text" name="md_factor" inputmode="decimal" placeholder="10" style="width:60px;font-size:13px;padding:7px;border:1px solid #cbd5e1;border-radius:8px">
+        <input aria-label="Jednostka bazowa" type="text" name="md_base" value="OP" style="width:56px;font-size:13px;padding:7px;border:1px solid #cbd5e1;border-radius:8px">
+      </div>
+      <input type="text" name="md_desc" maxlength="200" placeholder="opis (np. zły przelicznik KAR, złe wymiary)"
+             style="font-size:12px;padding:8px;border:1px solid #cbd5e1;border-radius:8px">
+      <div style="display:flex;gap:6px;align-items:center">
+        <input aria-label="Zdjęcie (dowód)" type="file" name="photo" accept="image/*" capture="environment" style="font-size:12px;flex:1;min-width:0">
+        <button type="submit" class="btn btn--ghost" style="margin:0;width:auto;padding:0 18px">Zgłoś</button>
+      </div>
+    </form>
+  </details>
+  {% endif %}
+  </details>
+  {# Podgląd poziomów opakowań (jak MATinfo, bez ilości magazynowych) — poza <summary>. #}
+  {% if md_preview_base %}<a class="pos-md" href="{{ md_preview_base }}?q={{ it.ref_code|urlencode }}&levels=1"
+         title="Poziomy opakowań (master data)" aria-label="Poziomy opakowań"
+         style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px">{% icon "package" 20 %}</a>{% endif %}
+  </div>
+  {% empty %}
+  <div class="pcard" style="text-align:center;color:#475569">Brak pozycji do kontroli.</div>
+  {% endfor %}
+
+  {% if open_issues %}
+  <div class="pcard" style="border-left:4px solid #f59e0b">
+    <div style="font-weight:800;font-size:13px;color:#92400e;margin-bottom:6px">Zgłoszenia jakościowe (otwarte)</div>
+    {% for iss in open_issues %}
+    <div style="font-size:13px;padding:4px 0;border-top:1px solid #f1f5f9">
+      {% icon "triangle-alert" %} {{ iss.get_issue_type_display }}{% if iss.ref_code %} · {{ iss.ref_code }}{% if iss.qty %} ({{ iss.qty|floatformat:'-2' }}){% endif %}{% endif %}
+      {% if iss.item %} · poz. {{ iss.item.ref_code }}{% endif %}
+    </div>
+    {% endfor %}
+    <div style="font-size:11px;color:#64748b;margin-top:6px">Zamykane na liście „Zgłoszenia jakościowe" (z notatką).</div>
+  </div>
+  {% endif %}
+
+  {% if not locked %}
+  {# Nadmiarowy towar — jeden czerwony przycisk, formularz zwinięty; po wysłaniu wraca do zwinięcia. #}
+  <details class="pcard foreign-report" style="padding:0;border:0;background:transparent;box-shadow:none">
+    <summary style="list-style:none;cursor:pointer;margin:0">
+      <span style="display:block;text-align:center;background:#dc2626;color:#fff;font-weight:800;padding:13px;border-radius:12px">
+        {% icon "triangle-alert" %} Zgłoś nadmiarowy towar{% if foreign_count %} <span style="background:#fff;color:#b91c1c;border-radius:999px;padding:1px 9px;font-size:12px;margin-left:4px">{{ foreign_count }}</span>{% endif %}
+      </span>
+    </summary>
+    <form method="post" action="{% url 'ui:hu_quality_add_foreign' hu.pk %}"
+          enctype="multipart/form-data" style="margin-top:10px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:12px">
+      {% csrf_token %}
+      <input type="text" name="ref_code" list="hu-prod-codes" autocomplete="off"
+             placeholder="REF — wpisz 2–3 znaki indeksu" inputmode="text"
+             style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-bottom:8px">
+      {# Obowiązkowe wskazanie HU (autopodstawiona bieżąca, edytowalna/skan) albo świadome „luzem". #}
+      <input type="text" name="hu_code" value="{{ hu.code|default:hu.ref }}" autocomplete="off"
+             placeholder="HU (skan/pickHU)" inputmode="text"
+             style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;margin-bottom:6px">
+      <label style="display:flex;align-items:center;gap:9px;font-size:13px;font-weight:700;color:#64748b;margin-bottom:8px">
+        <input type="checkbox" name="loose" value="1" style="width:24px;height:24px;flex:0 0 auto"> towar luzem / poza HU
+      </label>
+      <div style="display:flex;gap:8px;align-items:stretch">
+        <input type="text" name="qty" inputmode="decimal" placeholder="ilość"
+               style="flex:1;min-width:0;padding:12px;border:1px solid #cbd5e1;border-radius:10px">
+        <button type="submit" class="btn" style="margin:0;width:auto;flex:0 0 auto;padding:0 22px;background:#dc2626;color:#fff">Zgłoś</button>
+      </div>
+      <input aria-label="Zdjęcie (dowód)" type="file" name="photo" accept="image/*" capture="environment"
+             style="margin-top:8px;font-size:12px;width:100%">
+    </form>
+  </details>
+  {# Lazy autocomplete REF: katalog NIE renderowany inline; podpowiedzi z serwera po 2 znakach. #}
+  <datalist id="hu-prod-codes"></datalist>
+  <script>
+    (function () {
+      var inp = document.querySelector('input[name="ref_code"][list="hu-prod-codes"]');
+      var dl = document.getElementById('hu-prod-codes');
+      if (!inp || !dl) return;
+      var t = null;
+      inp.addEventListener('input', function () {
+        var q = inp.value.trim();
+        if (t) clearTimeout(t);
+        if (q.length < 2) { dl.innerHTML = ''; return; }
+        t = setTimeout(function () {
+          fetch('{% url "ui:hu_prod_codes" %}?q=' + encodeURIComponent(q),
+                {credentials: 'same-origin'})
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              dl.innerHTML = '';
+              (data.products || []).forEach(function (p) {
+                var o = document.createElement('option');
+                o.value = p.code;
+                o.label = p.code + ' — ' + p.name;
+                dl.appendChild(o);
+              });
+            })
+            .catch(function () {});   // offline/hala: pole działa dalej jako zwykły input
+        }, 250);
+      });
+    })();
+  </script>
+
+  {% if client_reqs %}
+  <div class="pcard" style="border-left:4px solid {% if reqs_confirmed %}#16a34a{% else %}#dc2626{% endif %}">
+    <div style="font-weight:800;font-size:13px;margin-bottom:6px">Szczególne wymagania klienta</div>
+    <ul style="margin:0 0 8px;padding-left:18px;font-size:13px;color:#334155">
+      {% for r in client_reqs %}<li>{{ r }}</li>{% endfor %}
+    </ul>
+    {% if reqs_confirmed %}
+    <div class="msg msg--ok" style="margin:0">{% icon "check" %} Potwierdzone{% if hu.client_reqs_confirmed_by %} przez {{ hu.client_reqs_confirmed_by.get_full_name|default:hu.client_reqs_confirmed_by.username }}{% endif %} · {{ hu.client_reqs_confirmed_at|date:"d.m.Y H:i" }}</div>
+    {% else %}
+    <div style="font-size:12px;color:#b91c1c;margin-bottom:8px">Potwierdź spełnienie wymagań — bez tego nie zaksięgujesz HU.</div>
+    <form method="post" action="{% url 'ui:hu_control_confirm_reqs' hu.pk %}" style="margin:0">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--ghost" style="margin:0">{% icon "check" %} Potwierdzam spełnienie wymagań klienta</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if short_dated %}
+  <div class="pcard" style="border-left:4px solid {% if short_dated_ack %}#16a34a{% else %}#d97706{% endif %}">
+    <div style="font-weight:800;font-size:13px;margin-bottom:6px">Krótki termin ważności (min. {{ min_shelf_months }} mies.)</div>
+    <ul style="margin:0 0 8px;padding-left:18px;font-size:13px;color:#334155">
+      {% for it in short_dated %}<li>{{ it.ref_code }} — do {{ it.expiry|date:"d.m.Y" }}</li>{% endfor %}
+    </ul>
+    {% if short_dated_ack %}
+    <div class="msg msg--ok" style="margin:0">{% icon "check" %} Krótki termin potwierdzony{% if hu.short_dated_ack_by %} przez {{ hu.short_dated_ack_by.get_full_name|default:hu.short_dated_ack_by.username }}{% endif %}</div>
+    {% else %}
+    <div style="font-size:12px;color:#b45309;margin-bottom:8px">Potwierdź świadomie krótki termin albo oflaguj „błędna data ważności” na pozycji — bez tego nie zaksięgujesz.</div>
+    <form method="post" action="{% url 'ui:hu_control_ack_short_dated' hu.pk %}" style="margin:0">
+      {% csrf_token %}
+      <button type="submit" class="btn btn--ghost" style="margin:0">{% icon "check" %} Potwierdzam krótki termin ważności</button>
+    </form>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <form method="post" action="{% url 'ui:hu_control_finalize' hu.pk %}">
+    {% csrf_token %}
+    {% if is_gls %}
+    {# Strefa GLS: rozliczenie konsolidacji wymagane do zaksięgowania (raport wydajności). #}
+    <div class="pcard" style="padding:12px 14px;margin-bottom:10px;border-left:4px solid #0d9488">
+      <div style="font-weight:800;font-size:14px;margin-bottom:8px">{% icon "package" %} GLS — rozliczenie pakowania</div>
+      <div style="display:flex;gap:10px">
+        <label style="flex:1;font-size:12px;font-weight:700;color:#475569">Kartony w przygotowaniu
+          <input type="number" name="gls_cartons" min="1" required inputmode="numeric" value="{{ request.GET.gls_cartons }}"
+                 style="width:100%;font-size:22px;font-weight:800;padding:8px;border:1px solid #cbd5e1;border-radius:10px;margin-top:4px" placeholder="np. 5"></label>
+        <label style="flex:1;font-size:12px;font-weight:700;color:#475569">Zrobione paczki
+          <input type="number" name="gls_parcels" min="1" required inputmode="numeric" value="{{ request.GET.gls_parcels }}"
+                 style="width:100%;font-size:22px;font-weight:800;padding:8px;border:1px solid #cbd5e1;border-radius:10px;margin-top:4px" placeholder="np. 2"></label>
+      </div>
+    </div>
+    {% endif %}
+    <div style="font-size:12px;color:#475569;margin:4px 2px 8px">Policz <strong>każdą</strong> pozycję — HU zaksięgujesz dopiero, gdy wszystkie są policzone.</div>
+    <button type="submit" class="btn btn--ok" data-testid="hu-book"{% if client_reqs and not reqs_confirmed %} disabled title="Najpierw potwierdź wymagania klienta"{% elif short_dated and not short_dated_ack %} disabled title="Najpierw potwierdź krótki termin"{% endif %}>{% icon "check" %} Zaksięguj</button>
+  </form>
+  {% endif %}
+
+  <script>
+    // "Wyczyść" — wipe all four converter tiles in this position so the operator can
+    // re-enter from scratch (e.g. typed into PAL by mistake) without backspacing each box.
+    // "Przelicz całość" (?full=1) przeładowuje stronę — wpisane, niezaksięgowane
+    // zliczenia przepadną. Ostrzeż, jeśli operator ma cokolwiek wpisane.
+    function palvizConfirmFull(link){
+      var typed = false;
+      document.querySelectorAll('.uconv').forEach(function(i){
+        if (String(i.value || '').trim() !== '') typed = true;
+      });
+      if (!typed) return true;
+      return window.confirm('Masz niezapisane zliczenia — przeliczenie całości je wyczyści. Kontynuować?');
+    }
+    function palvizClearUnits(btn){
+      var f = btn.closest('form'); if (!f) return;
+      f.querySelectorAll('.uconv').forEach(function(i){ i.value = ''; });
+      palvizRecalcSum(f);
+      var first = f.querySelector('.uconv:not([readonly])'); if (first) first.focus();
+    }
+
+    // Big +/- stepper — count the base (smallest) unit piece by piece; whole numbers
+    // only. Dispatches 'input' so the live multi-unit conversion refills the other tiles.
+    // Mini-stepper w rogu kafla: ±1 w JEDNOSTCE tego kafla (KAR+1 = o karton więcej),
+    // reszta kafli przelicza się przez zwykły event 'input'.
+    function palvizTileStep(btn, delta){
+      var el = btn.parentElement.querySelector('input.uconv'); if (!el) return;
+      var cur = parseInt(el.value || '0', 10); if (isNaN(cur)) cur = 0;
+      el.value = String(Math.max(0, cur + delta));
+      el.dispatchEvent(new Event('input', {bubbles:true}));
+      if (navigator.vibrate) navigator.vibrate(15);
+    }
+
+    // Liczenie ADDYTYWNE: kafle to niezależne składniki (NIE lustro). Suma wszystkich
+    // (ilość × data-factor) → baza; porównaj z oczekiwaną i pokaż „Zliczono X z Y".
+    function palvizRecalcSum(f){
+      var box = f.querySelector('.count-sum'); if (!box) return;
+      var sum = 0;
+      f.querySelectorAll('.uconv').forEach(function(o){
+        var of = parseFloat(o.getAttribute('data-factor') || '0');
+        var v = parseFloat((o.value || '').replace(',', '.'));
+        if (of > 0 && !isNaN(v)) sum += v * of;
+      });
+      var exp = parseFloat(box.getAttribute('data-expected') || '0');
+      var got = box.querySelector('.count-sum__got');
+      if (got) got.textContent = (Math.round(sum * 100) / 100).toString();
+      var filled = sum > 0, ok = Math.abs(sum - exp) < 0.05;
+      box.style.background = filled ? (ok ? '#dcfce7' : '#fee2e2') : '#eef6f4';
+      box.style.color      = filled ? (ok ? '#166534' : '#b91c1c') : '#4a6660';
+    }
+    document.addEventListener('input', function(e){
+      var el = e.target;
+      if (!el.classList || !el.classList.contains('uconv')) return;
+      // Whole units only — strip anything that isn't a digit (no "half a carton").
+      var cleaned = (el.value || '').replace(/[^0-9]/g, '');
+      if (cleaned !== el.value) el.value = cleaned;
+      var f = el.closest('form'); if (f) palvizRecalcSum(f);
+    });
+    document.addEventListener('DOMContentLoaded', function(){
+      document.querySelectorAll('form[data-count-form]').forEach(palvizRecalcSum);
+    });
+
+    // Sesja zaczyna się z pozycjami ZWINIĘTYMI — operator rozwija je w miarę sprawdzania.
+    // Gdy wszystkie policzone, zjedź do przycisku księgowania; w przeciwnym razie zostań u góry.
+    document.addEventListener('DOMContentLoaded', function(){
+      var pending = document.querySelector('details.pos:not([data-done])');
+      if (pending) return;                       // są jeszcze pozycje do sprawdzenia — nie przewijaj
+      var fin = document.querySelector('form[action*="finalize"]');
+      if (fin && fin.scrollIntoView){
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        fin.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'start'});
+      }
+    });
+
+    // ── Pasek postępu (spec UX §2.4): licz z DOM, auto-przeskok do 1. niepoliczonej,
+    //    gdy sesja już rozpoczęta (min. 1 policzona) — start zostaje u góry jak dotąd.
+    document.addEventListener('DOMContentLoaded', function(){
+      var pos = document.querySelectorAll('details.pos');
+      if (!pos.length) return;
+      var errs = document.querySelectorAll('details.pos[data-err]').length;
+      // Błędna pozycja jest ZAKSIĘGOWANA (rekontrola u innego kontrolera) — liczy się
+      // jako obsłużona: pasek dochodzi do 100%, a auto-przeskok jej nie otwiera.
+      var done = document.querySelectorAll('details.pos[data-done]').length + errs;
+      var t = document.getElementById('pvp-total'); if (!t) return;
+      t.textContent = pos.length;
+      document.getElementById('pvp-done').textContent = done;
+      document.getElementById('pvp-bar').style.width = Math.round(done*100/pos.length) + '%';
+      if (errs){ document.getElementById('pvp-err').style.display=''; document.getElementById('pvp-errn').textContent = errs; }
+      if (done > 0 && done < pos.length){
+        var nxt = document.querySelector('details.pos:not([data-done]):not([data-err])');
+        if (nxt){ nxt.open = true;
+          var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          nxt.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block: 'start'}); }
+      }
+    });
+
+    // ── Klawiatura numeryczna pełnoekranowa (spec UX §2.1): focus na .uconv otwiera
+    //    nakładkę z wielkimi cyframi (rękawice/kciuk). Zapis → event 'input' (przeliczenia).
+    (function(){
+      var kbTarget = null, kb = null, buf = '';
+      function render(){ var d = kb.querySelector('.pvkb__val'); d.textContent = buf || '0'; }
+      function build(){
+        kb = document.createElement('div');
+        kb.id = 'pv-keypad';
+        kb.style.cssText = 'position:fixed;inset:0;z-index:99;background:rgba(6,45,43,.96);display:flex;flex-direction:column;padding:14px';
+        kb.innerHTML = '<div class="pvkb__u" style="color:#7fe3d8;font-weight:800;text-align:center;font-size:15px"></div>'
+          + '<div class="pvkb__val" style="color:#fff;font-size:44px;font-weight:900;text-align:center;padding:8px 0">0</div>'
+          + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:1">'
+          + '789456123'.split('').map(function(d){return '<button type="button" data-k="'+d+'" style="font-size:30px;font-weight:900;border-radius:14px;border:0;background:#0f7d79;color:#fff">'+d+'</button>';}).join('')
+          + '<span></span>'
+          + '<button type="button" data-k="0" style="font-size:30px;font-weight:900;border-radius:14px;border:0;background:#0f7d79;color:#fff">0</button>'
+          + '<button type="button" data-k="back" style="font-size:26px;border-radius:14px;border:0;background:#0a4a47;color:#fff">⌫</button></div>'
+          + '<div style="display:flex;gap:8px;margin-top:10px">'
+          + '<button type="button" data-k="cancel" style="flex:1;padding:16px;font-size:16px;font-weight:800;border-radius:14px;border:0;background:#0a4a47;color:#cfe9e5">Anuluj</button>'
+          + '<button type="button" data-k="ok" style="flex:2;padding:16px;font-size:18px;font-weight:900;border-radius:14px;border:0;background:#7fe3d8;color:#063f3b">ZATWIERDŹ</button></div>';
+        kb.addEventListener('click', function(e){
+          var k = e.target && e.target.getAttribute && e.target.getAttribute('data-k');
+          if (!k) return;
+          if (k === 'back') buf = buf.slice(0, -1);
+          else if (k === 'cancel'){ close(); return; }
+          else if (k === 'ok'){
+            if (kbTarget){ kbTarget.value = buf; kbTarget.dispatchEvent(new Event('input', {bubbles:true})); }
+            close(); return;
+          } else if (buf.length < 7) buf += k;
+          render();
+        });
+        document.body.appendChild(kb);
+      }
+      function open(inp){
+        if (!kb) build();
+        kbTarget = inp; buf = (inp.value || '').replace(/[^0-9]/g, '');  // całe jednostki
+        var tile = inp.closest('.utile'), u = tile ? (tile.querySelector('.utile__u')||{}).textContent : '';
+        kb.querySelector('.pvkb__u').textContent = 'Ilość — ' + (u || '').trim();
+        render(); kb.style.display = 'flex';
+      }
+      function close(){ if (kb) kb.style.display = 'none'; kbTarget = null; }
+      var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      document.addEventListener('focusin', function(e){
+        var inp = e.target;
+        if (!coarse) return;   // desktop (lider/symulator): zwykła klawiatura
+        if (!inp.matches || !inp.matches('input.uconv') || inp.readOnly) return;
+        inp.blur();            // bez systemowej klawiatury Androida
+        open(inp);
+      });
+    })();
+
+    // Anty-przypadek: zaznaczenie błędu (suwak OFF→ON) wymaga potwierdzenia, żeby przypadkowy
+    // przesuw znacznika nie oznaczył np. błędnej daty. Odznaczanie bez pytania.
+    document.addEventListener('change', function(e){
+      var el = e.target;
+      if (!el || el.type !== 'checkbox' || !el.name || el.name.indexOf('flag_') !== 0) return;
+      if (!el.checked) return;
+      var row = el.closest('.vrow'), label = row ? (row.querySelector('span') || {}).textContent : 'ten błąd';
+      if (!window.confirm('Zaznaczyć błąd: ' + (label || '').trim() + '?')) el.checked = false;
+    });
+
+    // Damage / bad placement → reveal a REQUIRED photo field and block confirm without it.
+    function palvizPhotoRequired(f){
+      return f && (
+        (f.querySelector('input[name="flag_bad_placement"]') || {}).checked ||
+        (f.querySelector('input[name="flag_damaged"]') || {}).checked);
+    }
+    document.addEventListener('change', function(e){
+      if (e.target && (e.target.name === 'flag_bad_placement' || e.target.name === 'flag_damaged')){
+        var f = e.target.closest('form'), ph = f && f.querySelector('.ph-req');
+        if (ph) ph.style.display = palvizPhotoRequired(f) ? 'block' : 'none';
+      }
+    });
+    document.addEventListener('submit', function(e){
+      var f = e.target;
+      if (!f.matches || !f.matches('form[data-count-form]')) return;
+      var ph = f.querySelector('.ph-req input[type=file]');
+      if (palvizPhotoRequired(f) && ph && !ph.files.length){
+        e.preventDefault(); e.stopImmediatePropagation();
+        alert('Zaznaczono uszkodzenie / nieprawidłowe ułożenie — dodaj zdjęcie.');
+      }
+    }, true);
+  </script>
+{% endblock %}

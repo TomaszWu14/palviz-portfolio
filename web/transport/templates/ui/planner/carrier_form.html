@@ -1,0 +1,39 @@
+{% extends "ui/base.html" %}
+{% block title %}{% if instance %}Edytuj{% else %}Nowy{% endif %} przewoźnik — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_shipments' %}">Wysyłki</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_carriers' %}">Przewoźnicy</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if instance %}{{ instance.name }}{% else %}Nowy{% endif %}</span>
+</nav>
+
+<div class="page-header">
+  <div class="page-header__title">{% if instance %}Edytuj przewoźnika{% else %}Nowy przewoźnik{% endif %}</div>
+</div>
+
+<div class="card" style="max-width:560px">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group"><label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>{{ form.name }}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label for="{{ form.carrier_type.id_for_label }}">{{ form.carrier_type.label }}</label>{{ form.carrier_type }}</div>
+        <div class="form-group"><label for="{{ form.dim_weight_divisor.id_for_label }}">{{ form.dim_weight_divisor.label }}</label>{{ form.dim_weight_divisor }}
+          <span class="help-text">5000 = standard kurier; 4000 = FedEx/DHL intl</span></div>
+      </div>
+      <div class="form-group"><label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>{{ form.notes }}</div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">{{ form.is_active }} {{ form.is_active.label }}</label>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button type="submit" class="btn btn-primary">Zapisz i przejdź do cennika</button>
+        <a href="{% url 'ui:planner_carriers' %}" class="btn btn-secondary">Anuluj</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

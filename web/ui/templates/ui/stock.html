@@ -1,0 +1,140 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Stock magazynowy — {{ app_name }}{% endblock %}
+{% block nav_stockwh %}topnav__link--active{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><span>Stock magazynowy</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#0f766e;--pcbg:#f0fdfa">
+    <div class="panel-head__chip">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"/><path d="M3 7l9 4 9-4"/><path d="M12 11v10"/></svg>
+    </div>
+    <div>
+      <div class="page-header__title">Stock magazynowy</div>
+      <div class="page-header__sub">Zaimportowany stan magazynowy (HU) — wspólne źródło dla kontroli HU i modelowania mapy 3D</div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:planner_stock_contents' %}" class="btn btn-primary">{% icon "clipboard-list" %} Podgląd stocku</a>
+    {% if can_control %}<a href="{% url 'ui:hu_control_hub' %}" class="btn btn-secondary">{% icon "search" %} Kontrola HU</a>{% endif %}
+    {% if can_open_magazyn %}<a href="{% url 'ui:warehouse_map' %}" class="btn btn-secondary">{% icon "map" %} Mapa magazynu 3D</a>{% endif %}
+  </div>
+</div>
+
+<!-- Stock KPI -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px">
+  <div class="card" style="text-align:center;padding:14px"><div style="font-size:26px;font-weight:800;color:#0f766e">{{ totals.hu }}</div><div style="font-size:12px;color:var(--gray-500)">HU w stocku</div></div>
+  <div class="card" style="text-align:center;padding:14px"><div style="font-size:26px;font-weight:800;color:var(--gray-500)">{{ totals.planned }}</div><div style="font-size:12px;color:var(--gray-500)">Zaplanowane</div></div>
+  <div class="card" style="text-align:center;padding:14px"><div style="font-size:26px;font-weight:800;color:var(--green)">{{ totals.ok }}</div><div style="font-size:12px;color:var(--gray-500)">Zgodne</div></div>
+  <div class="card" style="text-align:center;padding:14px"><div style="font-size:26px;font-weight:800;color:var(--red)">{{ totals.to_recheck }}</div><div style="font-size:12px;color:var(--gray-500)">Do rekontroli</div></div>
+</div>
+
+<!-- Import -->
+<div class="card" style="margin-bottom:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:600;font-size:14px">Import stanu magazynowego (Power BI / SAP)</div>
+  <div style="padding:16px;display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <!-- Direct Power BI / SAP BW pull -->
+    <div style="flex:1;min-width:260px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">{% icon "download" %} Pobierz z Power BI (SAP BW)</div>
+      <p class="text-sm text-muted" style="margin-bottom:10px">Pobranie stanu wprost z kostki Power BI (DAX <code>executeQueries</code>) — bez ręcznego pliku.</p>
+      {% if powerbi_configured %}
+      <form method="post" action="{% url 'ui:planner_stock_powerbi_import' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">{% icon "download" %} Pobierz stan z Power BI</button>
+      </form>
+      {% if powerbi_account %}<p class="text-sm text-muted" style="margin-top:6px">Połączono jako <strong>{{ powerbi_account }}</strong></p>{% endif %}
+      {% elif powerbi_dataset_config and can_powerbi_connect %}
+      {% csrf_token %}
+      <button id="pbi-connect-btn" type="button" class="btn btn-primary">{% icon "link" %} Połącz z Power BI</button>
+      <div id="pbi-connect-box" style="display:none;margin-top:10px;padding:10px 12px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:8px;font-size:13px"></div>
+      <p class="text-sm text-muted" style="margin-top:8px">Logowanie użytkownika (device-code): kliknij, wpisz krótki kod na stronie Microsoft i gotowe — bez konsoli serwera.</p>
+      <script>
+      (function () {
+        var btn = document.getElementById('pbi-connect-btn');
+        var box = document.getElementById('pbi-connect-box');
+        if (!btn) return;
+        function csrf() { var el = document.querySelector('input[name=csrfmiddlewaretoken]'); return el ? el.value : ''; }
+        var poll = null, timer = null;
+        function reset() { btn.disabled = false; btn.textContent = '🔗 Połącz z Power BI'; }
+        btn.addEventListener('click', function () {
+          btn.disabled = true; btn.textContent = 'Łączenie…';
+          fetch('{% url "ui:planner_stock_powerbi_connect" %}', { method: 'POST', headers: { 'X-CSRFToken': csrf() } })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+              if (!d.ok) { box.style.display = 'block'; box.innerHTML = '<span style="color:var(--red)">' + (d.error || 'Błąd') + '</span>'; reset(); return; }
+              box.style.display = 'block';
+              box.innerHTML = 'Otwórz <a href="' + d.verification_uri + '" target="_blank" rel="noopener"><b>' + d.verification_uri + '</b></a> i wpisz kod:' +
+                '<div style="font-size:22px;font-weight:700;letter-spacing:2px;margin:6px 0">' + d.user_code + '</div>' +
+                '<span id="pbi-status" style="color:var(--gray-500)">⏳ Czekam na zalogowanie…</span>';
+              poll = setInterval(function () {
+                fetch('{% url "ui:planner_stock_powerbi_status" %}').then(function (r) { return r.json(); }).then(function (s) {
+                  if (s.connected) {
+                    clearInterval(poll); clearTimeout(timer);
+                    document.getElementById('pbi-status').innerHTML = '✅ Połączono' + (s.account ? ' jako <b>' + s.account + '</b>' : '') + '. Odświeżam…';
+                    setTimeout(function () { location.reload(); }, 1200);
+                  }
+                }).catch(function () {});
+              }, 4000);
+              timer = setTimeout(function () {
+                clearInterval(poll);
+                var st = document.getElementById('pbi-status');
+                if (st) st.innerHTML = '⌛ Kod wygasł — kliknij ponownie, by spróbować jeszcze raz.';
+                reset();
+              }, (d.expires_in || 900) * 1000);
+            })
+            .catch(function () { reset(); });
+        });
+      })();
+      </script>
+      {% else %}
+      <span class="badge badge-gray">Niepołączony</span>
+      {% if not powerbi_dataset_config %}
+      <p class="text-sm text-muted" style="margin-top:8px">Ustaw <code>POWERBI_WORKSPACE_ID</code> i <code>POWERBI_DATASET_ID</code> (w Coolify), a po odświeżeniu tej strony pojawi się przycisk „Połącz". Alternatywnie: <code>python manage.py powerbi_connect</code> w konsoli serwera.</p>
+      {% else %}
+      <p class="text-sm text-muted" style="margin-top:8px">Połączenie może wykonać użytkownik z rolą <strong>Master Data</strong> lub <strong>Administrator</strong>.</p>
+      {% endif %}
+      {% endif %}
+    </div>
+    <!-- Manual file fallback -->
+    <div style="flex:1;min-width:260px;border-left:1px solid var(--gray-100);padding-left:24px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">{% icon "upload" %} Lub wgraj plik</div>
+      <form method="post" action="{% url 'ui:planner_hu_import' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <p class="text-sm text-muted" style="margin-bottom:10px">Plik CSV/XLSX (pickHU, REF, LOT, data ważności, ilość, lokalizacja, typ magazynu, picker). Wiersze bez kolumny dostawy trafiają do kontenera „Stock magazynowy".</p>
+        <label class="btn btn-secondary" style="cursor:pointer">
+          {% icon "upload" %} Wybierz plik i importuj
+          <input type="file" name="file" accept=".csv,.xlsx,.xls" style="display:none" onchange="gvUpload(this)">
+        </label>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Stock containers -->
+<div class="card">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:600;font-size:14px">Kontenery stanu</div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Kontener</th><th>HU</th><th>Zgodne</th><th>Do rekontroli</th><th>Data importu</th><th></th></tr></thead>
+      <tbody>
+      {% for c in containers %}
+      <tr>
+        <td><strong>{{ c.name }}</strong></td>
+        <td><a href="{% url 'ui:planner_stock_contents' %}?container={{ c.id }}" style="color:#0f766e;font-weight:700">{{ c.n }}</a></td>
+        <td>{% if c.n_ok %}<span class="badge badge-green">{{ c.n_ok }}</span>{% else %}<span class="text-sm text-muted">0</span>{% endif %}</td>
+        <td>{% if c.n_recheck %}<span class="badge" style="background:var(--red-light);color:var(--red)">{{ c.n_recheck }}</span>{% else %}<span class="text-sm text-muted">0</span>{% endif %}</td>
+        <td class="text-sm text-muted">{{ c.created_at|date:"d.m.Y H:i" }}</td>
+        <td class="actions">
+          <a href="{% url 'ui:planner_stock_contents' %}?container={{ c.id }}" class="btn btn-ghost btn-sm">Podgląd</a>
+          {% if can_control %}<a href="{% url 'ui:hu_control_menu' %}" target="_blank" class="btn btn-ghost btn-sm" rel="noopener">Kontrola HU</a>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6"><div class="empty-state" style="padding:24px"><div class="empty-state__title">Brak zaimportowanego stanu</div><div class="empty-state__desc">Zaimportuj plik HU powyżej.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

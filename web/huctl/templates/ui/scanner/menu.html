@@ -1,0 +1,130 @@
+{% extends "ui/scanner/base.html" %}{% load palviz_extras %}
+{% block bar %}<span style="display:flex;flex-direction:column;line-height:1.15"><span style="font-weight:800">Kontrola HU</span><span style="font-size:12px;font-weight:600;color:#eafaf6">Magazyn WMS{% if section_theme %} · sekcja {{ section_theme.section_code }}{% endif %}</span></span>
+  {# Kafelek operatora = sam login; klik rozwija strefy + uprawnienia (natywny <details>, bez JS). #}
+  <details class="op-menu" style="margin-left:auto;position:relative">
+    <summary style="list-style:none;cursor:pointer;font-size:12px;font-weight:800;background:rgba(0,0,0,.2);padding:3px 10px;border-radius:999px;line-height:1.5;white-space:nowrap;display:inline-flex;align-items:center;gap:5px">
+      {{ request.user.username }}<span style="font-size:9px;opacity:.85">▾</span>
+    </summary>
+    <div style="position:absolute;right:0;top:calc(100% + 6px);z-index:60;min-width:210px;max-width:80vw;background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(13,60,58,.28);padding:11px 13px;text-align:left">
+      <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8aa6a2;margin-bottom:5px">Strefy do kontroli</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px">
+        {% if my_zones is None %}
+          <span style="font-size:11px;font-weight:800;background:#d8f0ec;color:#0c5c58;padding:3px 9px;border-radius:999px">wszystkie strefy</span>
+        {% else %}
+          {% for z in my_zones %}<span style="font-size:11px;font-weight:800;font-family:ui-monospace,Menlo,monospace;background:#e7f6f3;color:#0c5c58;padding:3px 9px;border-radius:999px">{{ z }}</span>{% empty %}<span style="font-size:11px;color:#8aa6a2">— brak —</span>{% endfor %}
+        {% endif %}
+      </div>
+      <div style="font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8aa6a2;margin-bottom:5px">Uprawnienia</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        {% for label, color in my_roles %}<span style="font-size:11px;font-weight:800;color:#fff;background:{{ color }};padding:3px 9px;border-radius:999px">{{ label }}</span>{% empty %}<span style="font-size:11px;color:#8aa6a2">— brak roli —</span>{% endfor %}
+      </div>
+    </div>
+  </details>
+{% endblock %}
+{% block content %}
+  <style>
+    .op-menu > summary::-webkit-details-marker{display:none}.op-menu > summary::marker{content:""}
+    .scan-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 2px 12px rgba(13,60,58,.08);margin-bottom:14px}
+    .qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    {# Ikona OBOK tekstu (nie nad): 2 linie zamiast 3 — siatka 2×2 mieści się na 4" Zebrze. #}
+    .qtile{display:flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:11px 12px;text-decoration:none;color:var(--ink);box-shadow:0 2px 8px rgba(13,60,58,.06)}
+    .qtile svg{color:var(--teal-deep);flex:0 0 auto}
+    .qtile__x{min-width:0}
+    .qtile__t{font-weight:800;font-size:15px;line-height:1.2}
+    .qtile__s{font-size:12px;color:#64748b;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .qtile__s--warn{color:#c2410c;font-weight:800}
+  </style>
+
+  {# Pasek „Stock: brak importu" usunięty — funkcja lidera (hub); na Zebrze zjadał wiersz. #}
+
+  {% if recheck_count %}
+  <div id="recheck-banner" class="msg msg--warning" style="display:flex;align-items:center;gap:10px;border-radius:14px">
+    <div style="flex:1">
+      <strong>{% icon "refresh-cw" %} Do rekontroli: {{ recheck_count }}</strong><br>
+      <span style="font-size:12px">Zacznij od najstarszej{% if recheck_oldest %} — <strong>{{ recheck_oldest.ref }}</strong>{% endif %}.</span>
+    </div>
+    {% if recheck_oldest %}<a class="btn btn--p5" href="{% url 'ui:hu_control_detail' recheck_oldest.pk %}" style="width:auto;margin:0;padding:9px 16px">Start</a>{% endif %}
+    <button type="button" class="btn btn--ghost" style="width:auto;margin:0;padding:9px 16px"
+            onclick="document.getElementById('recheck-banner').style.display='none'">Pomiń</button>
+  </div>
+  {% endif %}
+
+  {# Karta skanu (wg mockupu): status + dashed drop-zone + ręczny pickHU + duży „Skanuj". #}
+  <form method="post" action="{% url 'ui:hu_control_scan' %}" class="scan-card" id="hu-scan-form">
+    {% csrf_token %}
+    <input type="hidden" name="scan_src" id="scan-src" value="keyboard">
+    <input type="hidden" name="device_id" id="scan-dev" value="">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <strong style="font-size:17px;color:var(--teal-deep)">Skan etykiety HU</strong>
+      <span style="font-size:12px;color:var(--label);font-weight:700">skaner gotowy</span>
+    </div>
+    {# Bez dekoracyjnej ramki drop-zone (⅓ ekranu, zero funkcji) — skaner i tak wpisuje do pola. #}
+    <div style="display:flex;gap:8px;align-items:stretch;margin:12px 0">
+      <input type="text" id="hu-code" name="code" data-testid="scan-input" autofocus inputmode="text" autocomplete="off"
+             placeholder="wpisz pickHU ręcznie" style="flex:1;min-width:0">
+      <button type="button" class="btn btn--ghost"
+              onclick="document.getElementById('scan-src').value='scan';palvizScan('hu-code')"
+              title="Skanuj aparatem (QR / kod)" aria-label="Skanuj aparatem"
+              style="width:auto;flex:0 0 auto;margin:0;padding:0 16px">
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin:0"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </button>
+    </div>
+    <button type="submit" class="btn btn--xl btn--accent" data-testid="scan-submit" style="margin:0">Skanuj</button>
+  </form>
+
+  {# Kafle szybkich akcji (2×2, wg mockupu). #}
+  <div class="qgrid">
+    <a class="qtile" href="{% url 'ui:hu_my_shift' %}" style="border-color:var(--teal-deep)">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 10h8M8 14h5"/></svg>
+      <span class="qtile__x"><div class="qtile__t">Moja zmiana</div><div class="qtile__s">weź następną / skanuj</div></span></a>
+    <a class="qtile" href="{% url 'ui:hu_control_next' %}">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 4l10 8-10 8V4z"/><path d="M19 5v14"/></svg>
+      <span class="qtile__x"><div class="qtile__t">Następna HU</div><div class="qtile__s">{{ queue_count }} w kolejce</div></span></a>
+    <a class="qtile" href="{% url 'ui:hu_control_recheck_list' %}">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      <span class="qtile__x"><div class="qtile__t">Rekontrola</div><div class="qtile__s{% if recheck_count %} qtile__s--warn{% endif %}">{% if recheck_count %}{{ recheck_count }} oczekują{% else %}brak{% endif %}</div></span></a>
+    <a class="qtile" href="{% url 'ui:hu_control_find_recipient' %}">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <span class="qtile__x"><div class="qtile__t">Wg odbiorcy</div><div class="qtile__s">szukaj HU</div></span></a>
+    <a class="qtile" href="{% url 'ui:hu_quality_issues' %}">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+      <span class="qtile__x"><div class="qtile__t">Jakość</div><div class="qtile__s{% if quality_open_count %} qtile__s--warn{% endif %}">{% if quality_open_count %}{{ quality_open_count }} otwarte{% else %}brak otwartych{% endif %}</div></span></a>
+  </div>
+
+  <button type="button" id="pwa-install" class="btn btn--ghost" style="display:none;margin-top:12px" onclick="palvizInstall()">
+    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+    Zainstaluj aplikację
+  </button>
+
+  {# Warstwa A/C skanu: wykryj „burst" skanera (szybkie keydown) vs ręczne + device_id (cookie). #}
+  <script>
+  (function(){
+    var f=document.getElementById('hu-scan-form'); if(!f) return;
+    var inp=document.getElementById('hu-code'), src=document.getElementById('scan-src'),
+        dev=document.getElementById('scan-dev');
+    // device_id: losowy, trwały w cookie (per urządzenie/przeglądarka).
+    function cookie(n){ var m=document.cookie.match('(?:^|; )'+n+'=([^;]*)'); return m?m[1]:''; }
+    var did=cookie('pv_device');
+    if(!did){ did=(Date.now().toString(36)+Math.random().toString(36).slice(2,8));
+              document.cookie='pv_device='+did+';path=/;max-age=31536000;samesite=Lax'; }
+    dev.value=did;
+    // Burst: odstępy między keydown. Skaner „wpisuje" cały kod w <~30 ms/znak.
+    // UWAGA: NIE resetuj times na Enter — keydown Enter odpala się PRZED submit,
+    // reset tutaj zerował pomiar i każdy skan (CR ze skanera) lądował jako 'keyboard'.
+    var times=[];
+    inp.addEventListener('keydown', function(e){
+      if(e.key && e.key.length===1){ times.push(Date.now()); if(times.length>40) times.shift(); }
+    });
+    f.addEventListener('submit', function(){
+      var fast=0, n=0;
+      for(var i=1;i<times.length;i++){ n++; if(times[i]-times[i-1]<30) fast++; }
+      // ≥4 znaki i większość odstępów <30 ms → uznajemy za skan; inaczej klawiatura.
+      // Kamera ustawia scan-src='scan' wprost (przycisk) — nie nadpisuj jej pomiarem klawiatury.
+      if (src.value !== 'scan' || times.length) {
+        src.value=(times.length>=4 && fast>=Math.max(1,n-1)) ? 'scan' : 'keyboard';
+      }
+      times=[];                                  // reset PO pomiarze, na następny skan
+    });
+  })();
+  </script>
+{% endblock %}

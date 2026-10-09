@@ -1,0 +1,312 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}{% if obj %}Edytuj{% else %}Nowy{% endif %} produkt — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    margin: 20px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .mode-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .mode-toggle label {
+    flex: 1;
+    text-align: center;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--surface);
+    color: var(--gray-500);
+    border-right: 1px solid var(--gray-300);
+    transition: background .15s, color .15s;
+    margin: 0;
+  }
+  .mode-toggle label:last-child { border-right: none; }
+  .mode-toggle input[type=radio] { display: none; }
+  .mode-toggle input[type=radio]:checked + label {
+    background: var(--blue);
+    color: #fff;
+  }
+</style>
+{% if obj %}<script src="/static/ui/vendor/three.r128.min.js"></script>
+<script src="/static/ui/vendor/OrbitControls.r128.js"></script>{% endif %}
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_products' %}">Produkty</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if obj %}{{ obj.code }}{% else %}Nowy{% endif %}</span>
+</nav>
+
+<div style="max-width:700px">
+  <div class="page-header">
+    <div class="page-header__title">{% if obj %}Edytuj produkt{% else %}Nowy produkt{% endif %}</div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post" id="product-form" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- ── Product fields ────────────────────────────────────────── -->
+        <div class="form-grid" style="gap:16px;display:grid;grid-template-columns:1fr 1fr">
+
+          <div class="form-group">
+            <label for="{{ form.code.id_for_label }}">{{ form.code.label }}</label>
+            {{ form.code }}
+            {% if form.code.errors %}<ul class="error-list">{% for e in form.code.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            {% if ref_data %}<div style="font-size:11px;color:#15803d;margin-top:3px">{% icon "check" %} Znaleziono w bazie referencyjnej: {{ ref_data.name }}</div>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.supplier_short.id_for_label }}">{{ form.supplier_short.label }}</label>
+            {{ form.supplier_short }}
+            {% if form.supplier_short.errors %}<ul class="error-list">{% for e in form.supplier_short.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.ean.id_for_label }}">{{ form.ean.label }}</label>
+            {{ form.ean }}
+            {% if form.ean.errors %}<ul class="error-list">{% for e in form.ean.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div></div>
+
+          <div class="form-group" style="grid-column:1/-1">
+            <div class="section-label">Wymiary sztuki (opcjonalne — do wizualizacji 5-poziomowej)</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+              <div class="form-group">
+                <label for="{{ form.unit_length_cm.id_for_label }}">{{ form.unit_length_cm.label }}</label>
+                {{ form.unit_length_cm }}
+              </div>
+              <div class="form-group">
+                <label for="{{ form.unit_width_cm.id_for_label }}">{{ form.unit_width_cm.label }}</label>
+                {{ form.unit_width_cm }}
+              </div>
+              <div class="form-group">
+                <label for="{{ form.unit_height_cm.id_for_label }}">{{ form.unit_height_cm.label }}</label>
+                {{ form.unit_height_cm }}
+              </div>
+            </div>
+            <div class="form-row" style="display:flex;gap:16px;align-items:center;margin-top:8px">
+              <div class="form-group" style="display:flex;align-items:center;gap:6px">
+                {{ form.stackable }}<label style="margin:0" for="{{ form.stackable.id_for_label }}">{{ form.stackable.label }}</label>
+              </div>
+              <div class="form-group">
+                <label for="{{ form.max_stack_layers.id_for_label }}">{{ form.max_stack_layers.label }}</label>
+                {{ form.max_stack_layers }}
+              </div>
+            </div>
+            {# Model 3D poziomu OP/sztuka (.glb) — zastępuje generowaną bryłę w hierarchii. #}
+            <div class="form-group" style="margin-top:8px">
+              <label for="{{ form.glb_model.id_for_label }}">{% icon "box" %} {{ form.glb_model.label }}</label>
+              {{ form.glb_model }}
+              {% if form.glb_model.errors %}<ul class="error-list">{% for e in form.glb_model.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+            {# Media poziomu SZTUKA (JU) — osobne od OP: model .glb i/lub zdjęcie-nadruk. #}
+            <div class="form-group" style="margin-top:8px">
+              <label for="{{ form.ju_glb_model.id_for_label }}">{% icon "box" %} {{ form.ju_glb_model.label }}</label>
+              {{ form.ju_glb_model }}
+              {% if form.ju_glb_model.errors %}<ul class="error-list">{% for e in form.ju_glb_model.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+            <div class="form-group" style="margin-top:8px">
+              <label for="{{ form.ju_image.id_for_label }}">{% icon "palette" %} {{ form.ju_image.label }}</label>
+              {{ form.ju_image }}
+              {% if form.ju_image.errors %}<ul class="error-list">{% for e in form.ju_image.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+          </div>
+
+          <div class="form-group" style="grid-column:1/-1">
+            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% if form.name.errors %}<ul class="error-list">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+
+          <div class="form-group" style="grid-column:1/-1">
+            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+            {{ form.description }}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.category.id_for_label }}">{{ form.category.label }}</label>
+            {{ form.category }}
+            <span class="help-text">
+              <a href="{% url 'ui:planner_categories' %}" target="_blank" rel="noopener">Zarządzaj kategoriami</a>
+            </span>
+          </div>
+
+          <div class="form-group">
+            <div class="form-check">
+              {{ form.is_active }}
+              <label for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Carton section ────────────────────────────────────────── -->
+        <div class="section-label">Karton</div>
+
+        <div class="mode-toggle">
+          <input type="radio" name="carton_mode" id="cm_none" value="none" checked>
+          <label for="cm_none">Bez kartonu</label>
+          <input type="radio" name="carton_mode" id="cm_existing" value="existing">
+          <label for="cm_existing">Wybierz istniejący</label>
+          <input type="radio" name="carton_mode" id="cm_new" value="new">
+          <label for="cm_new">Zdefiniuj nowy</label>
+        </div>
+
+        <!-- Existing carton selector -->
+        <div id="carton-existing-section" style="display:none">
+          <div class="form-group">
+            <label style="font-size:13px">Karton z bazy</label>
+            <select aria-label="Karton z bazy" name="carton_pk" id="carton_pk_select" style="width:100%">
+              <option value="">— wybierz —</option>
+              {% for c in cartons_qs %}
+              <option value="{{ c.pk }}" data-l="{{ c.length_cm }}" data-w="{{ c.width_cm }}" data-h="{{ c.height_cm }}"
+                      data-weight="{{ c.unit_weight_kg }}" data-pcs="{{ c.pieces_per_carton }}" data-tare="{{ c.tare_kg }}">
+                {{ c.name }} ({{ c.length_cm }}×{{ c.width_cm }}×{{ c.height_cm }} cm)
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div id="carton-existing-info" style="display:none;font-size:12px;color:var(--gray-500);margin-top:4px;padding:8px;background:var(--gray-50);border-radius:4px"></div>
+        </div>
+
+        <!-- New carton fields -->
+        <div id="carton-new-section" style="display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group" style="grid-column:1/-1">
+              <label style="font-size:13px">Nazwa kartonu</label>
+              <input aria-label="Nazwa kartonu" type="text" name="c_name" placeholder="np. Karton standardowy">
+            </div>
+            <div class="form-group">
+              <label style="font-size:13px">L [cm]</label>
+              <input aria-label="L [cm]" type="number" name="c_l" value="40" min="1">
+            </div>
+            <div class="form-group">
+              <label style="font-size:13px">W [cm]</label>
+              <input aria-label="W [cm]" type="number" name="c_w" value="30" min="1">
+            </div>
+            <div class="form-group">
+              <label style="font-size:13px">H [cm]</label>
+              <input aria-label="H [cm]" type="number" name="c_h" value="25" min="1">
+            </div>
+            <div class="form-group">
+              <label style="font-size:13px">Waga jedn. [kg]</label>
+              <input aria-label="Waga jedn. [kg]" type="number" name="c_weight" value="0.0" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+              <label style="font-size:13px">Szt / karton</label>
+              <input aria-label="Szt / karton" type="number" name="c_pcs" value="1" min="1">
+            </div>
+            <div class="form-group">
+              <label style="font-size:13px">Tara kartonu [kg]</label>
+              <input aria-label="Tara kartonu [kg]" type="number" name="c_tare" value="0.0" min="0" step="0.01">
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Palletization section (shown when carton_mode != none) ── -->
+        <div id="palletization-section" style="display:none">
+          <div class="section-label">Paletyzacja</div>
+
+          <div class="form-check" style="margin-bottom:12px">
+            <input type="checkbox" name="create_instr" id="create_instr_cb">
+            <label for="create_instr_cb" style="font-size:13px;font-weight:500">Utwórz instrukcję paletyzacji</label>
+          </div>
+
+          <div id="instr-fields" style="display:none">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-group" style="grid-column:1/-1">
+                <label style="font-size:13px">Nazwa instrukcji (opcjonalnie)</label>
+                <input aria-label="Nazwa instrukcji (opcjonalnie)" type="text" name="instr_name" placeholder="np. Wersja standardowa">
+              </div>
+              <div class="form-group">
+                <label style="font-size:13px">Maks. wys. całkowita [cm]</label>
+                <input aria-label="Maks. wys. całkowita [cm]" type="number" name="pal_height" value="215" min="50">
+              </div>
+              <div class="form-group">
+                <label style="font-size:13px">Maks. waga [kg]</label>
+                <input aria-label="Maks. waga [kg]" type="number" name="pal_weight" value="1000" min="1">
+              </div>
+              <div class="form-group">
+                <label style="font-size:13px">Popyt [szt]</label>
+                <input aria-label="Popyt [szt]" type="number" name="demand_pcs" value="1000" min="1">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:24px">
+          <button type="submit" class="btn btn-primary">
+            {% if obj %}Zapisz zmiany{% else %}Utwórz produkt{% endif %}
+          </button>
+          <a href="{% url 'ui:planner_products' %}" class="btn btn-secondary">Anuluj</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% if obj %}
+{% url 'ui:product_artwork_list' obj.pk as au_list %}
+{% url 'ui:product_artwork_upload' obj.pk as au_upload %}
+{% url 'ui:product_artwork_update' 0 as au_upd0 %}
+{% url 'ui:product_artwork_delete' 0 as au_del0 %}
+{% include "ui/planner/_artwork_designer.html" with art_title="Wygląd sztuki — nadruki i etykiety (3D)" art_l=obj.unit_length_cm|default:20 art_w=obj.unit_width_cm|default:20 art_h=obj.unit_height_cm|default:20 art_url_list=au_list art_url_upload=au_upload art_url_update0=au_upd0 art_url_delete0=au_del0 %}
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function () {
+  // Carton mode toggle
+  document.querySelectorAll('input[name="carton_mode"]').forEach(radio => {
+    radio.addEventListener('change', updateCartonMode);
+  });
+
+  function updateCartonMode() {
+    const mode = document.querySelector('input[name="carton_mode"]:checked')?.value || 'none';
+    document.getElementById('carton-existing-section').style.display = mode === 'existing' ? '' : 'none';
+    document.getElementById('carton-new-section').style.display = mode === 'new' ? '' : 'none';
+    document.getElementById('palletization-section').style.display = mode !== 'none' ? '' : 'none';
+  }
+
+  // Existing carton select — show info
+  document.getElementById('carton_pk_select')?.addEventListener('change', function () {
+    const opt = this.options[this.selectedIndex];
+    const info = document.getElementById('carton-existing-info');
+    if (this.value && opt) {
+      const l = opt.dataset.l, w = opt.dataset.w, h = opt.dataset.h;
+      const weight = opt.dataset.weight, pcs = opt.dataset.pcs, tare = opt.dataset.tare;
+      info.style.display = '';
+      info.textContent = `${l}×${w}×${h} cm · ${weight} kg/szt · ${pcs} szt/karton · tara ${tare} kg`;
+    } else {
+      info.style.display = 'none';
+    }
+  });
+
+  // Instruction checkbox
+  document.getElementById('create_instr_cb')?.addEventListener('change', function () {
+    document.getElementById('instr-fields').style.display = this.checked ? '' : 'none';
+  });
+})();
+</script>
+{% endblock %}

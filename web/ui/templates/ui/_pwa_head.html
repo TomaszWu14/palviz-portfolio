@@ -1,0 +1,21 @@
+{% load static %}{# PWA head — installable, full-screen, registers the service worker. #}
+{# Jeden scalony manifest „GROOVE Go" (scope „/") dla całego skanera — Hierarchia + Kontrola HU. #}
+<link rel="manifest" href="{% url 'ui:pwa_manifest' %}">
+<meta name="theme-color" content="#0f7d79">
+<link rel="apple-touch-icon" href="{% static 'ui/icons/icon-192.png' %}">
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); });
+  }
+  // Czy TO OKNO to zainstalowana apka skanera (PWA / TWA), a nie zwykła karta przeglądarki.
+  // Wyłącznie sygnały per-okno: display-mode + znacznik w sessionStorage z wejścia `?app=1`.
+  // NIE ciasteczko — apka dzieli ciasteczka z kartami przeglądarki, więc raz ustawione
+  // przerzucało desktop z huba GROOVE prosto do skanera.
+  try { if (/[?&]app=1(&|$)/.test(location.search)) sessionStorage.setItem('pvScannerApp', '1'); } catch (e) {}
+  window.pvInstalledApp = function(){
+    try { if (sessionStorage.getItem('pvScannerApp') === '1') return true; } catch (e) {}
+    var mm = window.matchMedia;
+    return !!(mm && (mm('(display-mode: standalone)').matches || mm('(display-mode: minimal-ui)').matches))
+           || window.navigator.standalone === true;
+  };
+</script>

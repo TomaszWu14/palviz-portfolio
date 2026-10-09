@@ -1,0 +1,48 @@
+{% extends "ui/base.html" %}
+{% block title %}Szybka edycja opakowań — {{ app_name }}{% endblock %}
+{% block subnav %}{% include "ui/planner/_tabs.html" %}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:data_center' %}">Data Center</a> › <span>Szybka edycja opakowań</span></nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Szybka edycja rozmiarów opakowań</div>
+    <div class="page-header__sub">Edytuj wymiary i wagę w tabeli — zapisuje tylko zmienione wiersze</div>
+  </div>
+</div>
+
+<form method="post">
+  {% csrf_token %}
+  <div class="card">
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr>
+          <th>Opakowanie</th><th>L [cm]</th><th>W [cm]</th><th>H [cm]</th>
+          <th>Szt/karton</th><th>Waga jedn. [kg]</th><th>Tara [kg]</th>
+        </tr></thead>
+        <tbody>
+        {% for c in cartons %}
+          <tr>
+            <td><strong>{{ c.name }}</strong>{% if c.ean %}<div class="text-sm text-muted">EAN {{ c.ean }}</div>{% endif %}</td>
+            <td><input name="c{{ c.pk }}_l" aria-label="{{ c.name }} — L [cm]"   type="number" min="1" value="{{ c.length_cm }}" style="width:70px"></td>
+            <td><input name="c{{ c.pk }}_w" aria-label="{{ c.name }} — W [cm]"   type="number" min="1" value="{{ c.width_cm }}" style="width:70px"></td>
+            <td><input name="c{{ c.pk }}_h" aria-label="{{ c.name }} — H [cm]"   type="number" min="1" value="{{ c.height_cm }}" style="width:70px"></td>
+            <td><input name="c{{ c.pk }}_ppc" aria-label="{{ c.name }} — Szt/karton" type="number" min="1" value="{{ c.pieces_per_carton }}" style="width:80px"></td>
+            <td><input name="c{{ c.pk }}_uw" aria-label="{{ c.name }} — Waga jedn. [kg]"  value="{{ c.unit_weight_kg }}" style="width:90px"></td>
+            <td><input name="c{{ c.pk }}_tare" aria-label="{{ c.name }} — Tara [kg]" value="{{ c.tare_kg }}" style="width:80px"></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7"><div class="empty-state" style="padding:24px"><div class="empty-state__title">Brak opakowań</div><div class="empty-state__desc">Dodaj je w module Kartony lub przez import w Data Center.</div></div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if cartons %}
+    <div style="padding:12px 16px;border-top:1px solid var(--gray-100);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:var(--surface)">
+      <a class="btn btn-secondary" href="{% url 'ui:data_center' %}">Anuluj</a>
+      <button class="btn btn-primary" type="submit">Zapisz zmiany</button>
+    </div>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

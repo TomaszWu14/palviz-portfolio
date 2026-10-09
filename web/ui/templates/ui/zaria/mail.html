@@ -1,0 +1,44 @@
+{% extends "ui/base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Wyślij mailem" %} — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:zaria_conversation' conversation.pk %}">ZARIA</a><span class="breadcrumb__sep">›</span><span>{% trans "Wyślij mailem" %}</span></nav>
+
+{% if result %}
+<div class="card" style="padding:20px;max-width:640px">
+  <div style="font-weight:700;font-size:16px;margin-bottom:8px">{% trans "Wersja robocza gotowa" %}</div>
+  <div style="font-size:13px;color:var(--gray-600);margin-bottom:14px">{% trans "ZARIA przygotowała treść — wiadomość wysyłasz Ty w Outlooku." %}</div>
+  <a href="{{ mailto }}" class="btn btn-primary">{% trans "Otwórz w Outlooku" %}</a>
+  <form method="post" style="display:inline">{% csrf_token %}
+    <input type="hidden" name="scope" value="{{ scope }}"><input type="hidden" name="subject" value="{{ subject }}">
+    <input type="hidden" name="to" value="{{ to }}"><input type="hidden" name="cc" value="{{ cc }}">
+    <input type="hidden" name="fmt" value="eml">
+    <button type="submit" class="btn btn-secondary">{% trans "Pobierz plik .eml" %}</button>
+  </form>
+  {% if too_long %}<div style="margin-top:12px;font-size:13px;color:var(--yellow-dark)">{% trans "Treść jest długa — w linku mailto została skrócona. Pełna wersja w pliku .eml." %}</div>{% endif %}
+</div>
+{% else %}
+<div class="card" style="padding:20px;max-width:640px">
+  <form method="post" style="display:flex;flex-direction:column;gap:12px">{% csrf_token %}
+    <div>
+      <label style="font-size:12px;font-weight:600;color:var(--gray-600)">{% trans "Zakres" %}</label>
+      <select aria-label="{% trans "Zakres" %}" name="scope">
+        <option value="last">{% trans "Ostatnia odpowiedź" %}</option>
+        <option value="all">{% trans "Cała rozmowa" %}</option>
+      </select>
+    </div>
+    <div><label style="font-size:12px;font-weight:600;color:var(--gray-600)">{% trans "Do" %}</label>
+      <input aria-label="{% trans "Do" %}" type="text" name="to" placeholder="adres@firma.pl" style="width:100%"></div>
+    <div><label style="font-size:12px;font-weight:600;color:var(--gray-600)">{% trans "DW" %}</label>
+      <input aria-label="{% trans "DW" %}" type="text" name="cc" style="width:100%"></div>
+    <div><label style="font-size:12px;font-weight:600;color:var(--gray-600)">{% trans "Temat" %}</label>
+      <input aria-label="{% trans "Temat" %}" type="text" name="subject" value="{{ default_subject }}" style="width:100%"></div>
+    <div style="display:flex;gap:10px">
+      <button type="submit" name="fmt" value="mailto" class="btn btn-primary">{% trans "Przygotuj w Outlooku" %}</button>
+      <button type="submit" name="fmt" value="eml" class="btn btn-secondary">{% trans "Pobierz .eml" %}</button>
+    </div>
+    <div style="font-size:12px;color:var(--gray-500)">{% trans "Do treści zostanie dodana stopka informująca, że wiadomość wygenerował asystent AI ZARIA i wymaga weryfikacji." %}</div>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

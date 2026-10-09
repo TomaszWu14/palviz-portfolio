@@ -1,0 +1,261 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Współrzędne regałów — {{ wm.name }} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .coords-table th { white-space: nowrap; }
+  .coords-table td { vertical-align: middle; }
+  .coords-table input[type=number] {
+    width: 80px;
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+  .zone-header td {
+    background: var(--blue-light);
+    color: var(--blue-mid);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 7px 14px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .rack-row:hover td { background: #fafbff; }
+  /* Szybkie ustawianie kąta: ⇔ 0°, ⇕ 90°, ⟳ +90°. */
+  .angle-btns { display: inline-flex; gap: 2px; margin-left: 4px; vertical-align: middle; }
+  .angle-btns button {
+    width: 22px; height: 22px; padding: 0; line-height: 1;
+    border: 1px solid var(--gray-300); background: var(--surface);
+    border-radius: 4px; cursor: pointer; font-size: 12px; color: var(--gray-600);
+  }
+  .angle-btns button:hover { background: var(--blue-light); color: var(--blue-mid); border-color: var(--blue); }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_model_list' %}">Modele magazynu</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:warehouse_model_view' wm.pk %}">{{ wm.name }}</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Współrzędne regałów</span>
+</nav>
+
+<!-- Steps indicator -->
+<div style="display:flex;gap:0;margin-bottom:24px">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;background:var(--gray-200);color:var(--gray-500);border-radius:var(--radius) 0 0 var(--radius);font-size:13px">
+    <span style="width:22px;height:22px;background:var(--gray-300);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:var(--gray-600)">1</span>
+    Nazwij model i wgraj lokalizacje
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;background:var(--blue);color:#fff;border-radius:0 var(--radius) var(--radius) 0;font-weight:600;font-size:13px">
+    <span style="width:22px;height:22px;background:rgba(255,255,255,.3);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</span>
+    Przypisz współrzędne regałów
+  </div>
+</div>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Przypisz współrzędne regałów — {{ wm.name }}</div>
+    <div class="page-header__sub">Ustaw pozycję każdego regału na planie hali (X&nbsp;=&nbsp;szerokość, Y&nbsp;=&nbsp;głębokość w metrach)</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:warehouse_model_paste' wm.pk %}" class="btn btn-secondary">
+      Wklej adresy
+    </a>
+    <a href="{% url 'ui:warehouse_model_view' wm.pk %}" class="btn btn-secondary">
+      Pomiń — przejdź do wizualizacji
+    </a>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:20px">
+  <div class="card-header">
+    <span class="card-header__title">Regały modelu</span>
+    <span class="text-sm text-muted">{{ racks|length }} regałów &nbsp;|&nbsp; hala {{ wm.floor_width_m }}&thinsp;×&thinsp;{{ wm.floor_depth_m }} m</span>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="table-wrap">
+      <table class="table coords-table">
+        <thead>
+          <tr>
+            <th>Strefa</th>
+            <th>Regał</th>
+            <th>Boczki</th>
+            <th>Poziomy</th>
+            <th>X&nbsp;[m]</th>
+            <th>Y&nbsp;[m]</th>
+            <th>Kąt&nbsp;[°]</th>
+            <th>Szer.&nbsp;boczka&nbsp;[cm]</th>
+            <th>Głęb.&nbsp;[cm]</th>
+            <th>Wys.&nbsp;poziomu&nbsp;[cm]</th>
+            <th>Szablon&nbsp;gniazda</th>
+            <th>Numeracja&nbsp;gniazd</th>
+            <th>Od&nbsp;końca</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% regroup racks by zone as zone_list %}
+          {% for zone_group in zone_list %}
+          <tr class="zone-header">
+            <td colspan="13">
+              <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+              Strefa {{ zone_group.grouper }}
+            </td>
+          </tr>
+          {% for rack in zone_group.list %}
+          <tr class="rack-row">
+            <td><span class="badge badge-blue">{{ rack.zone }}</span></td>
+            <td><span class="font-semibold">{{ rack.rack_id }}</span></td>
+            <td class="text-muted">{{ rack.n_bays }}</td>
+            <td class="text-muted">{{ rack.n_levels }}</td>
+            <td>
+              <input type="hidden" name="rack_{{ rack.pk }}_zone"    value="{{ rack.zone }}">
+              <input type="hidden" name="rack_{{ rack.pk }}_rack_id" value="{{ rack.rack_id }}">
+              <input type="number" name="rack_{{ rack.pk }}_x_m"
+                     value="{{ rack.x_m }}"
+                     step="0.1" min="0" max="{{ wm.floor_width_m }}"
+                     placeholder="0.0">
+            </td>
+            <td>
+              <input type="number" name="rack_{{ rack.pk }}_y_m"
+                     value="{{ rack.y_m }}"
+                     step="0.1" min="0" max="{{ wm.floor_depth_m }}"
+                     placeholder="0.0">
+            </td>
+            <td>
+              <input type="number" name="rack_{{ rack.pk }}_angle_deg"
+                     value="{{ rack.angle_deg }}"
+                     step="5" min="-180" max="180"
+                     placeholder="0">
+              <span class="angle-btns" data-target="rack_{{ rack.pk }}_angle_deg">
+                <button type="button" data-set="0" title="Poziomo (0°)">{% icon "arrow-left-right" cls="icon--em" %}</button>
+                <button type="button" data-set="90" title="Pionowo (90°)">{% icon "arrow-up-down" cls="icon--em" %}</button>
+                <button type="button" data-rot="90" title="Obróć o +90°">⟳</button>
+              </span>
+            </td>
+            <td>
+              <input type="number" name="rack_{{ rack.pk }}_bay_width_cm"
+                     value="{{ rack.bay_width_cm }}"
+                     step="1" min="1"
+                     placeholder="100">
+            </td>
+            <td>
+              <input type="number" name="rack_{{ rack.pk }}_depth_cm"
+                     value="{{ rack.depth_cm }}"
+                     step="1" min="1"
+                     placeholder="80">
+            </td>
+            <td>
+              <input type="number" name="rack_{{ rack.pk }}_level_height_cm"
+                     value="{{ rack.level_height_cm }}"
+                     step="1" min="1"
+                     placeholder="200">
+            </td>
+            <td>
+              <select aria-label="Szablon gniazd regału {{ rack.rack_id }}" name="rack_{{ rack.pk }}_template" style="min-width:170px;padding:5px 8px;font-size:12px">
+                <option value="">— brak —</option>
+                {% for t in templates %}
+                <option value="{{ t.pk }}"{% if t.pk == rack.template_id %} selected{% endif %}>{{ t.name }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <input type="text" name="rack_{{ rack.pk }}_bay_numbers" value="{{ rack.bay_numbers }}"
+                     placeholder="1-{{ rack.n_bays }}" style="width:110px;padding:5px 8px;font-size:12px"
+                     title="Zakresy numerów gniazd, np. 10-47,50">
+            </td>
+            <td style="text-align:center">
+              <input type="checkbox" name="rack_{{ rack.pk }}_reverse" value="1"{% if rack.reverse %} checked{% endif %}
+                     title="Numeracja gniazd od końca rzędu">
+            </td>
+          </tr>
+          {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-footer" style="display:flex;gap:10px;align-items:center">
+      <button type="submit" class="btn btn-primary">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V7"/><path d="M16 2v4a2 2 0 002 2h4"/><path d="M14 2H6a2 2 0 00-2 2v14"/><polyline points="17 2 22 7 17 12"/></svg>
+        Zapisz i przejdź do wizualizacji
+      </button>
+      <a href="{% url 'ui:warehouse_model_view' wm.pk %}" class="btn btn-secondary">
+        Pomiń — przejdź do wizualizacji
+      </a>
+      <span class="text-sm text-muted" style="margin-left:auto">
+        Hala: {{ wm.floor_width_m }}&thinsp;×&thinsp;{{ wm.floor_depth_m }} m
+      </span>
+    </div>
+
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-header__title">Wskazówki</span>
+  </div>
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;font-size:13px;color:var(--gray-700)">
+      <div>
+        <div class="font-semibold" style="margin-bottom:4px">Oś X — szerokość</div>
+        <div class="text-muted">Pozycja regału od lewej krawędzi hali (od 0 do {{ wm.floor_width_m }} m)</div>
+      </div>
+      <div>
+        <div class="font-semibold" style="margin-bottom:4px">Oś Y — głębokość</div>
+        <div class="text-muted">Pozycja regału od dolnej krawędzi hali (od 0 do {{ wm.floor_depth_m }} m)</div>
+      </div>
+      <div>
+        <div class="font-semibold" style="margin-bottom:4px">Kąt obrotu [°]</div>
+        <div class="text-muted">0° = równoległy do osi X. Dodatni = obrót zgodnie z ruchem wskazówek.</div>
+      </div>
+      <div>
+        <div class="font-semibold" style="margin-bottom:4px">Szer. boczka / Głęb. / Wys.</div>
+        <div class="text-muted">Wymiary fizyczne półek regału w centymetrach.</div>
+      </div>
+      <div>
+        <div class="font-semibold" style="margin-bottom:4px">Szybkie obracanie</div>
+        <div class="text-muted">Przy polu „Kąt”: <strong>{% icon "arrow-left-right" cls="icon--em" %}</strong> ustawia 0° (poziomo),
+          <strong>{% icon "arrow-up-down" cls="icon--em" %}</strong> 90° (pionowo), <strong>⟳</strong> obraca o +90°.
+          Zmianę zapisuje przycisk „Zapisz”.</div>
+      </div>
+      <div>
+        <div class="font-semibold" style="margin-bottom:4px">Szablon i numeracja gniazd</div>
+        <div class="text-muted">Szablon = domyślny słup regału rzędu. Numeracja: zakresy numerów kolejnych
+          gniazd, np. <code>10-47,50</code> (pusta = 1…liczba gniazd). „Od końca” odwraca kierunek.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // ⇔/⇕ ustawiają kąt wprost, ⟳ dokłada +90° i zawija do zakresu -180..180 (input ma
+  // min=-180 max=180 — bez zawijania przeglądarka odrzuciłaby 270°). Zapis idzie
+  // istniejącym POST-em formularza, bez osobnego endpointu.
+  document.querySelectorAll('.angle-btns').forEach(function (box) {
+    var input = document.querySelector('input[name="' + box.dataset.target + '"]');
+    if (!input) return;
+    box.addEventListener('click', function (e) {
+      var btn = e.target.closest('button');
+      if (!btn) return;
+      var val;
+      if (btn.dataset.set !== undefined) {
+        val = parseFloat(btn.dataset.set);
+      } else {
+        val = (parseFloat(input.value) || 0) + parseFloat(btn.dataset.rot || 90);
+        val = ((val + 180) % 360 + 360) % 360 - 180;   // wrap do -180..180
+      }
+      input.value = val;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  });
+</script>
+{% endblock %}

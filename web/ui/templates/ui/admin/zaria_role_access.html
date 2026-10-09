@@ -1,0 +1,39 @@
+{% extends "ui/base.html" %}
+{% block title %}ZARIA — dostęp ról — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .za-table th, .za-table td { padding:8px 10px; font-size:12px; text-align:center; border-bottom:1px solid var(--gray-100); }
+  .za-table th:first-child, .za-table td:first-child { text-align:left; position:sticky; left:0; background:var(--surface); min-width:190px; z-index:1; }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_zaria_panel' %}">ZARIA</a><span class="breadcrumb__sep">›</span><span>Dostęp ról do modeli</span></nav>
+<div class="page-header"><div><div class="page-header__title">Dostęp ról do modeli ZARIA</div>
+  <div class="page-header__sub">Zaznacz, która rola widzi który model w pickerze. Superuser widzi zawsze wszystko.</div></div></div>
+
+<form method="post">
+  {% csrf_token %}
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button type="submit" class="btn btn-primary">Zapisz</button></div>
+  <div class="card" style="padding:0;overflow:auto">
+    <table class="za-table" style="width:100%;border-collapse:collapse">
+      <thead><tr>
+        <th>Model</th>
+        {% for r in roles %}<th>{{ r }}</th>{% endfor %}
+      </tr></thead>
+      <tbody>
+      {% for row in rows %}
+      <tr>
+        <td><strong>{{ row.model.display_name }}</strong></td>
+        {% for c in row.cols %}
+        <td><input type="checkbox" name="a_{{ row.model.pk }}_{{ c.role }}" value="1" {% if c.checked %}checked{% endif %}></td>
+        {% endfor %}
+      </tr>
+      {% empty %}
+        <tr><td colspan="{{ roles|length|add:1 }}"><div class="empty-state" style="padding:24px"><div class="empty-state__desc">Brak aktywnych modeli — dodaj je w katalogu.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div style="display:flex;justify-content:flex-end;margin-top:12px"><button type="submit" class="btn btn-primary">Zapisz</button></div>
+</form>
+{% endblock %}

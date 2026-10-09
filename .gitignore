@@ -1,0 +1,61 @@
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.env
+.venv
+venv/
+*.log
+*.sqlite3
+db.sqlite3
+.claude/*
+!.claude/settings.json
+web/staticfiles/
+web/media/
+
+# Node / frontend deps (vendored copies live in web/ui/static/ui/js/)
+node_modules/
+
+# Editor / timestamped backup copies
+*.bak
+*.bak_*
+
+# Generated CLI output (main.py writes here; recreated on each run)
+output/
+
+# Osobisty inwentarz pluginów/skilli Claude — nie należy do repo produktu
+plugins.csv
+skills.csv
+plugins_and_skills.csv
+
+# Lokalne dane testowe (wypełniony arkusz kont testowych, nie wzór importu)
+excel_templates/GROOVE_userzy_testowi.xlsx
+
+# GSD: ulotny stan sesji (flagi auto-chain) i lock milestone — nie commitowac
+.planning/config.json
+.planning/milestone.lock
+
+# Pokrycie testów (make test-full / test.bat full)
+.coverage
+.coverage.*
+htmlcov/
+
+# --- kopia do przygotowania wersji publicznej (wymagane minimum) ---
+.env
+.env.*
+!.env.example
+!.env.*.example
+.idea/
+.venv/
+venv/
+__pycache__/
+*.pyc
+node_modules/
+*.sql
+*.dump
+*.bak
+.DS_Store

@@ -1,0 +1,104 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="refresh" content="{{ refresh }}">
+  <title>Kontrola HU — ściana · {{ app_name }}</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0b1220;color:#e7eef7;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:24px;min-height:100vh}
+    .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px}
+    .head h1{font-size:28px;font-weight:800;letter-spacing:.5px}
+    .head .clock{font-size:18px;color:#7d8ba1}
+    .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:18px;margin-bottom:22px}
+    .tile{border-radius:16px;padding:22px 20px;text-align:center;background:#131d31}
+    .tile .n{font-size:52px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+    .tile .l{font-size:14px;color:#9fb0c7;margin-top:8px;text-transform:uppercase;letter-spacing:.06em}
+    .t-plan .n{color:#94a3b8}.t-ctrl .n{color:#60a5fa}.t-ok .n{color:#4ade80}.t-rc .n{color:#f87171}.t-esc .n{color:#fbbf24}
+    .row2{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+    .panel{background:#131d31;border-radius:16px;padding:18px 20px}
+    .panel h2{font-size:16px;color:#9fb0c7;margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em}
+    table{width:100%;border-collapse:collapse;font-size:20px}
+    td{padding:9px 6px;border-top:1px solid #223049}
+    tr:first-child td{border-top:0}
+    .who{color:#cdd8e8}.prog{color:#8ea3c0;font-variant-numeric:tabular-nums}
+    .kpi{display:flex;flex-direction:column;gap:14px}
+    .kpi .k{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid #223049;padding-top:12px}
+    .kpi .k:first-child{border-top:0;padding-top:0}
+    .kpi .kv{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums}
+    .kpi .kl{font-size:14px;color:#9fb0c7}
+    .warn{color:#f87171}
+    .empty{color:#5b6b83;font-size:18px;padding:12px 0}
+    .rng{display:flex;gap:6px}
+    .rng a{color:#9fb0c7;text-decoration:none;font-size:14px;padding:5px 12px;border-radius:8px;background:#131d31}
+    .rng a.on{background:#2b3c5c;color:#fff;font-weight:700}
+    .types{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:22px}
+    .type{border-radius:12px;padding:12px 14px;background:#131d31;border-left:5px solid var(--tc)}
+    .type .c{font-size:18px;font-weight:800;color:var(--tc);font-family:ui-monospace,monospace}
+    .type .s{font-size:14px;color:#9fb0c7;margin-top:6px;display:flex;gap:10px;font-variant-numeric:tabular-nums}
+    .type .s b{color:#e7eef7}
+  </style>
+</head>
+<body>
+  <div class="head">
+    <h1>Kontrola HU — na żywo</h1>
+    <div class="rng">
+      <a href="?range=today" class="{% if range == 'today' %}on{% endif %}">Dziś</a>
+      <a href="?range=shift" class="{% if range == 'shift' %}on{% endif %}">Zmiana</a>
+      <a href="?range=week" class="{% if range == 'week' %}on{% endif %}">Tydzień</a>
+      <a href="?range=month" class="{% if range == 'month' %}on{% endif %}">Miesiąc</a>
+    </div>
+    <div class="clock">{{ now|date:"H:i" }} · {{ now|date:"d.m.Y" }}</div>
+  </div>
+
+  <div class="tiles">
+    <div class="tile t-plan"><div class="n">{{ status_counts.planned }}</div><div class="l">Zaplanowane</div></div>
+    <div class="tile t-ctrl"><div class="n">{{ status_counts.in_control }}</div><div class="l">W kontroli</div></div>
+    <div class="tile t-ok"><div class="n">{{ status_counts.ok }}</div><div class="l">Zgodne</div></div>
+    <div class="tile t-rc"><div class="n">{{ status_counts.to_recheck }}</div><div class="l">Do rekontroli</div></div>
+    {% if status_counts.escaped %}<div class="tile t-esc"><div class="n">{{ status_counts.escaped }}</div><div class="l">Wyjechało bez kontroli</div></div>{% endif %}
+  </div>
+
+  {% if type_rows %}
+  {# Działy = kontrolowane typy magazynu, każdy ze swoim kolorem. #}
+  <div class="types">
+    {% for t in type_rows %}
+    <div class="type" style="--tc:{{ t.color }}">
+      <div class="c">{{ t.code }}</div>
+      <div class="s"><span>plan <b>{{ t.planned }}</b></span><span>w kontroli <b>{{ t.in_control }}</b></span>
+        <span>OK <b>{{ t.ok }}</b></span>{% if t.to_recheck %}<span class="warn">rekontrola <b>{{ t.to_recheck }}</b></span>{% endif %}{% if t.escaped %}<span class="warn">bez kontroli <b>{{ t.escaped }}</b></span>{% endif %}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="row2">
+    <div class="panel">
+      <h2>Kto teraz kontroluje ({{ live|length }})</h2>
+      <table>
+        <tbody>
+        {% for c in live %}
+          <tr>
+            <td><strong>{{ c.hu.ref }}</strong></td>
+            <td class="who">{% if c.controller %}{{ c.controller.get_full_name|default:c.controller.get_username }}{% else %}—{% endif %}</td>
+            <td class="prog">{{ c.done }}/{{ c.total }}</td>
+            <td class="prog">{% if c.started %}{{ c.started|timesince:now }}{% else %}—{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td class="empty">Nikt teraz nie kontroluje.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel kpi">
+      <div class="k"><span class="kl">Aktywni kontrolerzy (15 min)</span><span class="kv">{{ active_controllers }}</span></div>
+      <div class="k"><span class="kl">Pozycje {% if range == 'today' %}dziś{% elif range == 'shift' %}(zmiana){% elif range == 'week' %}(tydzień){% else %}(miesiąc){% endif %}</span><span class="kv">{{ today_positions }}</span></div>
+      <div class="k"><span class="kl">Błędy {% if range == 'today' %}dziś{% elif range == 'shift' %}(zmiana){% elif range == 'week' %}(tydzień){% else %}(miesiąc){% endif %}</span><span class="kv warn">{{ today_errors }}</span></div>
+      <div class="k"><span class="kl">Otwarte jakościowe</span><span class="kv">{{ open_quality }}</span></div>
+      <div class="k"><span class="kl">Zniknęło z SAP</span><span class="kv {% if stale_count %}warn{% endif %}">{{ stale_count }}</span></div>
+    </div>
+  </div>
+</body>
+</html>

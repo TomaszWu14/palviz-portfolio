@@ -1,0 +1,290 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% load palviz_extras %}
+{% block title %}Symulacja lokalizacji — {{ loc.name }}{% endblock %}
+{% block nav_locations %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'ui/js/plotly.min.js' %}"></script>
+<style>
+.sim-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
+@media(max-width:900px){ .sim-layout { grid-template-columns:1fr; } }
+
+.fit-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: 10px;
+  font-size: 15px; font-weight: 800;
+  margin-bottom: 16px; width: 100%;
+}
+.fit-badge--ok  { background: var(--green-light); color: var(--green); border: 1px solid #6ee7b7; }
+.fit-badge--err { background: var(--red-light); color: var(--red); border: 1px solid #fca5a5; }
+
+.fit-row { display: flex; align-items: center; justify-content: space-between;
+           padding: 7px 0; border-bottom: 1px solid var(--gray-100); font-size: 13px; }
+.fit-row:last-child { border-bottom: none; }
+.fit-row__lbl { color: var(--gray-500); }
+.fit-row__val { font-weight: 700; }
+.fit-row__ok  { color: var(--green); }
+.fit-row__err { color: var(--red); }
+
+.loc-info { background: var(--gray-50); border-radius: 8px; padding: 12px; margin-bottom: 14px; }
+.loc-info__row { display: flex; justify-content: space-between; font-size: 12px;
+                 color: var(--gray-500); padding: 3px 0; }
+.loc-info__val { font-weight: 700; color: var(--gray-900); }
+.mode-toggle { display: flex; gap: 6px; margin-bottom: 14px; }
+.mode-toggle a {
+  flex: 1; text-align: center; padding: 8px 0; border-radius: 8px; font-size: 13px;
+  font-weight: 700; text-decoration: none; border: 2px solid var(--gray-200); color: var(--gray-500);
+  background: var(--gray-50);
+}
+.mode-toggle a.active { border-color: #1a56db; color: #1a56db; background: var(--blue-light); }
+.vol-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.vol-card { background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 8px;
+            padding: 10px 12px; text-align: center; }
+.vol-card__lbl { font-size: 10px; font-weight: 700; color: var(--gray-400); text-transform: uppercase;
+                 letter-spacing: .5px; margin-bottom: 4px; }
+.vol-card__val { font-size: 18px; font-weight: 800; color: var(--gray-900); }
+.vol-card__unit { font-size: 11px; color: var(--gray-500); }
+.vol-card--green .vol-card__val { color: var(--green); }
+.vol-card--blue  .vol-card__val { color: #1a56db; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_locations' %}">Lokalizacje</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Symulacja: {{ loc.name }}</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Symulacja dopasowania — {{ loc.name }}</div>
+    <div class="page-header__sub">Sprawdź czy paleta z kartonym mieści się w tym miejscu paletowym</div>
+  </div>
+</div>
+
+<div class="sim-layout">
+
+  <!-- ── Params panel ────────────────────────────────────────────── -->
+  <div>
+
+    <!-- Location summary -->
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-header" style="padding:10px 14px">
+        <span class="card-header__title" style="font-size:12px">Wymiary lokalizacji</span>
+      </div>
+      <div class="card-body" style="padding:12px 14px">
+        <div class="loc-info">
+          <div class="loc-info__row"><span>Szerokość (światło)</span><span class="loc-info__val">{{ loc.width_cm }} cm</span></div>
+          <div class="loc-info__row"><span>Głębokość</span><span class="loc-info__val">{{ loc.depth_cm }} cm</span></div>
+          <div class="loc-info__row"><span>Wysokość całkowita</span><span class="loc-info__val">{{ loc.total_height_cm }} cm</span></div>
+          <div class="loc-info__row"><span>− Wys. palety</span><span class="loc-info__val">{{ loc.pallet_height_cm }} cm</span></div>
+          <div class="loc-info__row"><span>− Margines manipulacji</span><span class="loc-info__val">{{ loc.manipulation_margin_cm }} cm</span></div>
+          <div class="loc-info__row" style="border-top:1px solid var(--gray-200);margin-top:6px;padding-top:6px">
+            <span><strong>Wys. użytkowa towaru</strong></span>
+            <span class="loc-info__val" style="color:#1a56db">{{ loc.usable_height_cm }} cm</span>
+          </div>
+        </div>
+        <a href="{% url 'ui:planner_location_edit' loc.pk %}" class="btn btn-ghost btn-sm" style="font-size:12px">
+          Edytuj wymiary lokalizacji
+        </a>
+      </div>
+    </div>
+
+    <!-- Carton params form -->
+    <div class="card">
+      <div class="card-header" style="padding:10px 14px">
+        <span class="card-header__title" style="font-size:12px">Karton do symulacji</span>
+      </div>
+      <div class="card-body" style="padding:12px 14px">
+        <form method="get" action="">
+          <div class="form-group" style="margin-bottom:12px">
+            <label for="{{ form.carton_from_db.id_for_label }}">{{ form.carton_from_db.label }}</label>
+            {{ form.carton_from_db }}
+          </div>
+
+          <div style="font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;
+                      border-top:1px solid var(--gray-100);padding-top:10px;margin-bottom:8px">
+            Lub wpisz ręcznie:
+          </div>
+
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label for="{{ form.carton_l.id_for_label }}">{{ form.carton_l.label }}</label>
+              {{ form.carton_l }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.carton_w.id_for_label }}">{{ form.carton_w.label }}</label>
+              {{ form.carton_w }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.carton_h.id_for_label }}">{{ form.carton_h.label }}</label>
+              {{ form.carton_h }}
+            </div>
+          </div>
+
+          <div class="form-grid-2" style="margin-top:8px">
+            <div class="form-group">
+              <label for="{{ form.unit_weight.id_for_label }}">{{ form.unit_weight.label }}</label>
+              {{ form.unit_weight }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.pcs_per_carton.id_for_label }}">{{ form.pcs_per_carton.label }}</label>
+              {{ form.pcs_per_carton }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.carton_tare.id_for_label }}">{{ form.carton_tare.label }}</label>
+              {{ form.carton_tare }}
+            </div>
+          </div>
+
+          <input type="hidden" name="with_pallet" value="{% if with_pallet %}1{% else %}0{% endif %}">
+          <button type="submit" class="btn btn-primary w-full" style="margin-top:14px">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14m-7-7 7 7-7 7"/>
+            </svg>
+            Sprawdź dopasowanie
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Result panel ────────────────────────────────────────────── -->
+  <div>
+
+    <!-- Mode toggle -->
+    <div class="mode-toggle">
+      <a href="?{% querystring with_pallet=1 %}" class="{% if with_pallet %}active{% endif %}">
+        {% icon "package" %} Z paletą
+      </a>
+      <a href="?{% querystring with_pallet=0 %}" class="{% if not with_pallet %}active{% endif %}">
+        {% icon "construction" %} Bez palety
+      </a>
+    </div>
+
+    {% if fig_json and fit %}
+
+    <!-- Volume cards -->
+    <div class="vol-cards">
+      <div class="vol-card">
+        <div class="vol-card__lbl">Obj. całkowita</div>
+        <div class="vol-card__val">{{ fit.total_vol }}</div>
+        <div class="vol-card__unit">m³</div>
+      </div>
+      <div class="vol-card vol-card--green">
+        <div class="vol-card__lbl">Obj. użytkowa</div>
+        <div class="vol-card__val">{{ fit.usable_vol }}</div>
+        <div class="vol-card__unit">m³</div>
+      </div>
+      <div class="vol-card vol-card--blue">
+        <div class="vol-card__lbl">Obj. dostępna{% if not with_pallet %} (bez pal.){% endif %}</div>
+        <div class="vol-card__val">{{ fit.avail_vol }}</div>
+        <div class="vol-card__unit">m³</div>
+      </div>
+    </div>
+
+    <!-- Fit verdict -->
+    {% if fit.fits_h and fit.fits_w and fit.fits_d %}
+    <div class="fit-badge fit-badge--ok">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+      {% if with_pallet %}Paleta z kartonem mieści się{% else %}Karton mieści się bez palety{% endif %}
+    </div>
+    {% else %}
+    <div class="fit-badge fit-badge--err">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      NIE MIEŚCI SIĘ — sprawdź wymiary
+    </div>
+    {% endif %}
+
+    <!-- Detailed checks -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-body" style="padding:12px 16px">
+        <div class="fit-row">
+          <span class="fit-row__lbl">Szerokość palety (80 cm) ≤ {{ loc.width_cm }} cm (światło)</span>
+          <span class="fit-row__val {% if fit.fits_w %}fit-row__ok{% else %}fit-row__err{% endif %}">
+            {% if fit.fits_w %}{% icon "check" %} OK{% else %}{% icon "x" %} Za wąskie{% endif %}
+          </span>
+        </div>
+        <div class="fit-row">
+          <span class="fit-row__lbl">Głębokość palety (120 cm) ≤ {{ loc.depth_cm }} cm (regał)</span>
+          <span class="fit-row__val {% if fit.fits_d %}fit-row__ok{% else %}fit-row__err{% endif %}">
+            {% if fit.fits_d %}{% icon "check" %} OK{% else %}{% icon "x" %} Za płytki{% endif %}
+          </span>
+        </div>
+        <div class="fit-row">
+          <span class="fit-row__lbl">Wys. dostępna: {{ fit.avail_h }} cm
+            {% if with_pallet %}({{ loc.usable_height_cm }} cm użytk.){% else %}(z paletą byłoby {{ loc.usable_height_cm }} cm){% endif %}
+          </span>
+          <span class="fit-row__val {% if fit.fits_h %}fit-row__ok{% else %}fit-row__err{% endif %}">
+            {% if fit.fits_h %}{% icon "check" %} Towar zmieści się{% else %}{% icon "x" %} Za niska{% endif %}
+          </span>
+        </div>
+        <div class="fit-row">
+          <span class="fit-row__lbl">Kartony / warstwa</span>
+          <span class="fit-row__val" style="color:var(--gray-700)">{{ fit.per_layer }} szt</span>
+        </div>
+        <div class="fit-row">
+          <span class="fit-row__lbl">Liczba warstw (mieści się w wys.)</span>
+          <span class="fit-row__val" style="color:var(--gray-700)">{{ fit.n_layers }}</span>
+        </div>
+        <div class="fit-row">
+          <span class="fit-row__lbl">Łącznie kartonów w lokalizacji</span>
+          <span class="fit-row__val" style="color:#1a56db">{{ fit.total_cartons }} szt</span>
+        </div>
+        {% if fit.szt_total %}
+        <div class="fit-row" style="background:#f0fdf4;border-radius:6px;padding:8px 10px;margin-top:4px">
+          <span class="fit-row__lbl" style="font-weight:700;color:var(--green)">
+            Ilość szt w lokalizacji ({{ fit.total_cartons }} kart × {{ fit.pcs_per_carton }} szt/kart)
+          </span>
+          <span class="fit-row__val" style="color:var(--green);font-size:16px">{{ fit.szt_total }} szt</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 3D visualization -->
+    <div class="card">
+      <div style="padding:10px 14px;font-size:12px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--gray-100)">
+        Widok 3D — przekrój miejsca paletowego
+      </div>
+      <div id="plot-location"></div>
+    </div>
+
+    <script>
+    (function() {
+      var fig = {{ fig_json|safe }};
+      Plotly.react('plot-location', fig.data, fig.layout, {responsive: true, displayModeBar: false});
+      {% if fig_2d_json %}
+      var fig2d = {{ fig_2d_json|safe }};
+      Plotly.react('plot-location-2d', fig2d.data, fig2d.layout, {responsive: true, displayModeBar: false});
+      {% endif %}
+    })();
+    </script>
+
+    {% if fig_2d_json %}
+    <div class="card" style="margin-top:14px">
+      <div style="padding:10px 14px;font-size:12px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--gray-100)">
+        Rzut z przodu (szerokość × wysokość)
+      </div>
+      <div id="plot-location-2d"></div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="card" style="display:flex;align-items:center;justify-content:center;height:400px;border:2px dashed var(--gray-200)">
+      <div style="text-align:center;color:var(--gray-400)">
+        <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2" style="margin:0 auto 12px;display:block">
+          <rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8l5 3-5 3"/>
+        </svg>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Wybierz karton i kliknij „Sprawdź"</div>
+        <div style="font-size:13px">Zostanie wygenerowany widok 3D lokalizacji z paletą i kartonami</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

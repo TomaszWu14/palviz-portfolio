@@ -1,0 +1,86 @@
+# Widoczność UI per rola (bez nadpisań UserModuleAccess, pełny wariant platformy).
+# Źródło: core/platform_modules.py (MODULES, modules_for, nav_grouped), core/context_processors.py
+# (flagi), szablony. Test widoczności (etap 4) loguje każdą rolę i sprawdza te elementy przez
+# data-testid. „?” = do decyzji (tests/PLAN-ETAP-0.md), B-xxx = BUGS-FOUND.md.
+wersja: 1
+skroty: {SU: superuser, Adm: Administratorzy, MD: Master Data, Tr: Transport, KHU: Kontrola HU,
+  Lid: Lider kontroli, Pod: Podgląd, Kli: Obsługa klienta, Mag: Magazyn, Opt: Optymalizacja kartonów}
+
+moduly:   # klucz → [sekcja nawigacji, role]; SU zawsze; nadpisanie per użytkownik wygrywa z rolą
+  data_center: [Dane, [Adm, MD]]
+  paletyzacja: [Operacje, [Adm, MD, Tr]]
+  transport: [Transport, [Adm, Tr]]
+  magazyn: [Magazyn, [Adm, MD, Tr, Pod]]
+  kontrola_hu: [Operacje, [Adm, KHU, Lid]]
+  wydruk_hu: [Operacje, [Adm, Mag]]
+  zadania: [bezpośrednio (licznik), [Adm, MD]]
+  klienci: [Dane, [Adm, MD, Tr, Kli], "ukryty, gdy rola ma data_center (dedup)"]
+  zaria: [Dane, [Adm, MD, Tr, KHU, Lid, Pod, Mag], "czat działa dopiero z ZariaModelRoleAccess"]
+  wysylka_ukraina: [Transport, [Adm, MD, Tr]]
+  phv: [Magazyn, [Adm, MD, Mag, KHU, Lid]]
+  carton_opt: [Operacje, [Adm, MD, Opt]]
+
+role:
+  superuser: &adm
+    po_zalogowaniu: hub
+    hub: [paletyzacja, kontrola_hu, wydruk_hu, carton_opt, magazyn, phv, transport, wysylka_ukraina, data_center, zaria, zadania]
+    nawigacja: {Operacje: [paletyzacja, kontrola_hu, wydruk_hu, carton_opt], Magazyn: [magazyn, phv],
+                Transport: [transport, wysylka_ukraina], Dane: [data_center, zaria], bezposrednio: [zadania]}
+    menu_uzytkownika: [Mój profil, Panel administracyjny, Użytkownicy, Macierz login × moduł, Macierz ról, "Django Admin (tylko is_staff, B-005)", Wyloguj]
+    przyciski_zapisu_danych_podstawowych: true
+    kontrola_hu_lider: [Panel lidera, Raport GLS, Symulator skanera, KPI kontrolerów, Wyjechało bez kontroli]
+  Administratorzy: *adm
+  Master Data:
+    po_zalogowaniu: hub
+    hub: [paletyzacja, carton_opt, magazyn, phv, wysylka_ukraina, data_center, zaria, zadania]
+    nawigacja: {Operacje: [paletyzacja, carton_opt], Magazyn: [magazyn, phv], Transport: [wysylka_ukraina],
+                Dane: [data_center, zaria], bezposrednio: [zadania]}
+    menu_uzytkownika: [Mój profil, Wyloguj]
+    przyciski_zapisu_danych_podstawowych: true
+  Transport:
+    po_zalogowaniu: hub
+    hub: [paletyzacja, magazyn, transport, wysylka_ukraina, klienci, zaria]
+    nawigacja: {Operacje: [paletyzacja], Magazyn: [magazyn], Transport: [transport, wysylka_ukraina], Dane: [klienci, zaria]}
+    przyciski_zapisu_danych_podstawowych: false
+  Kontrola HU:
+    po_zalogowaniu: "skaner — hu_my_shift"
+    nawigacja: {Operacje: [kontrola_hu], Magazyn: [phv], Dane: [zaria]}
+    skaner_zakladki: [Skan, Status, MATinfo]
+    przyciski_zapisu_danych_podstawowych: false
+  Lider kontroli:
+    po_zalogowaniu: "hub kontroli — hu_control_hub"
+    nawigacja: {Operacje: [kontrola_hu], Magazyn: [phv], Dane: [zaria]}
+    skaner_zakladki: [Skan, Status, MATinfo]
+    kontrola_hu_lider: [Panel lidera, Raport GLS, Symulator skanera, KPI kontrolerów, Wyjechało bez kontroli]
+  Podgląd:
+    po_zalogowaniu: hub
+    hub: [magazyn, zaria]
+    nawigacja: {Magazyn: [magazyn], Dane: [zaria]}
+    przyciski_zapisu_danych_podstawowych: false
+  Obsługa klienta:
+    po_zalogowaniu: "bezpośrednio Baza klientów (jeden moduł)"
+    nawigacja: {Dane: [klienci]}
+    strony_tylko_login: "? (P-2 — dziś widzi katalog, instrukcje, lokalizacje)"
+  Magazyn:
+    po_zalogowaniu: hub
+    hub: [wydruk_hu, phv, zaria]
+    nawigacja: {Operacje: [wydruk_hu], Magazyn: [phv], Dane: [zaria]}
+  Optymalizacja kartonów:
+    po_zalogowaniu: "bezpośrednio Optymalizacja kartonów (jeden moduł)"
+    nawigacja: {Operacje: [carton_opt]}
+  bez_roli:
+    po_zalogowaniu: "wyszukiwarka magazynowa (0 modułów)"
+    nawigacja: {}
+
+elementy_warunkowe:   # flaga → elementy (plik:linia) — test sprawdza obecność/brak per rola
+  can_write_products: {role: [SU, Adm, MD], elementy: [
+    "planner/excel_templates.html — formularze „Importuj” (7 kart; „⬇ Szablon” dla wszystkich)",
+    "warehouse_variants/list.html — Usuń wariant, Wariant z modelu", "bay_templates.html — Nowy/Edytuj/Usuń szablon",
+    "ewm_detect.html — Zapisz", "warehouse_map/index.html — Zadania magazynowe EWM", "_flow_player.html — Import zadań EWM"]}
+  can_manage_users: {role: [SU, Adm], elementy: ["base.html — Panel administracyjny, Użytkownicy, Macierze", "zaria/home.html — katalog modeli"]}
+  role_is_control: {role: [SU, Adm, KHU, Lid], elementy: ["scanner/base.html — pasek Skan/Status"]}
+  can_open_matinfo: {role: [SU, Adm, MD, Mag, KHU, Lid], elementy: ["scanner/base.html — zakładka MATinfo (moduł phv + nadpisania, B-008 naprawione)"]}
+  is_leader: {role: [SU, Adm, Lid], elementy: ["control/hub.html — narzędzia lidera", "hu_detail.html — PILNA, Otwórz ponownie"]}
+  can_edit_rules: {role: [SU, Adm, MD], elementy: ["customer_form.html — reguły pakowania (B-007 naprawione: SU, Adm, MD)"]}
+  can_edit_threshold: {role: [SU, Adm], elementy: ["carton_opt/dashboard.html — próg wypełnienia"]}
+  can_compare: {role: "z bazy (ZariaRolePermission)", elementy: ["zaria/home.html — Porównaj dwa modele"]}

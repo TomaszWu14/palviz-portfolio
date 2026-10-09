@@ -1,0 +1,240 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Podgląd stocku — {{ app_name }}{% endblock %}
+{% block nav_stockwh %}topnav__link--active{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:planner_stock' %}">Stock magazynowy</a> <span>· Podgląd</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#0f766e;--pcbg:#f0fdfa">
+    <div class="panel-head__chip">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"/><path d="M3 7l9 4 9-4"/><path d="M12 11v10"/></svg>
+    </div>
+    <div>
+      <div class="page-header__title">Podgląd stocku</div>
+      <div class="page-header__sub">{{ page_obj.paginator.count }} pozycji · pickHU, REF, LOT, ilość, lokalizacja</div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:planner_stock' %}" class="btn btn-secondary">← Stock magazynowy</a>
+  </div>
+</div>
+
+{# Przełącznik trybów: pozycje stocku / widok HU (palety wszystkich dostaw) #}
+<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+  <a href="?" class="btn {% if mode == 'items' %}btn-primary{% else %}btn-secondary{% endif %}">Pozycje stocku</a>
+  <a href="?view=hu" class="btn {% if mode == 'hu' %}btn-primary{% else %}btn-secondary{% endif %}">Widok HU (palety)</a>
+  {% if mode == 'hu' %}
+  <span style="flex:1"></span>
+  <span style="align-self:center;font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase">Kompletacja (picking):</span>
+  <a href="?view=hu&tab=open{% if qs_no_tab %}&{{ qs_no_tab }}{% endif %}" class="btn {% if tab == 'open' %}btn-primary{% else %}btn-ghost{% endif %}">Nieskompletowane ({{ n_open }})</a>
+  <a href="?view=hu&tab=completed{% if qs_no_tab %}&{{ qs_no_tab }}{% endif %}" class="btn {% if tab == 'completed' %}btn-primary{% else %}btn-ghost{% endif %}">Skompletowane ({{ n_completed }})</a>
+  {% endif %}
+</div>
+
+{% if mode == 'hu' and ctrl_counts %}
+{# Osobny wymiar: status KONTROLI HU (nie mylić z kompletacją-pickingiem powyżej) #}
+<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center">
+  <span style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase">Kontrola:</span>
+  <a href="?view=hu{% if qs_no_status %}&{{ qs_no_status }}{% endif %}"
+     class="btn btn-sm {% if not status %}btn-primary{% else %}btn-ghost{% endif %}">Wszystkie</a>
+  {% for key, label, n in ctrl_counts %}
+  <a href="?view=hu&status={{ key }}{% if qs_no_status %}&{{ qs_no_status }}{% endif %}"
+     class="btn btn-sm {% if status == key %}btn-primary{% else %}btn-ghost{% endif %}">{{ label }} ({{ n }})</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Filters -->
+<form method="get" class="card" style="padding:12px 16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+  {% if mode == 'hu' %}<input type="hidden" name="view" value="hu">
+  {% if tab %}<input type="hidden" name="tab" value="{{ tab }}">{% endif %}
+  {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}{% endif %}
+  <div style="flex:2;min-width:220px">
+    <label class="text-sm text-muted">Szukaj (REF, opis, LOT, pickHU, lokalizacja)</label>
+    <input aria-label="Szukaj (REF, opis, LOT, pickHU, lokalizacja)" type="text" name="q" value="{{ q }}" class="form-control" placeholder="np. 48301 / B0-01-100A / LOT123">
+  </div>
+  <div style="flex:1;min-width:160px">
+    <label class="text-sm text-muted">Kontener</label>
+    <select aria-label="Kontener" name="container" class="form-control">
+      <option value="">— wszystkie —</option>
+      {% for c in containers %}<option value="{{ c.id }}" {% if container == c.id|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+  </div>
+  <div style="flex:1;min-width:140px">
+    <label class="text-sm text-muted">Typ magazynu</label>
+    <select aria-label="Typ magazynu" name="type" class="form-control">
+      <option value="">— wszystkie —</option>
+      {% for t in types %}<option value="{{ t }}" {% if wtype == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+    </select>
+  </div>
+  <div style="flex:1;min-width:140px">
+    <label class="text-sm text-muted">Status</label>
+    <select aria-label="Status" name="status" class="form-control">
+      <option value="">— wszystkie —</option>
+      {% for val, lbl in statuses %}<option value="{{ val }}" {% if status == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+    </select>
+  </div>
+  {% if mode == 'hu' %}
+  <div style="flex:1;min-width:150px">
+    <label class="text-sm text-muted">Grupuj po</label>
+    <select aria-label="Grupuj po" name="group" class="form-control">
+      <option value="">— bez grupowania —</option>
+      <option value="date" {% if group == 'date' %}selected{% endif %}>Data utworzenia dostawy</option>
+      <option value="week" {% if group == 'week' %}selected{% endif %}>Tydzień</option>
+      <option value="month" {% if group == 'month' %}selected{% endif %}>Miesiąc</option>
+      <option value="customer" {% if group == 'customer' %}selected{% endif %}>Klient</option>
+      <option value="zone" {% if group == 'zone' %}selected{% endif %}>Strefa (typ magazynu)</option>
+      <option value="vip" {% if group == 'vip' %}selected{% endif %}>VIP</option>
+      <option value="recipient" {% if group == 'recipient' %}selected{% endif %}>Odbiorca</option>
+    </select>
+  </div>
+  {% endif %}
+  <button type="submit" class="btn btn-primary">Filtruj</button>
+  {% if q or container or wtype or status or group %}<a href="{% url 'ui:planner_stock_contents' %}{% if mode == 'hu' %}?view=hu{% endif %}" class="btn btn-ghost">Wyczyść</a>{% endif %}
+</form>
+
+{% if mode == 'hu' and group_rows %}
+{# Widok zgrupowany: wiersz = grupa, klik rozwija (ten sam widok z filtrem grupy) #}
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Grupa</th><th style="text-align:right">Palet (HU)</th><th></th></tr></thead>
+      <tbody>
+      {% for g in group_rows %}
+      <tr>
+        <td><strong>{% if group == 'vip' %}{% if g.value %}{% icon "star" %} VIP{% else %}Standard{% endif %}{% else %}{{ g.value|default:"— (brak)" }}{% endif %}</strong>
+          {% if g.incomplete %}
+          <span style="margin-left:8px;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:#fef3c7;color:#b45309">NIEKOMPLETNA</span>
+          {% if g.eta_note %}<div style="font-size:11px;color:#b45309;margin-top:2px">⏱ {{ g.eta_note }} <span style="color:var(--gray-500)">({{ g.eta_by }}{% if g.eta_at %}, {{ g.eta_at|date:"H:i" }}{% endif %})</span></div>{% endif %}
+          {% endif %}
+        </td>
+        <td style="text-align:right">{{ g.n }}</td>
+        <td style="text-align:right">
+          {% if group == 'recipient' and g.shipment_id %}
+          <form method="post" action="{% url 'ui:hu_call_batch' %}" style="display:inline">{% csrf_token %}
+            <input type="hidden" name="shipment_id" value="{{ g.shipment_id }}">
+            <button class="btn btn-ghost btn--sm" type="submit">Wywołaj gotowe</button>
+          </form>
+          {% if g.incomplete %}
+          <form method="post" action="{% url 'ui:hu_escalate' %}" style="display:inline">{% csrf_token %}
+            <input type="hidden" name="shipment_id" value="{{ g.shipment_id }}">
+            <button class="btn btn-ghost btn--sm" type="submit" style="color:#b45309" title="Eskaluj niekompletną przesyłkę do lidera pickingu">{% icon "triangle-alert" %} Eskaluj</button>
+          </form>
+          <form method="post" action="{% url 'ui:shipment_eta_note' g.shipment_id %}" style="display:inline-flex;gap:4px">{% csrf_token %}
+            <input name="note" value="{{ g.eta_note }}" placeholder="ETA / status pickingu" maxlength="200" style="font-size:11px;width:150px">
+            <button class="btn btn-ghost btn--sm" type="submit">{% icon "save" label="Zapisz" cls="icon--em" %}</button>
+          </form>
+          {% endif %}
+          {% endif %}
+          {% if g.value is not None and g.param %}<a class="btn btn-ghost" href="?view=hu{% if tab %}&tab={{ tab }}{% endif %}&{{ g.param }}={% if group == 'vip' %}{{ g.value|yesno:'1,0' }}{% else %}{{ g.value|urlencode }}{% endif %}">Pokaż →</a>{% endif %}
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="3"><div class="empty-state" style="padding:24px"><div class="empty-state__desc">Brak danych do zgrupowania.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% elif mode == 'hu' %}
+{# Checkboxy „zaznacz wiele → wywołaj": formularz poza tabelą (wiersze mają własne formy), checkboxy wiążą się atrybutem form="callsel". #}
+<form id="callsel" method="post" action="{% url 'ui:hu_call_selected' %}" style="margin-bottom:8px">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-secondary btn-sm">{% icon "megaphone" %} Wywołaj zaznaczone</button>
+</form>
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr>
+        <th style="width:24px"><input type="checkbox" onclick="document.querySelectorAll('input[name=hu_ids]').forEach(c=>c.checked=this.checked)" title="Zaznacz wszystkie"></th>
+        <th><a href="?view=hu&sort=priority{% if qs_no_sort %}&{{ qs_no_sort }}{% endif %}" style="color:inherit" title="Pilne najpierw (wywołane + ranga klienta)">pickHU {% if sort == 'priority' %}{% icon "flame" %}{% endif %}</a></th>
+        <th><a href="?view=hu&sort={% if sort == '-created' %}created{% else %}-created{% endif %}{% if qs_no_sort %}&{{ qs_no_sort }}{% endif %}" style="color:inherit">Data utworzenia {% if sort == 'created' %}↑{% else %}↓{% endif %}</a></th>
+        <th><a href="?view=hu&sort=vip{% if qs_no_sort %}&{{ qs_no_sort }}{% endif %}" style="color:inherit">Klient {% if sort == 'vip' %}{% icon "star" %}{% endif %}</a></th>
+        <th>WZ</th><th>Dostawa</th><th>Strefa</th><th>Lokalizacja</th>
+        <th style="text-align:right">Waga</th><th style="text-align:right">Objętość</th>
+        <th>Kompletacja</th><th>Status kontroli</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for h in page_obj %}
+      <tr>
+        <td>{% if h.is_completed and not h.called_at %}<input type="checkbox" name="hu_ids" value="{{ h.pk }}" form="callsel">{% endif %}</td>
+        <td><a href="{% url 'ui:hu_control_detail' h.pk %}"><strong>{{ h.code|default:h.seq }}</strong></a></td>
+        <td class="text-sm">{{ h.shipment.outbound_created_date|date:"d.m.Y"|default:"—" }}</td>
+        <td class="text-sm">{% if h.shipment.customer.is_vip %}<span title="VIP">{% icon "star" label="VIP" cls="icon--em" %}</span> {% endif %}{{ h.shipment.customer.name|default:h.recipient_type|default:"—" }}</td>
+        <td class="text-sm">{{ h.shipment.wz_number|default:"—" }}</td>
+        <td class="text-sm text-muted">{{ h.shipment.name }}</td>
+        <td class="text-sm">{{ h.warehouse_type|default:"—" }}</td>
+        <td><strong>{{ h.location|default:"—" }}</strong></td>
+        <td style="text-align:right" class="text-sm">{% if h.metric.weight_kg %}{% if h.metric.estimated %}~{% endif %}{{ h.metric.weight_kg|floatformat:1 }} kg{% else %}—{% endif %}</td>
+        <td style="text-align:right" class="text-sm">{% if h.metric.volume_m3 %}{% if h.metric.estimated %}~{% endif %}{{ h.metric.volume_m3|floatformat:3 }} m³{% else %}—{% endif %}</td>
+        <td>{% if h.is_completed %}<span class="badge badge-green">Skompletowana</span>{% else %}<span class="badge badge-gray">W kompletacji</span>{% endif %}</td>
+        <td>
+          {% if h.status == 'ok' %}<span class="badge badge-green">Zgodny</span>
+          {% elif h.status == 'to_recheck' %}<span class="badge" style="background:var(--red-light);color:var(--red)">Do rekontroli</span>
+          {% elif h.status == 'in_control' %}<span class="badge" style="background:#fef9c3;color:#854d0e">W kontroli</span>
+          {% elif h.status == 'escaped' %}<span class="badge" style="background:var(--red-light);color:var(--red)">Wyjechało</span>
+          {% else %}<span class="badge badge-gray">Zaplanowany</span>{% endif %}
+        </td>
+        <td>
+          {% if h.is_completed and not h.called_at %}
+          <form method="post" action="{% url 'ui:hu_call' h.pk %}" style="display:inline">{% csrf_token %}
+            <button class="btn btn--sm btn--ok" type="submit">Wywołaj</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="13"><div class="empty-state" style="padding:24px"><div class="empty-state__title">Brak HU</div><div class="empty-state__desc">Zmień filtry lub zaimportuj dane.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<!-- Results -->
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr>
+        <th>pickHU</th><th>REF</th><th>Opis</th><th>LOT</th><th>Ważność</th>
+        <th style="text-align:right">Ilość</th><th>Lokalizacja</th><th>Typ</th><th>Kontener</th><th>Status</th>
+      </tr></thead>
+      <tbody>
+      {% for it in page_obj %}
+      <tr>
+        <td><strong>{{ it.hu.code|default:it.hu.seq }}</strong></td>
+        <td>{{ it.ref_code }}</td>
+        <td class="text-sm">{{ it.description|default:"—" }}</td>
+        <td class="text-sm">{{ it.lot|default:"—" }}</td>
+        <td class="text-sm {% if it.expiry %}{% endif %}">{{ it.expiry|date:"d.m.Y"|default:"—" }}</td>
+        <td style="text-align:right">{{ it.base_qty|floatformat:"-2" }} {{ it.base_unit }}{% if it.alt_qty %}<div class="text-sm text-muted">{{ it.alt_qty|floatformat:"-2" }} {{ it.alt_unit }}</div>{% endif %}</td>
+        <td><strong>{{ it.hu.location|default:"—" }}</strong></td>
+        <td class="text-sm">{{ it.hu.warehouse_type|default:"—" }}</td>
+        <td class="text-sm text-muted">{{ it.hu.shipment.name }}</td>
+        <td>
+          {% if it.hu.status == 'ok' %}<span class="badge badge-green">Zgodny</span>
+          {% elif it.hu.status == 'to_recheck' %}<span class="badge" style="background:var(--red-light);color:var(--red)">Do rekontroli</span>
+          {% elif it.hu.status == 'in_control' %}<span class="badge" style="background:#fef9c3;color:#854d0e">W kontroli</span>
+          {% else %}<span class="badge badge-gray">Zaplanowany</span>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="10"><div class="empty-state" style="padding:24px"><div class="empty-state__title">Brak pozycji</div><div class="empty-state__desc">Zmień filtry lub zaimportuj stan na zakładce <a href="{% url 'ui:planner_stock' %}">Stock magazynowy</a>.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if page_obj.has_other_pages %}
+<div class="pagination" style="margin-top:16px">
+  {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if qs %}&{{ qs }}{% endif %}">‹</a>{% endif %}
+  {% for num in page_obj.paginator.page_range %}
+    {% if page_obj.number == num %}<span class="current">{{ num }}</span>
+    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}<a href="?page={{ num }}{% if qs %}&{{ qs }}{% endif %}">{{ num }}</a>{% endif %}
+  {% endfor %}
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if qs %}&{{ qs }}{% endif %}">›</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

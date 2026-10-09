@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Potwierdzenie odbioru — {{ shipment.name }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background:#f1f5f9; margin:0; color:#0f172a; }
+    .wrap { max-width:480px; margin:24px auto; background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 6px 24px rgba(2,6,23,.1); }
+    .head { background:#0369a1; color:#fff; padding:16px 20px; }
+    .body { padding:20px; }
+    .summary { background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:14px;margin-bottom:16px; }
+    .btns { display:flex; gap:10px; }
+    button { flex:1; padding:18px; border:0; border-radius:10px; font-size:17px; font-weight:700; color:#fff; cursor:pointer; }
+    .yes { background:#16a34a; } .no { background:#dc2626; }
+    .ok { background:#dcfce7; color:#166534; padding:14px; border-radius:10px; font-weight:600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><div style="font-weight:800;font-size:18px">Potwierdzenie odbioru</div><div style="opacity:.9">{{ shipment.name }}</div></div>
+    <div class="body">
+      {% if saved %}
+        <div class="ok">{% if da.pickup_status == 'confirmed' %}Dziękujemy! Odbiór potwierdzony.{% else %}Zapisano: odbiór NIE potwierdzony.{% endif %}</div>
+      {% else %}
+      <div class="summary">
+        <div style="display:flex;justify-content:space-between;gap:8px">
+          <div><div style="font-size:11px;color:#64748b;font-weight:700">ADRES ZAŁADUNKU</div>
+            <strong>{{ pickup_address|default:"—" }}</strong></div>
+          <div style="text-align:right"><div style="font-size:11px;color:#64748b;font-weight:700">RAMPA</div>
+            <strong style="font-size:20px;color:#0369a1">{{ ramp|default:"—" }}</strong></div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:18px">
+          <div><div style="font-size:11px;color:#64748b;font-weight:700">PALETY</div><strong style="font-size:18px">{{ n_pallets }}</strong></div>
+          {% if da.driver_plate %}<div><div style="font-size:11px;color:#64748b;font-weight:700">AUTO</div><strong>{{ da.driver_plate }}</strong></div>{% endif %}
+        </div>
+        <div style="margin-top:10px"><div style="font-size:11px;color:#64748b;font-weight:700">ADRES ODBIORU</div>
+          <strong>{{ shipment.recipient_name }}{% if shipment.recipient_name %} · {% endif %}{{ delivery_address|default:"—" }}</strong></div>
+        {% if site.leaders %}<div style="margin-top:10px"><div style="font-size:11px;color:#64748b;font-weight:700">LIDERZY MAGAZYNU</div>
+          <strong>{{ site.leaders }}</strong></div>{% endif %}
+      </div>
+      {% if site.site_map %}<a href="{{ site.site_map.url }}" target="_blank" rel="noopener"><img src="{{ site.site_map.url }}" alt="Mapka obiektu" style="width:100%;border-radius:10px;margin-bottom:12px"></a>{% endif %}
+      {% if site.instructions %}<div class="summary" style="white-space:pre-line"><div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:4px">INSTRUKCJA PORUSZANIA SIĘ NA OBIEKCIE</div>{{ site.instructions }}</div>{% endif %}
+      <p style="font-size:15px;color:#334155">Czy potwierdzasz odbiór przesyłki?</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="btns">
+          <button class="yes" name="answer" value="confirmed" type="submit">✓ Potwierdzam</button>
+          <button class="no" name="answer" value="declined" type="submit"
+                  onclick="return confirm('Na pewno NIE odbierzesz przesyłki? Planista dostanie powiadomienie.')">✕ Nie odbiorę</button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

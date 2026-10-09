@@ -1,0 +1,77 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Miejsca składowania — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><span>Magazyn</span> › <span>Miejsca składowania</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#0891b2;--pcbg:#ecfeff">
+    <div class="panel-head__chip">{% icon "archive" cls="icon--em" %}</div>
+    <div>
+      <div class="page-header__title">Miejsca puste i zablokowane</div>
+      <div class="page-header__sub">
+        {% if snapshot %}Dane z importu: {{ snapshot.uploaded_at|date:"Y-m-d H:i" }}{% else %}Brak snapshotu magazynu — wgraj eksport SAP WMS w mapie magazynu.{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if snapshot %}
+<form method="get" class="card" style="display:flex;gap:16px;flex-wrap:wrap;align-items:end">
+  <div class="form-group" style="margin:0">
+    <label>Typ magazynu</label>
+    <select aria-label="Typ magazynu" name="t" onchange="this.form.submit()">
+      <option value="all" {% if f_type == "all" %}selected{% endif %}>Wszystkie ({{ counts.t_all }})</option>
+      <option value="0052" {% if f_type == "0052" %}selected{% endif %}>0052 — picking ({{ counts.t_0052 }})</option>
+      <option value="0010" {% if f_type == "0010" %}selected{% endif %}>0010+0011 — zapas ({{ counts.t_0010 }})</option>
+      <option value="other" {% if f_type == "other" %}selected{% endif %}>Pozostałe ({{ counts.t_other }})</option>
+    </select>
+  </div>
+  <div class="form-group" style="margin:0">
+    <label>Rozmiar miejsca</label>
+    <select aria-label="Rozmiar miejsca" name="s" onchange="this.form.submit()">
+      <option value="all" {% if f_size == "all" %}selected{% endif %}>Wszystkie ({{ counts.s_all }})</option>
+      <option value="full" {% if f_size == "full" %}selected{% endif %}>Pełne ({{ counts.s_full }})</option>
+      <option value="half" {% if f_size == "half" %}selected{% endif %}>Połówka ({{ counts.s_half }})</option>
+    </select>
+  </div>
+  <div class="form-group" style="margin:0">
+    <label>Status</label>
+    <select aria-label="Status" name="st" onchange="this.form.submit()">
+      <option value="both" {% if f_status == "both" %}selected{% endif %}>Puste + zablokowane ({{ counts.st_both }})</option>
+      <option value="empty" {% if f_status == "empty" %}selected{% endif %}>Tylko puste ({{ counts.st_empty }})</option>
+      <option value="blocked" {% if f_status == "blocked" %}selected{% endif %}>Tylko zablokowane ({{ counts.st_blocked }})</option>
+    </select>
+  </div>
+  <noscript><button class="btn btn-secondary" type="submit">Filtruj</button></noscript>
+</form>
+
+<div class="card" style="padding:0">
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Lokalizacja</th><th>Regał</th><th>Typ</th><th>Rozmiar</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+    <tr>
+      <td style="font-family:monospace;font-weight:700">{{ r.location_code }}</td>
+      <td>{{ r.stack }}{% if r.aisle %} <span style="color:var(--gray-400)">(aleja {{ r.aisle }})</span>{% endif %}</td>
+      <td>{{ r.warehouse_type|default:"—" }}</td>
+      <td>{% if "-" in r.col_code %}<span class="badge badge-gray">połówka</span>{% else %}pełne{% endif %}</td>
+      <td>
+        {% if r.blocked_pick or r.blocked_put %}
+        <span class="badge badge-red">zablokowane{% if r.blocked_pick %} · wyd.{% endif %}{% if r.blocked_put %} · um.{% endif %}</span>
+        {% endif %}
+        {% if r.is_empty %}<span class="badge badge-green">puste</span>{% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5"><div class="empty-state" style="padding:24px">
+      <div class="empty-state__title">Brak miejsc dla wybranych filtrów</div></div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% if rows|length == shown_cap %}
+<div class="badge badge-red" style="margin-top:8px">Pokazano pierwsze {{ shown_cap }} — zawęź filtry.</div>
+{% endif %}
+{% endif %}
+{% endblock %}

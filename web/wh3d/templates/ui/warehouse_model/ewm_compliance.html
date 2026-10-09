@@ -1,0 +1,71 @@
+{% extends "ui/base.html" %}
+{% block title %}Zgodność z EWM — {{ wm.name }} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .codes { font-family: var(--font-mono, monospace); font-size: 11px; line-height: 1.7; color: var(--gray-700); }
+  details summary { cursor: pointer; font-size: 12px; color: var(--blue-mid); }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_model_list' %}">Modele magazynu</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:warehouse_model_view' wm.pk %}">{{ wm.name }}</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Zgodność z EWM</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Zgodność z EWM — {{ wm.name }}</div>
+    <div class="page-header__sub">Kody generowane z planu (szablony + numeracja + wyjątki) porównane z masterem lokalizacji{% if batch %} „{{ batch.name }}”{% endif %}</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="?format=xlsx" class="btn btn-secondary">Pobierz XLSX</a>
+    <a href="{% url 'ui:warehouse_model_detect' wm.pk %}" class="btn btn-secondary">Wykryj z EWM</a>
+    <a href="{% url 'ui:warehouse_model_view' wm.pk %}" class="btn btn-ghost">Wróć do modelu</a>
+  </div>
+</div>
+
+{% if not batch %}<div class="alert alert-warning" style="margin-bottom:16px">{{ no_master }}</div>{% endif %}
+
+<div class="stats-grid">
+  <div class="stat-card"><div><div class="stat-value">{{ report.summary.pct }}%</div><div class="stat-label">zgodność kodów przejść na planie</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ report.summary.ok }} / {{ report.summary.aisles }}</div><div class="stat-label">przejść zgodnych</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ report.summary.plan }}</div><div class="stat-label">miejsc na planie</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ report.summary.ewm }}</div><div class="stat-label">kodów w EWM (strefy modelu)</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ report.summary.ewm_outside }}</div><div class="stat-label">kodów EWM poza planem ({{ report.summary.outside_aisles }} przejść)</div></div></div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Przejście</th><th>Status</th><th>Na planie</th><th>W EWM</th><th>Zgodne</th><th>%</th><th>Rozbieżności</th></tr></thead>
+      <tbody>
+        {% for a in report.aisles %}
+        <tr>
+          <td class="font-semibold">{{ a.zone }}-{{ a.aisle }}</td>
+          <td><span class="badge {{ a.badge }}">{{ a.label }}</span></td>
+          <td>{{ a.plan }}</td>
+          <td>{{ a.ewm }}</td>
+          <td>{{ a.matched }}</td>
+          <td>{{ a.pct }}</td>
+          <td>
+            {% if a.plan_only %}<details><summary>na planie, brak w EWM ({{ a.plan_only|length }})</summary>
+              <div class="codes">{{ a.plan_only|slice:":100"|join:" · " }}{% if a.plan_only|length > limit %} … (pełna lista w XLSX){% endif %}</div></details>{% endif %}
+            {% if a.ewm_only %}<details><summary>w EWM, brak na planie ({{ a.ewm_only|length }})</summary>
+              <div class="codes">{{ a.ewm_only|slice:":100"|join:" · " }}{% if a.ewm_only|length > limit %} … (pełna lista w XLSX){% endif %}</div></details>{% endif %}
+            {% if a.duplicates %}<details><summary>duplikaty ({{ a.duplicates|length }})</summary>
+              <div class="codes">{{ a.duplicates|slice:":100"|join:" · " }}{% if a.duplicates|length > limit %} … (pełna lista w XLSX){% endif %}</div></details>{% endif %}
+            {% if a.status == "ok" %}<span class="text-muted text-sm">—</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

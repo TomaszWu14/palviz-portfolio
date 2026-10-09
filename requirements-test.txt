@@ -1,0 +1,14 @@
+# Zależności TESTÓW (CI + lokalnie). Instalowane przez ci.yml i przez requirements-dev.txt.
+# Nie trafiają do obrazu produkcyjnego (Dockerfile instaluje tylko requirements.txt).
+-r requirements.txt
+hypothesis==6.168.3        # property-based testing (packing invariants)
+tblib==3.2.2               # tracebacki z manage.py test --parallel
+factory_boy==3.3.3         # fabryki danych (web/testkit/factories.py)
+time-machine==3.5.1       # zamrażanie czasu, Europe/Warsaw (web/testkit/clock.py)
+PyYAML==6.0.3              # tests/permissions.yaml, tests/ui-permissions.yaml
+coverage==7.16.2         # pomiar pokrycia (make test-full)
+pytest==9.1.1            # alternatywny runner (CI: manage.py test)
+pytest-django==4.14.0       # Django fixtures/db for pytest
+pytest-env==1.7.1          # env Django dla pytest (pyproject.toml)
+# Blokada sieci: własna, web/testkit/net.py (stdlib) — pytest-socket działa tylko pod pytest,
+# a CI uruchamia manage.py test.

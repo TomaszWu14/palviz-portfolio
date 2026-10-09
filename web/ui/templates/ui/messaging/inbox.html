@@ -1,0 +1,20 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Wiadomości — {{ app_name }}{% endblock %}
+{% block content %}
+<div style="max-width:640px;margin:0 auto">
+  <div class="page-header">
+    <h1 class="page-header__title" style="margin:0">{% icon "mail" %} Wiadomości</h1>
+    <div class="page-header__actions"><a href="{% url 'ui:message_compose' %}" class="btn btn-primary btn-sm">Nowa</a></div>
+  </div>
+  {% for t in threads %}
+  <a href="{% url 'ui:message_thread' t.pk %}" class="card"
+     style="display:block;text-decoration:none;color:inherit;margin-bottom:8px">
+    <div style="font-weight:800">{{ t.subject|default:"Wątek" }}</div>
+    <div style="font-size:12px;color:var(--gray-500)">{{ t.messages.count }} wiad. · aktualizacja {{ t.updated_at|date:"d.m H:i" }}</div>
+  </a>
+  {% empty %}
+  <div class="card" style="text-align:center;color:var(--gray-500)">Brak wiadomości.</div>
+  {% endfor %}
+</div>
+{% endblock %}

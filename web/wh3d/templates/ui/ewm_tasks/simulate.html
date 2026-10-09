@@ -1,0 +1,116 @@
+{% extends "ui/base.html" %}
+{% block title %}Symulacja dnia — {{ batch.name }} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .sim-form { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; }
+  .sim-form .form-group { margin: 0; min-width: 120px; }
+  .sim-form select { min-width: 240px; }
+  .sim-table td.num, .sim-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sim-over { color: var(--danger-fg); font-weight: 700; }
+  .sim-ok { color: var(--ok-fg); font-weight: 700; }
+  .sim-note { font-size: 13px; color: var(--gray-500); line-height: 1.55; }
+  .sim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px; margin-top: 16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:ewm_tasks_list' %}">Zadania magazynowe EWM</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:ewm_tasks_profile' batch.pk %}?p={{ p }}">Dzień projektowy</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Symulacja dnia</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Symulacja dnia projektowego na modelu hali</div>
+    <div class="page-header__sub"><a href="{% url 'ui:ewm_tasks_calibration' batch.pk %}?p={{ p }}">Kalibracja na obecnej hali →</a> — współczynniki z realnego tempa wózków i pickerów ·
+      <a href="{% url 'ui:ewm_tasks_compare' batch.pk %}?p={{ p }}&mult={{ mult|stringformat:'g' }}&kt={{ calib.trucks|stringformat:'g' }}&kp={{ calib.picking|stringformat:'g' }}">Porównanie wariantów →</a></div>
+    <div class="page-header__sub">{{ batch.name }}{% if day %} · dzień P{{ p }}: {{ day|date:"d.m.Y" }}{% endif %} · zmiany 5:00–21:00</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <form method="get" class="sim-form">
+      <input type="hidden" name="run" value="1">
+      <div class="form-group">
+        <label for="sim-model">Model hali</label>
+        <select id="sim-model" name="model">
+          {% for m in models %}<option value="{{ m.pk }}" {% if wm and m.pk == wm.pk %}selected{% endif %}>{{ m.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="sim-p">Dzień</label>
+        <select id="sim-p" name="p">{% for q in percentiles %}<option value="{{ q }}" {% if q == p %}selected{% endif %}>P{{ q }}</option>{% endfor %}</select>
+      </div>
+      <div class="form-group">
+        <label for="sim-mult">Mnożnik wzrostu</label>
+        <input id="sim-mult" type="number" name="mult" value="{{ mult|stringformat:'g' }}" step="0.05" min="0.1" max="10">
+      </div>
+      {% for kind, label, count in fleet_rows %}
+      <div class="form-group">
+        <label for="sim-{{ kind }}">{{ label }}</label>
+        <input id="sim-{{ kind }}" type="number" name="{{ kind }}" value="{{ count }}" min="1" max="60">
+      </div>
+      {% endfor %}
+      <div class="form-group">
+        <label for="sim-kt" title="Z ekranu „Kalibracja na obecnej hali”">Kalibracja wózków ×</label>
+        <input id="sim-kt" type="number" name="kt" value="{{ calib.trucks|stringformat:'g' }}" step="0.05" min="0.3" max="10">
+      </div>
+      <div class="form-group">
+        <label for="sim-kp" title="Z ekranu „Kalibracja na obecnej hali”">Kalibracja kompletacji ×</label>
+        <input id="sim-kp" type="number" name="kp" value="{{ calib.picking|stringformat:'g' }}" step="0.05" min="0.3" max="10">
+      </div>
+      <button type="submit" class="btn btn-primary">Symuluj dzień</button>
+    </form>
+  </div>
+</div>
+
+{% if not models %}
+<div class="alert alert-warning" style="margin-top:16px">Brak modeli hali — utwórz go w <a href="{% url 'ui:warehouse_model_generator' %}">Generatorze hali</a>.</div>
+{% elif not day %}
+<div class="alert alert-warning" style="margin-top:16px">Brak potwierdzonych zadań w tym imporcie — nie ma dnia projektowego.</div>
+{% elif ran and not result %}
+<div class="alert alert-warning" style="margin-top:16px">Model „{{ wm.name }}” nie ma regałów VNA, półek K1 albo doków — symulacja dotyczy hali z <a href="{% url 'ui:warehouse_model_generator' %}">Generatora hali</a>.</div>
+{% elif result %}
+<div class="sim-grid">
+  <div class="card"><div class="card-body">
+    <div class="section-title">Flota — wykorzystanie w ciągu {{ result.horizon_h|floatformat:0 }} h</div>
+    <div class="table-wrap"><table class="table sim-table">
+      <thead><tr><th>Sprzęt / ludzie</th><th class="num">Szt.</th><th class="num">Zadań</th><th class="num">Praca [h]</th>
+        <th class="num">Wykorzystanie</th><th class="num">Sugerowane szt.</th><th class="num">Droga [km]</th></tr></thead>
+      <tbody>{% for f in result.fleet %}<tr>
+        <td>{{ f.label }}</td><td class="num">{{ f.count }}</td><td class="num">{{ f.tasks }}</td><td class="num">{{ f.busy_h }}</td>
+        <td class="num {% if f.util_pct > 85 %}sim-over{% else %}sim-ok{% endif %}">{{ f.util_pct }} %</td>
+        <td class="num">{{ f.suggested }}</td><td class="num">{{ f.km }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="sim-note">Sugerowana flota = praca ÷ (16 h × 85 %). Zadań z dnia: {{ n_tasks }}{% if result.multiplier != 1 %} × {{ result.multiplier|stringformat:'g' }}{% endif %}.
+      {% if result.late %}<span class="sim-over">{{ result.late }} zadań kończy się po 21:00</span> — za mała flota.{% else %}Wszystko mieści się w zmianach.{% endif %}</p>
+  </div></div>
+
+  <div class="card"><div class="card-body">
+    <div class="section-title">Czekanie na obsługę</div>
+    <div class="table-wrap"><table class="table sim-table">
+      <thead><tr><th>Rodzaj zadania</th><th class="num">Zadań</th><th class="num">Średnio [min]</th><th class="num">P95 [min]</th></tr></thead>
+      <tbody>{% for kind, w in wait_rows %}<tr><td>{{ kind }}</td><td class="num">{{ w.n }}</td><td class="num">{{ w.mean_min }}</td><td class="num">{{ w.p95_min }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="sim-note">Od chwili potwierdzenia zadania w EWM (przyjęte jako jego zlecenie) do podjęcia przez sprzęt.</p>
+  </div></div>
+
+  <div class="card"><div class="card-body">
+    <div class="section-title">Godziny — zlecone vs wykonane</div>
+    <div class="table-wrap"><table class="table sim-table">
+      <thead><tr><th>Godzina</th><th class="num">Zlecone</th><th class="num">Wykonane</th><th></th></tr></thead>
+      <tbody>{% for h in result.hours %}<tr><td>{{ h.h }}:00</td><td class="num">{{ h.demand }}</td>
+        <td class="num {% if h.done < h.demand %}sim-over{% endif %}">{{ h.done }}</td>
+        <td>{% if h.h < 21 %}<a href="{% url 'ui:warehouse_model_view' wm.pk %}?{{ anim_query }}&sim_h={{ h.h }}">Animuj w 3D →</a>{% endif %}</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </div></div>
+</div>
+<p class="sim-note" style="margin-top:12px">Model uproszczony: droga liczona prostokątnie wzdłuż alejek, prędkości z katalogu sprzętu, towar rozmieszczony wg ABC (A najbliżej i najniżej), bez blokowania się wózków w korytarzach. Służy do porównań wariantów i rzędu wielkości floty — kalibracja na obecnej hali to etap 6 planu.</p>
+{% endif %}
+{% endblock %}

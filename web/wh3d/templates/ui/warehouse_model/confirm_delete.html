@@ -1,0 +1,36 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Usuń model magazynu — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_model_list' %}">Modele magazynu</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Usuń model</span>
+</nav>
+
+<div class="card" style="max-width:460px;margin:40px auto">
+  <div class="card-body" style="text-align:center;padding:36px 32px">
+    <div style="font-size:36px;margin-bottom:14px">{% icon "trash-2" cls="icon--em" %}</div>
+    <h3 style="font-size:17px;font-weight:700;color:var(--gray-900);margin-bottom:10px">Usuń model magazynu</h3>
+    <p style="color:var(--gray-500);font-size:13px;line-height:1.6;margin-bottom:6px">
+      Czy na pewno chcesz usunąć model
+      <strong style="color:var(--gray-900)">{{ wm.name }}</strong>?
+    </p>
+    <p style="color:var(--gray-400);font-size:12px;margin-bottom:24px">
+      Zostaną usunięte wszystkie regały i przypisane współrzędne. Tej operacji nie można cofnąć.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" style="background:var(--red);color:#fff;border-color:var(--red)">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6m4-6v6"/><path d="M9 6V4h6v2"/></svg>
+          Tak, usuń model
+        </button>
+      </form>
+      <a href="{% url 'ui:warehouse_model_list' %}" class="btn btn-secondary">Anuluj</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

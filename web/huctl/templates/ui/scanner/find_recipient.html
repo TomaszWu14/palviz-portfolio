@@ -1,0 +1,81 @@
+{% extends "ui/scanner/base.html" %}
+{% block bar %}Znajdź dla odbiorcy{% endblock %}
+{% block back %}<a href="{% url 'ui:hu_control_menu' %}">‹</a>{% endblock %}
+{% block content %}
+  {# Główna droga: zeskanuj HU → pokaż wszystkie inne HU dla tego samego odbiorcy. #}
+  <form method="get" style="margin-bottom:10px">
+    <div class="field">
+      <label>Zeskanuj HU (pickHU) — pokaże rodzeństwo dla tego odbiorcy</label>
+      <div style="display:flex;gap:8px;align-items:stretch">
+        <input aria-label="Zeskanuj HU (pickHU) — pokaże rodzeństwo dla tego odbiorcy" type="text" name="hu" value="{{ hu_code }}" id="fr-hu" autofocus autocomplete="off"
+               inputmode="text" placeholder="np. 111835083" style="flex:1;min-width:0">
+        <button type="button" onclick="palvizScan('fr-hu')" aria-label="Skanuj"
+                style="flex:0 0 auto;width:52px">▣</button>
+      </div>
+    </div>
+    <button type="submit" class="btn btn--accent">Znajdź rodzeństwo</button>
+  </form>
+
+  {% if scanned %}
+  <div class="card" style="margin-bottom:10px">
+    <div style="font-size:12px;color:var(--label);font-weight:800">ODBIORCA</div>
+    <div style="font-size:18px;font-weight:900">{% if recipient_kunnr %}{{ recipient_kunnr }} · {% endif %}{{ recipient_label }}</div>
+    <div style="font-size:12px;color:#475569">Zeskanowano HU {{ scanned.ref }} · {{ hus|length }} innych HU tego odbiorcy (wszystkie strefy)</div>
+  </div>
+  {% endif %}
+
+  {# Alternatywa: wpisz nazwę odbiorcy / typ magazynu (tylko Twoja strefa). #}
+  <details class="card" style="margin-bottom:10px">
+    <summary style="font-weight:700;cursor:pointer">Szukaj po nazwie / typie magazynu (Twoja strefa)</summary>
+    <form method="get" style="margin-top:10px">
+      <div class="field">
+        <label>Odbiorca / typ odbiorcy</label>
+        <input aria-label="Odbiorca / typ odbiorcy" type="text" name="q" value="{{ q }}" autocomplete="off" placeholder="np. PHARMO lub V.I.P">
+      </div>
+      {% if wh_types %}
+      <div class="field">
+        <label>Typ magazynu</label>
+        <select aria-label="Typ magazynu" name="wh">
+          <option value="">Wszystkie typy</option>
+          {% for t in wh_types %}<option value="{{ t }}" {% if t == wh %}selected{% endif %}>{{ t }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <button type="submit" class="btn btn--primary">Szukaj</button>
+    </form>
+  </details>
+
+  {# Wyniki wyszukiwania pogrupowane per klient: nagłówek numer + nazwa. #}
+  {% for g in groups %}
+  <div style="display:flex;align-items:center;gap:8px;margin:12px 2px 6px">
+    <span style="font-weight:900;font-size:14px">{% if g.kunnr %}{{ g.kunnr }}{% if g.name %} · {{ g.name }}{% endif %}{% else %}{{ g.name|default:"—" }}{% endif %}</span>
+    <span class="pill" style="background:#e2f4f1;color:#0c5c58;font-size:11px">{{ g.hus|length }} HU</span>
+  </div>
+  {% for hu in g.hus %}
+  {% include "ui/scanner/_find_recipient_row.html" %}
+  {% endfor %}
+  {% endfor %}
+
+  {% if page_obj and page_obj.paginator.num_pages > 1 %}
+  <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin:14px 2px 4px">
+    {% if page_obj.has_previous %}
+    <a class="btn btn--ghost" style="margin:0;padding:8px 14px"
+       href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if wh %}wh={{ wh|urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}">‹ Poprzednie</a>
+    {% endif %}
+    <span style="font-size:13px;color:#475569">Strona {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+      · {{ page_obj.paginator.count }} klientów</span>
+    {% if page_obj.has_next %}
+    <a class="btn btn--ghost" style="margin:0;padding:8px 14px"
+       href="?{% if q %}q={{ q|urlencode }}&{% endif %}{% if wh %}wh={{ wh|urlencode }}&{% endif %}page={{ page_obj.next_page_number }}">Następne ›</a>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if scanned %}{% for hu in hus %}
+  {% include "ui/scanner/_find_recipient_row.html" %}
+  {% endfor %}{% endif %}
+  {% if not groups and not hus %}
+  {% if hu_code and scanned %}<div class="card" style="text-align:center;color:#475569">Brak innych HU dla tego odbiorcy.</div>
+  {% elif q or wh %}<div class="card" style="text-align:center;color:#475569">Brak HU dla podanych kryteriów.</div>{% endif %}
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Pilność wypełnienia — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .co-nav { display:flex; gap:8px; margin-bottom:16px; }
+  .co-nav a { padding:8px 16px; border-radius:8px; text-decoration:none; font-weight:600;
+              font-size:13px; color:var(--gray-700); border:1px solid var(--gray-200); background:var(--surface); }
+  .co-nav a.active { background:var(--yellow-solid); border-color:var(--yellow-solid); color:#fff; }
+  .co-row { display:grid; grid-template-columns:auto 1fr auto auto auto; gap:14px; align-items:center;
+            padding:13px 16px; border-bottom:1px solid var(--gray-100); }
+  .co-opt { font-size:12px; font-weight:700; color:var(--yellow); text-decoration:none; white-space:nowrap; }
+  .co-urg { width:5px; align-self:stretch; border-radius:3px; min-height:34px; }
+  .co-urg--0 { background:var(--red-solid); } .co-urg--1 { background:var(--yellow-solid); } .co-urg--2 { background:var(--cyan-solid); }
+  .co-code { font-family:monospace; font-weight:700; color:var(--gray-900); }
+  .co-name { font-size:12px; color:var(--gray-500); margin-top:2px; }
+  .co-bar { width:120px; height:9px; background:var(--gray-100); border-radius:5px; overflow:hidden; }
+  .co-bar span { display:block; height:100%; }
+  .co-fill { font-weight:800; font-size:15px; min-width:52px; text-align:right; }
+  .co-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; }
+  .co-badge--0 { background:var(--red-light); color:var(--red); } .co-badge--1 { background:var(--yellow-light); color:var(--yellow-dark); }
+  .co-badge--2 { background:var(--cyan-light); color:var(--cyan); }
+  .co-thr { display:flex; gap:8px; align-items:center; font-size:13px; }
+  .co-thr input { width:70px; padding:7px 9px; border:1px solid var(--gray-200); border-radius:8px; }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><span>Optymalizacja kartonów</span> › <span>Pilność wypełnienia</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#d97706;--pcbg:#fffbeb">
+    <div class="panel-head__chip">{% icon "package" cls="icon--em" %}</div>
+    <div>
+      <div class="page-header__title">Pilność wypełnienia palet</div>
+      <div class="page-header__sub">Materiały z wypełnieniem poniżej progu {{ threshold }}% — od najgorszego</div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    {% if can_edit_threshold %}
+    <form method="post" action="{% url 'ui:carton_opt_set_config' %}" class="co-thr" style="margin:0">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <label>Próg dobrego wypełnienia:</label>
+      <input aria-label="Próg dobrego wypełnienia" type="number" name="min_fill_pct" min="1" max="100" value="{{ threshold }}">
+      <label title="Auto-sugestia wymiarów">Pasmo objętości −</label>
+      <input aria-label="Pasmo objętości −" type="number" name="suggest_vol_down_pct" min="0" max="90" value="{{ cfg.suggest_vol_down_pct }}">
+      <label>% / +</label>
+      <input aria-label="% / +" type="number" name="suggest_vol_up_pct" min="0" max="100" value="{{ cfg.suggest_vol_up_pct }}">
+      <label title="Pojemność auta do KPI aut/rok">Palet/auto:</label>
+      <input aria-label="Palet/auto" type="number" name="pallets_per_truck" min="1" max="66" value="{{ cfg.pallets_per_truck }}">
+      <button class="btn btn-secondary btn-sm" type="submit">Zapisz</button>
+    </form>
+    {% else %}
+    <span class="co-thr" style="color:var(--gray-500)">Próg: <strong>{{ threshold }}%</strong></span>
+    {% endif %}
+  </div>
+</div>
+
+<div class="co-nav">
+  <a href="{% url 'ui:carton_opt_inbox' %}">Skrzynka zgłoszeń</a>
+  <a href="{% url 'ui:carton_opt_dashboard' %}" class="active">Pilność wypełnienia</a>
+  <a href="{% url 'ui:carton_opt_variants' %}">Warianty kartonów</a>
+  <a href="{% url 'ui:carton_opt_redesigns' %}">Projekty A/B</a>
+</div>
+
+<div class="card" style="padding:0">
+  {% for r in rows %}
+  <div class="co-row">
+    <div class="co-urg co-urg--{{ r.urgency }}"></div>
+    <div>
+      <div class="co-code">{{ r.product.code }}
+        <span class="co-badge co-badge--{{ r.urgency }}">
+          {% if r.urgency == 0 %}krytyczna{% elif r.urgency == 1 %}wysoka{% else %}średnia{% endif %}</span></div>
+      <div class="co-name">{{ r.product.name|truncatechars:70 }}
+        · brakuje {{ r.gap }} p.p. do progu</div>
+    </div>
+    <div class="co-bar"><span class="co-urg--{{ r.urgency }}" style="width:{{ r.fill }}%"></span></div>
+    <a class="co-fill" href="{% url 'ui:planner_product_hierarchy' r.product.pk %}"
+       style="text-decoration:none;color:inherit" title="Zobacz hierarchię">{{ r.fill }}%</a>
+    <a class="co-opt" href="{% url 'ui:carton_opt_variants' %}?product={{ r.product.code }}"
+       title="Porównaj i przenieś lepszy wariant">Optymalizuj →</a>
+  </div>
+  {% empty %}
+  <div style="padding:40px;text-align:center;color:var(--gray-500)">
+    Wszystkie materiały mają wypełnienie ≥ {{ threshold }}%. Nic do optymalizacji. {% icon "party-popper" %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

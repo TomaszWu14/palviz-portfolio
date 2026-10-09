@@ -1,0 +1,185 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}{% if obj %}Edytuj{% else %}Nowy{% endif %} użytkownik — {{ app_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:admin_users' %}">Użytkownicy</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if obj %}{{ obj.username }}{% else %}Nowy{% endif %}</span>
+</nav>
+
+<div style="max-width:640px">
+  <div class="page-header">
+    <div class="page-header__title">{% if obj %}Edytuj użytkownika{% else %}Nowy użytkownik{% endif %}</div>
+  </div>
+
+  {% if errors %}
+  <div class="alert alert-error" style="margin-bottom:16px">
+    <ul style="margin:0;padding-left:18px">
+      {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="section-label" style="font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin:0 0 12px;padding-bottom:6px;border-bottom:1px solid var(--gray-200)">Dane konta</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+          <div class="form-group" style="grid-column:1/-1">
+            <label>Nazwa użytkownika *</label>
+            <input aria-label="Nazwa użytkownika" type="text" name="username" value="{{ obj.username|default:'' }}" required autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>Imię</label>
+            <input aria-label="Imię" type="text" name="first_name" value="{{ obj.first_name|default:'' }}">
+          </div>
+          <div class="form-group">
+            <label>Nazwisko</label>
+            <input aria-label="Nazwisko" type="text" name="last_name" value="{{ obj.last_name|default:'' }}">
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label>Email</label>
+            <input aria-label="Email" type="email" name="email" value="{{ obj.email|default:'' }}">
+          </div>
+          <div class="form-group">
+            <label>Telefon (SMS)</label>
+            <input aria-label="Telefon (SMS)" type="text" name="phone" value="{{ profile.phone|default:'' }}" maxlength="20" placeholder="+48…">
+          </div>
+          <div class="form-group">
+            <label>Dział</label>
+            <input aria-label="Dział" type="text" name="department" value="{{ profile.department|default:'' }}" maxlength="80" placeholder="np. Magazyn, Transport">
+          </div>
+          <div class="form-group">
+            <label>Sekcja skanera</label>
+            {# Motyw przewoźnika (kolor apki operatora) — dotąd tylko import Excela. #}
+            <select aria-label="Sekcja skanera" name="section">
+              <option value="">— brak (motyw bazowy) —</option>
+              {% for val, lbl in section_choices %}
+              <option value="{{ val }}" {% if profile.section == val %}selected{% endif %}>{{ lbl }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label>Strefy kontroli HU</label>
+            {# Strefy, w których użytkownik MOŻE kontrolować (aktywną wybiera na skanerze). Brak zaznaczeń = bez ograniczenia strefowego. #}
+            <div style="display:flex;gap:16px;flex-wrap:wrap;padding:4px 0">
+              {% for val, lbl in section_choices %}
+              <label class="form-check" style="font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px">
+                <input type="checkbox" name="allowed_sections" value="{{ val }}"
+                       {% if val in allowed_sections %}checked{% endif %}> {{ lbl }}
+              </label>
+              {% endfor %}
+            </div>
+            <span class="help-text">Zaznacz strefy dozwolone dla operatora kontroli; puste = dostęp jak dotąd (bez stref).</span>
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <div class="form-check">
+              <input type="checkbox" name="email_notifications" value="1" id="email_notif_cb"
+                     {% if not profile or profile.email_notifications %}checked{% endif %}>
+              <label for="email_notif_cb" style="font-size:13px;font-weight:500">Powiadomienia e-mail</label>
+            </div>
+            <span class="help-text">Telefon używany do SMS-ów, dział grupuje raport zużycia ZARIA.</span>
+          </div>
+        </div>
+
+        <div class="section-label" style="font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin:20px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--gray-200)">
+          Hasło {% if obj %}(zostaw puste żeby nie zmieniać){% else %}*{% endif %}
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+          <div class="form-group">
+            <label>Hasło{% if not obj %} *{% endif %}</label>
+            <input type="password" name="password1" autocomplete="new-password" minlength="8">
+          </div>
+          <div class="form-group">
+            <label>Powtórz hasło</label>
+            <input aria-label="Powtórz hasło" type="password" name="password2" autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="section-label" style="font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin:20px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--gray-200)">Rola i dostęp</div>
+
+        {% if sso_managed_roles %}
+        <div class="alert alert-info" style="margin-bottom:12px">
+          <span>{% icon "lock" %} Role są zarządzane przez SSO (dostawca tożsamości) i nadpisywane przy każdym logowaniu — zmień je w Keycloak/Entra, nie tutaj. Poniższe pola są tylko podglądem.</span>
+        </div>
+        {% endif %}
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+          <div class="form-group">
+            <label>Stanowisko</label>
+            <select aria-label="Stanowisko" name="position" {% if sso_managed_roles %}disabled{% endif %}>
+              <option value="">— brak (role ręcznie poniżej) —</option>
+              {% for p in positions %}
+              <option value="{{ p.pk }}" {% if profile.position_id == p.pk %}selected{% endif %}>{{ p.name }}</option>
+              {% endfor %}
+            </select>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:2px">
+              Wybór stanowiska ustawia role z jego definicji (checkboxy niżej są wtedy ignorowane).</div>
+          </div>
+          <div class="form-group">
+            <label>Lider (przełożony)</label>
+            <select aria-label="Lider (przełożony)" name="leader">
+              <option value="">— brak —</option>
+              {% for u in leaders %}
+              <option value="{{ u.pk }}" {% if profile.leader_id == u.pk %}selected{% endif %}>{{ u.get_full_name|default:u.username }}</option>
+              {% endfor %}
+            </select>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:2px">
+              Adresat akcji „Napisz do lidera" tego użytkownika.</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+          {% for g in groups %}
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1px solid var(--gray-200);border-radius:8px;{% if sso_managed_roles %}opacity:.6;cursor:not-allowed{% else %}cursor:pointer{% endif %};transition:border-color .15s"
+                 {% if not sso_managed_roles %}onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--gray-200)'"{% endif %}>
+            <input type="checkbox" name="groups" value="{{ g.pk }}"
+                   {% if g.pk in user_group_ids %}checked{% endif %}
+                   {% if sso_managed_roles %}disabled{% endif %}
+                   style="margin-top:2px;flex-shrink:0">
+            <div>
+              <div style="font-weight:600;font-size:13px">
+                <span aria-hidden="true" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{% if g.name == "Administratorzy" %}var(--red-solid){% elif g.name == "Master Data" %}var(--blue){% elif g.name == "Transport" %}var(--yellow-solid){% else %}var(--gray-300){% endif %}"></span>
+                {{ g.name }}
+              </div>
+              <div style="font-size:11px;color:var(--gray-500);margin-top:2px">
+                {% if g.name == "Administratorzy" %}Pełny dostęp — wszystkie moduły
+                {% elif g.name == "Master Data" %}Produkty, kartony, instrukcje, ruchy
+                {% elif g.name == "Transport" %}Wysyłki, przewoźnicy, kalkulator
+                {% elif g.name == "Podgląd" %}Tylko podgląd (instrukcje, produkty)
+                {% else %}Niestandardowa grupa
+                {% endif %}
+              </div>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+
+        <div class="form-group" style="margin-bottom:20px">
+          <div class="form-check">
+            <input type="checkbox" name="is_active" value="1" id="is_active_cb"
+                   {% if not obj or obj.is_active %}checked{% endif %}>
+            <label for="is_active_cb" style="font-size:13px;font-weight:500">Konto aktywne</label>
+          </div>
+          <span class="help-text">Nieaktywny użytkownik nie może się logować.</span>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button type="submit" class="btn btn-primary">
+            {% if obj %}Zapisz zmiany{% else %}Utwórz użytkownika{% endif %}
+          </button>
+          <a href="{% url 'ui:admin_users' %}" class="btn btn-secondary">Anuluj</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "ui/scanner/base.html" %}
+{# Wybór aktywnej strefy kontroli — kafle w kolorach motywów przewoźników. #}
+{% block title %}Wybór strefy{% endblock %}
+{% block bar %}Wybierz strefę kontroli{% endblock %}
+{% block content %}
+<div style="display:flex;flex-direction:column;gap:12px;padding:14px;max-width:520px;margin:0 auto">
+  <p style="margin:2px 4px 6px;font-size:14px;color:#4a706c">
+    Kontrolujesz w jednej strefie naraz. Wybierz obszar, w którym pracujesz —
+    przełączysz się później, tapiąc strefę w nagłówku.
+  </p>
+  {% for t in tiles %}
+  <form method="post" style="margin:0">
+    {% csrf_token %}
+    <input type="hidden" name="section" value="{{ t.code }}">
+    <button type="submit" data-testid="zone-{{ t.code }}"
+            style="width:100%;text-align:left;cursor:pointer;border-radius:14px;padding:18px 16px;
+                   border:2px solid {{ t.theme.border }};background:{{ t.theme.card_bg }};color:{{ t.theme.ink }};
+                   display:flex;align-items:center;gap:12px{% if t.active %};outline:3px solid {{ t.theme.header_bg }}{% endif %}">
+      <span style="background:{{ t.theme.pill_bg }};color:{{ t.theme.pill_text }};font-size:12px;font-weight:900;
+                   letter-spacing:.06em;padding:6px 12px;border-radius:999px">{{ t.code }}</span>
+      <span style="font-size:17px;font-weight:800;flex:1">{{ t.title }}</span>
+      {% if t.active %}<span style="font-size:12px;font-weight:800;opacity:.75">AKTYWNA</span>{% endif %}
+    </button>
+  </form>
+  {% endfor %}
+</div>
+{% endblock %}

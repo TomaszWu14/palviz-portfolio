@@ -1,0 +1,51 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Panel administracyjny — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><span>Panel administracyjny</span></nav>
+<div class="page-header"><div><div class="page-header__title">Panel administracyjny</div>
+  <div class="page-header__sub">Użytkownicy, role, uprawnienia i dostęp do modułów — wszystko w jednym miejscu</div></div></div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px">
+  <div class="card" style="text-align:center;padding:16px"><div style="font-size:28px;font-weight:800;color:var(--gray-900)">{{ n_users }}</div><div style="font-size:12px;color:var(--gray-500)">Użytkownicy</div></div>
+  <div class="card" style="text-align:center;padding:16px"><div style="font-size:28px;font-weight:800;color:var(--green)">{{ n_active }}</div><div style="font-size:12px;color:var(--gray-500)">Aktywni</div></div>
+  <div class="card" style="text-align:center;padding:16px"><div style="font-size:28px;font-weight:800;color:var(--blue-mid)">{{ n_online }}</div><div style="font-size:12px;color:var(--gray-500)">Online teraz</div></div>
+  <div class="card" style="text-align:center;padding:16px"><div style="font-size:28px;font-weight:800;color:var(--violet-ink)">{{ n_roles }}</div><div style="font-size:12px;color:var(--gray-500)">Role</div></div>
+  <div class="card" style="text-align:center;padding:16px"><div style="font-size:28px;font-weight:800;color:var(--cyan)">{{ n_modules }}</div><div style="font-size:12px;color:var(--gray-500)">Moduły</div></div>
+  <div class="card" style="text-align:center;padding:16px"><div style="font-size:28px;font-weight:800;color:var(--yellow-dark)">{{ n_overrides }}</div><div style="font-size:12px;color:var(--gray-500)">Nadpisania dostępu</div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+  <a class="card" href="{% url 'ui:admin_users' %}" style="text-decoration:none;padding:20px;border-left:5px solid var(--sky);color:inherit">
+    <div style="font-size:26px">{{ "👥"|pv_icon:30 }}</div><div style="font-weight:800;font-size:17px;margin-top:6px;color:var(--gray-900)">Użytkownicy</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Lista, dodawanie, edycja, hasła, aktywacja i role (wszystkie 8 grup).</div></a>
+
+  <a class="card" href="{% url 'ui:admin_import_status' %}" style="text-decoration:none;padding:20px;border-left:5px solid var(--teal-cyan);color:inherit">
+    <div style="font-size:26px">{{ "📶"|pv_icon:30 }}</div><div style="font-weight:800;font-size:17px;margin-top:6px;color:var(--gray-900)">Status importów</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Ostatnia aktualizacja każdego źródła danych; alert przy nieświeżych.</div></a>
+
+  <a class="card" href="{% url 'ui:admin_positions' %}" style="text-decoration:none;padding:20px;border-left:5px solid var(--violet);color:inherit">
+    <div style="font-size:26px">{{ "🧑‍🏭"|pv_icon:30 }}</div><div style="font-weight:800;font-size:17px;margin-top:6px;color:var(--gray-900)">Stanowiska</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Macierz stanowisko × moduły; przypisanie synchronizuje role konta.</div></a>
+
+  <a class="card" href="{% url 'ui:admin_module_access' %}" style="text-decoration:none;padding:20px;border-left:5px solid var(--cyan-solid);color:inherit">
+    <div style="font-size:26px">{{ "🧩"|pv_icon:30 }}</div><div style="font-weight:800;font-size:17px;margin-top:6px;color:var(--gray-900)">Macierz login × moduł</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Per login, per moduł: dziedzicz z roli / wymuś dostęp / zablokuj.</div></a>
+
+  <a class="card" href="{% url 'ui:admin_role_matrix' %}" style="text-decoration:none;padding:20px;border-left:5px solid var(--violet);color:inherit">
+    <div style="font-size:26px">{{ "📋"|pv_icon:30 }}</div><div style="font-weight:800;font-size:17px;margin-top:6px;color:var(--gray-900)">Macierz ról → moduły</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Co odblokowuje każda z 8 ról (moduły + uprawnienia szczegółowe).</div></a>
+
+  <a class="card" href="{% url 'ui:admin_control_zones' %}" style="text-decoration:none;padding:20px;border-left:5px solid var(--emerald);color:inherit">
+    <div style="font-size:26px">{{ "🏬"|pv_icon:30 }}</div><div style="font-weight:800;font-size:17px;margin-top:6px;color:var(--gray-900)">Strefy kontroli HU</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Które typy magazynu może kontrolować dany operator HU.</div></a>
+
+  <a class="card" href="{% url 'ui:admin_zaria_panel' %}" style="text-decoration:none;padding:20px;border-left:5px solid var(--violet-soft);color:inherit">
+    <div style="font-size:26px">{{ "🤖"|pv_icon:30 }}</div><div style="font-weight:800;font-size:17px;margin-top:6px;color:var(--gray-900)">ZARIA</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Katalog modeli, dostęp ról/użytkowników, budżety i raport zużycia.</div></a>
+
+  <a class="card" href="/admin/" style="text-decoration:none;padding:20px;border-left:5px solid var(--gray-500);color:inherit">
+    <div style="font-size:26px">{{ "🛠️"|pv_icon:30 }}</div><div style="font-weight:800;font-size:17px;margin-top:6px;color:var(--gray-900)">Django admin</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">Pełny panel bazodanowy (modele, historia, dane surowe).</div></a>
+</div>
+{% endblock %}

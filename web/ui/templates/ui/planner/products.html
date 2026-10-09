@@ -1,0 +1,226 @@
+{% extends "ui/base.html" %}{% load palviz_extras %}
+{% block title %}Produkty — master data — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block subnav %}{% include "ui/planner/_tabs.html" %}{% endblock %}
+
+{% block extra_head %}
+<style>
+.pkg-chain { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+.pkg-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 600; padding: 2px 7px;
+  border-radius: var(--radius-sm); white-space: nowrap;
+}
+.pkg-chip .icon { width: 12px; height: 12px; }
+.pkg-chip--unit   { background: var(--ok-bg); color: var(--ok-fg); }
+.pkg-chip--inner  { background: var(--primary-soft); color: var(--link); }
+.pkg-chip--carton { background: var(--warn-bg); color: var(--warn-fg); }
+.pkg-chip--instr  { background: var(--violet-bg); color: var(--violet-fg); }
+.pkg-arrow { color: var(--gray-400); font-size: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#6366f1;--pcbg:#eef2ff">
+    <div class="panel-head__chip">{% icon "package" 24 %}</div>
+    <div>
+      <h1 class="page-header__title">Produkty — master data</h1>
+      <div class="page-header__sub">{{ page_obj.paginator.count }} produktów · pełna hierarchia opakowań</div>
+    </div>
+  </div>
+  <div class="page-header__actions toolbar__end" style="margin-bottom:0">
+    <details class="menu" data-testid="products-more">
+      <summary class="btn btn-secondary">{% icon "ellipsis" %}Więcej</summary>
+      <div class="menu__panel">
+        <a class="menu__item" href="{% url 'ui:planner_ref_materials' %}">{% icon "clipboard-list" %}Baza referencyjna</a>
+        <a class="menu__item" href="{% url 'ui:planner_categories' %}">{% icon "tag" %}Kategorie</a>
+        <a class="menu__item" href="{% url 'ui:planner_product_csv_template' %}">{% icon "file-down" %}Pobierz wzór CSV</a>
+        {% if can_write_products %}
+        <form method="post" action="{% url 'ui:planner_product_import' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <label class="menu__item menu__upload">{% icon "file-up" %}Importuj CSV (pełny)
+            <input type="file" name="file" accept=".csv" onchange="gvUpload(this)"></label>
+        </form>
+        <div class="menu__sep"></div>
+        <form method="post" action="{% url 'ui:planner_master_data_import' %}" enctype="multipart/form-data"
+              title="Migracja SAP: format MARM (wiersz na jednostkę miary) lub łączony (ref_code, wymiary 'L X W X H cm') — tworzy produkty + instrukcje paletyzacji">
+          {% csrf_token %}
+          <label class="menu__item" title="Najpierw usuwa wszystkie dane z poprzednich importów, potem wczytuje nowe">
+            <input type="checkbox" name="overwrite" value="1"> Nadpisz starą bazę przy imporcie</label>
+          <label class="menu__item menu__upload">{% icon "database" %}Import master daty (migracja)…
+            <input type="file" name="file" accept=".csv,.xlsx,.xls" onchange="gvUpload(this)"></label>
+        </form>
+        <div class="menu__sep"></div>
+        <form method="post" action="{% url 'ui:planner_master_data_purge' %}">
+          {% csrf_token %}
+          <button type="submit" name="scope" value="inner_packs" class="menu__item menu__item--danger" data-confirm="Usunąć opakowania zbiorcze z importu?">{% icon "trash-2" %}Usuń opakowania zbiorcze (z importu)</button>
+          <button type="submit" name="scope" value="instructions" class="menu__item menu__item--danger" data-confirm="Usunąć instrukcje paletyzacji z importu?">{% icon "trash-2" %}Usuń instrukcje paletyzacji (z importu)</button>
+          <button type="submit" name="scope" value="products" class="menu__item menu__item--danger" data-confirm="Usunąć wszystkie produkty razem z hierarchią?">{% icon "trash-2" %}Usuń wszystkie produkty (z hierarchią)</button>
+          <button type="submit" name="scope" value="all" class="menu__item menu__item--danger" data-confirm="Usunąć wszystko: produkty, instrukcje i opakowania z importu?">{% icon "trash-2" %}Usuń wszystko</button>
+        </form>
+        {% endif %}
+      </div>
+    </details>
+    {% if can_write_products %}<a href="{% url 'ui:planner_product_new' %}" class="btn btn-primary" data-testid="product-new">{% icon "plus" %}Nowy produkt</a>{% endif %}
+  </div>
+</div>
+
+{% if no_instr %}
+<div class="alert alert-warning" style="margin-bottom:12px;display:block">
+  Wyświetlane: <strong>produkty aktywne BEZ instrukcji paletyzacji</strong>
+  <a href="{% url 'ui:planner_products' %}" style="margin-left:10px">{% icon "x" %} Pokaż wszystkie</a>
+</div>
+{% endif %}
+<form method="get" class="filterbar" role="search" data-testid="products-filter">
+  <label class="filterbar__search"><span class="sr-only">Szukaj produktu</span>{% icon "search" %}
+    <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Szukaj kodu, nazwy lub EAN…"></label>
+  {% if categories %}
+  <select name="category" aria-label="Kategoria">
+    <option value="">Wszystkie kategorie</option>
+    {% for cat in categories %}
+    <option value="{{ cat.pk }}" {% if category_id == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+    {% endfor %}
+  </select>
+  {% endif %}
+  {% if suppliers %}
+  <select name="supplier" aria-label="Dostawca">
+    <option value="">Wszyscy dostawcy</option>
+    {% for s in suppliers %}
+    <option value="{{ s }}" {% if supplier == s %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+  {% endif %}
+  <button type="submit" class="btn btn-secondary">{% icon "filter" %}Szukaj</button>
+  {% if query or supplier or category_id %}<a href="{% url 'ui:planner_products' %}" class="btn btn-ghost">{% icon "x" %}Wyczyść</a>{% endif %}
+</form>
+
+<div class="card card--accent" style="--pc:#6366f1">
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Lista produktów">
+    <table class="table" data-testid="products-table">
+      <thead>
+        <tr>
+          <th style="width:130px">Kod materiału</th>
+          <th>Nazwa</th>
+          <th style="width:130px">Dostawca</th>
+          <th style="width:120px">EAN</th>
+          <th style="width:130px">Wym. sztuki [cm]</th>
+          <th>Hierarchia opakowań</th>
+          <th style="width:80px">Status</th>
+          <th style="width:80px"></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for product in page_obj %}
+      <tr>
+        <td>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--blue-mid);white-space:nowrap">{{ product.code }}</span>
+        </td>
+        <td class="cell-clip" style="--clip:36ch" title="{{ product.name }}">
+          <div class="font-semibold" style="overflow:hidden;text-overflow:ellipsis">{{ product.name }}</div>
+          {% if product.description %}
+          <div class="text-sm text-muted">{{ product.description|truncatechars:50 }}</div>
+          {% endif %}
+        </td>
+        <td>
+          {% if product.supplier_short %}
+          <span class="badge badge-gray cell-clip" style="--clip:14ch;display:inline-block;vertical-align:middle" title="{{ product.supplier_short }}">{{ product.supplier_short }}</span>
+          {% else %}<span class="text-muted text-sm">—</span>{% endif %}
+          {% if product.category %}
+          <div style="margin-top:3px">
+            <span class="cell-clip" title="{{ product.category.name }}" style="--clip:14ch;display:inline-block;vertical-align:middle;padding:1px 6px;border-radius:4px;font-size:12px;font-weight:600;background:{{ product.category.color }}20;color:color-mix(in srgb, {{ product.category.color }} 55%, var(--gray-900));border:1px solid {{ product.category.color }}40">
+              {{ product.category.name }}
+            </span>
+          </div>
+          {% endif %}
+        </td>
+        <td class="text-muted text-sm num" style="text-align:left">{{ product.ean|default:"—" }}</td>
+        <td class="num" style="font-size:12px;font-family:var(--font-mono);text-align:left;white-space:nowrap">
+          {% if product.unit_length_cm %}
+            {{ product.unit_length_cm }}×{{ product.unit_width_cm }}×{{ product.unit_height_cm }}
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% for instr in product.instructions.all %}
+          <div class="pkg-chain" style="{% if not forloop.first %}margin-top:8px;padding-top:8px;border-top:1px solid var(--gray-100);{% endif %}">
+            {% if product.unit_length_cm %}
+            <span class="pkg-chip pkg-chip--unit" title="Sztuka">
+              {% icon "square" %}
+              sztuka {{ product.unit_length_cm }}×{{ product.unit_width_cm }}×{{ product.unit_height_cm }}
+            </span>
+            <span class="pkg-arrow">›</span>
+            {% endif %}
+            {% if instr.carton and instr.carton.inner_pack %}
+            <span class="pkg-chip pkg-chip--inner" title="Opakowanie zbiorcze">
+              {% icon "briefcase" %}
+              {{ instr.carton.inner_pack.name }}
+            </span>
+            <span class="pkg-arrow">›</span>
+            {% endif %}
+            <span class="pkg-chip pkg-chip--carton" title="Karton {{ instr.carton_l }}×{{ instr.carton_w }}×{{ instr.carton_h }} cm, {{ instr.pcs_per_carton }} szt">
+              {% icon "box" %}
+              karton {{ instr.carton_l }}×{{ instr.carton_w }}×{{ instr.carton_h }} ({{ instr.pcs_per_carton }} szt)
+            </span>
+            <span class="pkg-arrow">›</span>
+            <span class="pkg-chip pkg-chip--instr" title="Paletyzacja">
+              {% icon "layers" %}
+              paleta v{{ instr.version }}{% if instr.name %}: {{ instr.name }}{% endif %}
+            </span>
+            <a href="{% url 'ui:planner_instruction_detail' instr.pk %}" class="btn btn-ghost btn-sm">podgląd</a>
+          </div>
+          {% empty %}
+          <span class="text-muted text-sm">Brak paletyzacji{% if can_write_products %} — <a href="{% url 'ui:planner_instruction_new' %}">dodaj</a>{% endif %}</span>
+          {% endfor %}
+        </td>
+        <td>
+          {% if product.is_active %}
+          <span class="badge badge-green">Aktywny</span>
+          {% else %}
+          <span class="badge badge-gray">Nieaktywny</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="actions">
+            <a href="{% url 'ui:planner_product_hierarchy' product.pk %}" class="btn btn-ghost btn-sm" title="Hierarchia opakowań">{% icon "list" %}Hierarchia</a>
+            {% if can_write_products %}{% url 'ui:planner_product_edit' product.pk as edit_url %}{% icon_button "pencil" label="Edytuj "|add:product.code href=edit_url size="sm" %}
+            <form method="post" action="{% url 'ui:planner_product_delete' product.pk %}">
+              {% csrf_token %}
+              {% icon_button "trash-2" label="Usuń "|add:product.code type="submit" variant="btn-ghost text-danger" size="sm" confirm="Usunąć produkt "|add:product.code|add:"?" %}
+            </form>{% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8">
+          {% if query %}{% include "ui/components/_empty.html" with icon="search" title="Brak wyników" desc="Nic nie pasuje do „"|add:query|add:"”. Zmień frazę albo wyczyść filtry." %}
+          {% elif can_write_products %}{% url 'ui:planner_product_new' as new_url %}{% include "ui/components/_empty.html" with icon="package" title="Brak produktów" desc="Dodaj pierwszy produkt albo zaimportuj CSV z menu „Więcej”." action_url=new_url action_label="Nowy produkt" action_icon="plus" %}
+          {% else %}{% include "ui/components/_empty.html" with icon="package" title="Brak produktów" %}{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="pagination" aria-label="Strony listy produktów">
+  {% if page_obj.has_previous %}
+  <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">‹</a>
+  {% else %}<span class="disabled">‹</span>{% endif %}
+  {% for num in page_obj.paginator.page_range %}
+  {% if page_obj.number == num %}<span class="current">{{ num }}</span>
+  {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+  <a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+  {% endif %}{% endfor %}
+  {% if page_obj.has_next %}
+  <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">›</a>
+  {% else %}<span class="disabled">›</span>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

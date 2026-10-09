@@ -1,0 +1,61 @@
+{% extends "ui/base.html" %}
+{% block title %}Generator hali — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="breadcrumb">
+      <a href="{% url 'ui:warehouse_model_list' %}">Modele magazynu</a>
+      <span class="breadcrumb__sep">/</span>
+      <span>Generator hali</span>
+    </div>
+    <div class="page-header__title">Nowy magazyn od zera — generator hali</div>
+    <div class="page-header__sub">Pojemność i doki → układ hali (przepływ I: przyjęcia z lewej, wydania z prawej). Wynik to zwykły model magazynu z widokiem 3D i animacją przepływów.</div>
+  </div>
+</div>
+
+{% if summary %}
+<div class="stats-grid">
+  <div class="stat-card"><div><div class="stat-value">{{ summary.floor_w|floatformat:0 }} × {{ summary.floor_d|floatformat:0 }} m</div><div class="stat-label">Hala · {{ summary.area_m2|floatformat:"0g" }} m²</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ summary.pallet_positions|floatformat:"0g" }}</div><div class="stat-label">Miejsca paletowe VNA · {{ summary.vna_levels }} poziomów, {{ summary.vna_rows }} rzędów × {{ summary.vna_row_len_m|floatformat:0 }} m</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ summary.carton_locations|floatformat:"0g" }}</div><div class="stat-label">Lokalizacje kartonowe K1 · {{ summary.k1_rows }} rzędów półek</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ summary.docks_in }} / {{ summary.docks_out }}</div><div class="stat-label">Bramy przyjęć / wydań</div></div></div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header"><span class="card-header__title">Parametry (wartości startowe: wzorzec EDCO Deurne × dane ACME z 2026-10-02)</span></div>
+  <div class="card-body">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+      <div class="alert alert-error" style="margin-bottom:16px">{% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}</div>
+      {% endif %}
+      {% for title, fields in form.sections %}
+      <div style="margin-bottom:20px">
+        <div class="section-title">{{ title }}</div>
+        <div class="form-grid-2" style="gap:16px">
+          {% for field in fields %}
+          <div class="form-group">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}<ul class="error-list">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+      <div style="display:flex;gap:10px;padding-top:8px;border-top:1px solid var(--gray-100)">
+        <button type="submit" name="create" value="1" class="btn btn-primary">Utwórz model i pokaż w 3D</button>
+        <button type="submit" name="preview" value="1" class="btn btn-secondary">Przelicz</button>
+        <a href="{% url 'ui:warehouse_model_list' %}" class="btn btn-secondary">Anuluj</a>
+      </div>
+    </form>
+  </div>
+</div>
+<p class="text-muted text-sm" style="margin-top:12px">
+  Szacunek z katalogu sprzętu (regał VNA: gniazdo 2,7 m × 3 palety, korytarz 1,8 m; 1 m wolnego pod tryskaczami).
+  Doki, sprzęt i ludzi doprecyzuje symulacja dnia projektowego (etap 3 planu).
+</p>
+{% endblock %}

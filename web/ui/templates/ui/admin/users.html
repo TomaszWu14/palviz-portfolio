@@ -1,0 +1,184 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Zarządzanie użytkownikami — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .uz-actions { display:flex; gap:9px; flex-wrap:wrap; }
+  .uz-kpi { display:grid; grid-template-columns:repeat(3,1fr) 1.4fr; gap:1px; background:var(--gray-200);
+    border:1px solid var(--gray-200); border-radius:12px; overflow:hidden; margin:16px 0; }
+  .uz-kpi > div { background:var(--surface); padding:14px 18px; display:flex; flex-direction:column; gap:5px; }
+  .uz-kpi .lbl { font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:var(--gray-500); font-weight:600; }
+  .uz-kpi .val { font-size:23px; font-weight:800; line-height:1; display:flex; align-items:center; gap:8px; }
+  .uz-dot { width:9px; height:9px; border-radius:99px; background:var(--green); box-shadow:0 0 0 3px var(--green-light); }
+  .uz-imp { display:flex; flex-direction:row; align-items:center; gap:14px; }
+  .uz-imp .meta { display:flex; flex-direction:column; gap:3px; min-width:0; }
+  .uz-imp .meta small { font-size:12px; color:var(--gray-500); }
+  .uz-av { width:34px; height:34px; flex:none; border-radius:10px; display:grid; place-items:center;
+    font-weight:800; font-size:12px; background:var(--gray-100); color:var(--gray-700); }
+  .uz-av.su { background:var(--green); color:#fff; }
+  .badge-super { font-size:10px; font-weight:800; letter-spacing:.06em; padding:2px 6px; border-radius:5px; background:var(--green); color:#fff; }
+  .badge-you { font-size:10px; font-weight:600; padding:2px 6px; border-radius:5px; background:var(--gray-100); color:var(--gray-600); }
+  .role-badge { font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px; background:var(--gray-100); color:var(--gray-600); }
+  .status-pill { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; padding:4px 10px; border-radius:999px; }
+  .status-pill.on { background:var(--green-light); color:var(--green); }
+  .status-pill.off { background:var(--gray-100); color:var(--gray-500); }
+  .uz-search { display:flex; align-items:center; gap:8px; height:34px; padding:0 12px; border-radius:9px;
+    background:var(--gray-50); border:1px solid var(--gray-200); width:270px; }
+  .uz-search input { border:0; outline:0; background:transparent; font-size:13px; width:100%; color:var(--gray-900); }
+  .grp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; }
+  .grp-card { background:var(--surface); border:1px solid var(--gray-200); border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .grp-count { font-size:11px; font-weight:600; padding:3px 9px; border-radius:999px; background:var(--gray-100); color:var(--gray-500); }
+  .grp-count.has { background:var(--green-light); color:var(--green); }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_panel' %}">Panel admina</a><span class="breadcrumb__sep">›</span><span>Użytkownicy</span></nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Zarządzanie użytkownikami</div>
+    <div class="page-header__sub">Role, sesje i uprawnienia w systemie {{ app_name }}</div>
+  </div>
+  <div class="uz-actions">
+    <a href="{% url 'ui:admin_role_matrix' %}" class="btn btn-ghost">{% icon "clipboard-list" %} Macierz ról</a>
+    <a href="{% url 'ui:admin_control_zones' %}" class="btn btn-ghost">{% icon "map" %} Strefy kontroli</a>
+    <a href="{% url 'ui:admin_user_new' %}" class="btn btn-primary">+ Nowy użytkownik</a>
+  </div>
+</div>
+
+<div class="uz-kpi">
+  <div><span class="lbl">Użytkownicy</span><span class="val">{{ total_users }}</span></div>
+  <div><span class="lbl">Zalogowanych teraz</span><span class="val"><span class="uz-dot"></span>{{ active_session_count }}</span></div>
+  <div><span class="lbl">Aktywne sesje</span><span class="val">{{ total_session_count }}</span></div>
+  <div class="uz-imp">
+    <div class="meta"><span class="lbl">Import z pliku</span><small>XLSX / CSV · upsert po loginie</small></div>
+    <div style="flex:1"></div>
+    <button type="button" id="uzImpBtn" class="btn btn-secondary btn-sm">Import</button>
+  </div>
+</div>
+
+<form method="post" action="{% url 'ui:admin_users_import' %}" enctype="multipart/form-data"
+      id="uzImpPanel" class="card" style="display:none;padding:16px 18px;margin-bottom:16px;align-items:center;gap:14px;flex-wrap:wrap">
+  {% csrf_token %}
+  <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:280px">
+    <input type="file" name="file" accept=".csv,.xlsx,.xls" required>
+    <span class="help-text">Kolumny: <strong>login*</strong>, imię, nazwisko, email, hasło (nowi), role (po przecinku), telefon, dział, aktywny.</span>
+  </div>
+  <button type="submit" class="btn btn-primary btn-sm">Wgraj</button>
+</form>
+
+<div class="card">
+  <div class="card-header" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span class="card-header__title">Lista użytkowników</span>
+    <span class="role-badge">{{ users|length }} z {{ total_users }}</span>
+    <div style="flex:1"></div>
+    <form method="get" class="uz-search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--gray-400)"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+      <input type="search" name="q" value="{{ q }}" placeholder="Login, imię lub e-mail" autocomplete="off">
+      {% if q %}<a href="{% url 'ui:admin_users' %}" style="color:var(--gray-400)">{% icon "x" label="Wyczyść wyszukiwanie" cls="icon--em" %}</a>{% endif %}
+    </form>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Użytkownik</th><th>Imię i nazwisko</th><th>E-mail</th><th>Rola / grupy</th><th>Status</th><th>Ostatnie logowanie</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for u in users %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:11px">
+            <div class="uz-av {% if u.is_superuser %}su{% endif %}">{{ u.username|slice:":2"|upper }}</div>
+            <div style="min-width:0">
+              <div style="display:flex;align-items:center;gap:7px">
+                <span style="font-weight:700">{{ u.username }}</span>
+                {% if u.is_superuser %}<span class="badge-super">SUPER</span>{% endif %}
+                {% if u == request.user %}<span class="badge-you">to Ty</span>{% endif %}
+              </div>
+              {% if u.profile.department %}<div style="font-size:12px;color:var(--gray-500);margin-top:2px">{{ u.profile.department }}</div>{% endif %}
+            </div>
+          </div>
+        </td>
+        <td class="text-muted">{{ u.get_full_name|default:"—" }}</td>
+        <td class="text-muted" style="font-size:13px">{{ u.email|default:"—" }}</td>
+        <td>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">
+            {% for g in u.groups.all %}<span class="role-badge">{{ g.name }}</span>{% empty %}<span class="text-muted" style="font-size:11px">— brak roli —</span>{% endfor %}
+          </div>
+        </td>
+        <td>
+          {% if u.is_active %}<span class="status-pill on">Aktywny</span>{% else %}<span class="status-pill off">Nieaktywny</span>{% endif %}
+        </td>
+        <td class="text-muted" style="font-size:13px">{{ u.last_login|date:"d.m.Y H:i"|default:"Nigdy" }}</td>
+        <td style="text-align:right;white-space:nowrap">
+          {% if u != request.user %}
+          <a href="{% url 'ui:admin_user_edit' u.pk %}" class="btn btn-ghost btn-sm">Edytuj</a>
+          <form method="post" action="{% url 'ui:admin_user_toggle' u.pk %}" style="display:inline"
+                {% if u.is_active %}onsubmit="return confirm('Dezaktywować użytkownika {{ u.username }}? Straci dostęp do aplikacji.')"{% endif %}>
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-sm" style="color:{% if u.is_active %}var(--yellow-dark){% else %}var(--green){% endif %}">{% if u.is_active %}Dezaktywuj{% else %}Aktywuj{% endif %}</button>
+          </form>
+          <a href="{% url 'ui:admin_user_delete' u.pk %}" class="btn btn-ghost btn-sm" style="color:var(--red)">Usuń</a>
+          {% else %}<span class="text-muted" style="font-size:11px">to Ty</span>{% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-muted" style="text-align:center;padding:34px">
+        {% if q %}Brak użytkowników pasujących do „{{ q }}".{% else %}Brak użytkowników{% endif %}
+      </td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-size:13px;color:var(--gray-500)">
+    <span>Strona {{ page_obj.number }} z {{ page_obj.paginator.num_pages }} ({{ page_obj.paginator.count }} użytkowników)</span>
+    <span style="display:flex;gap:6px">
+      {% if page_obj.has_previous %}<a class="btn btn-ghost btn-sm" href="?{% if q %}q={{ q }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">‹ Poprzednia</a>{% endif %}
+      {% if page_obj.has_next %}<a class="btn btn-ghost btn-sm" href="?{% if q %}q={{ q }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Następna ›</a>{% endif %}
+    </span>
+  </div>
+  {% endif %}
+</div>
+
+<div style="margin-top:26px">
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green)">Grupy w systemie</div>
+    <span style="font-size:12px;color:var(--gray-500)">uprawnienia grup ustawiasz w <a href="{% url 'ui:admin_role_matrix' %}">macierzy ról</a></span>
+  </div>
+  <div class="grp-grid">
+    {% for g in groups %}
+    <div class="grp-card">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-weight:700;font-size:13px">{{ g.name }}</span>
+        <div style="flex:1"></div>
+        <span class="grp-count {% if g.user_set.count %}has{% endif %}">{% if g.user_set.count %}{{ g.user_set.count }}{% else %}brak{% endif %}</span>
+      </div>
+      <p style="margin:0;font-size:12px;line-height:1.45;color:var(--gray-500)">
+        {% if g.name == "Administratorzy" %}Pełny dostęp do wszystkich modułów systemu.
+        {% elif g.name == "Master Data" %}Produkty, kartony, kategorie, instrukcje, model magazynu, szablony Excel.
+        {% elif g.name == "Transport" %}Wysyłki, przewoźnicy, kalkulator. Podgląd instrukcji i produktów.
+        {% elif g.name == "Kontrola HU" %}Skanowanie i zatwierdzanie kontroli jednostek.
+        {% elif g.name == "Lider kontroli" %}Kontrola HU plus wymuszanie rekontroli i zarządzanie zgłoszeniami.
+        {% elif g.name == "Podgląd" %}Tylko podgląd: instrukcje paletyzacji, produkty, mapa 3D, occupancy.
+        {% elif g.name == "Obsługa klienta" %}Baza klientów i zgłoszenia.
+        {% elif g.name == "Magazyn" %}Wydruk HU, model magazynu, MATinfo.
+        {% elif g.name == "Optymalizacja kartonów" %}Optymalizacja wypełnienia palet (skrzynka zgłoszeń).
+        {% endif %}
+      </p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+(function(){
+  var b = document.getElementById('uzImpBtn'), p = document.getElementById('uzImpPanel');
+  b.addEventListener('click', function(){
+    var open = p.style.display !== 'none';
+    p.style.display = open ? 'none' : 'flex';
+    b.textContent = open ? 'Import' : 'Zamknij';
+  });
+})();
+</script>
+{% endblock %}

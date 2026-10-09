@@ -1,0 +1,17 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Usuń przesyłkę — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+{% block content %}
+<div class="card" style="max-width:420px;margin:40px auto">
+  <div class="card-body" style="text-align:center">
+    <div style="font-size:32px;margin-bottom:12px">{% icon "trash-2" cls="icon--em" %}</div>
+    <h3>Usuń przesyłkę</h3>
+    <p style="color:var(--gray-500);margin:10px 0 20px">Czy na pewno usunąć przesyłkę <strong>{{ shipment.name }}</strong>?</p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <form method="post">{% csrf_token %}<button type="submit" class="btn btn-primary" style="background:var(--red);border-color:var(--red)">Usuń</button></form>
+      <a href="{% url 'ui:planner_shipments' %}" class="btn btn-secondary">Anuluj</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

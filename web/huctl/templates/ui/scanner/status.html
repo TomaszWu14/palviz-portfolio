@@ -1,0 +1,178 @@
+{% extends "ui/scanner/base.html" %}{% load palviz_extras %}
+{% block bar %}Status kontroli{% endblock %}
+{% block back %}<a href="{% url 'ui:hu_control_menu' %}">‹</a>{% endblock %}
+{% block content %}
+<style>
+  /* Ekran statusu kontroli — trójpoziomowa hierarchia (podsumowanie → strefy → HU).
+     Liczby tabular-nums (kolumny się wyrównują); siatki zawsze repeat(4,1fr). */
+  .st-num { font-variant-numeric: tabular-nums; }
+  .st-sum { border-radius:14px; padding:13px 14px; margin-bottom:14px;
+            background:{% if section_theme %}{{ section_theme.summary_bg }}{% else %}#e2f4f1{% endif %};
+            border:1px solid {% if section_theme %}{{ section_theme.summary_border }}{% else %}#a5d3cc{% endif %}; }
+  .st-sum__over { font-size:12px; font-weight:900; letter-spacing:.09em; text-transform:uppercase; color:var(--label); }
+  .st-sum__line { font-size:15px; font-weight:700; color:#133b3a; margin-top:2px; }
+  .st-sum__pct  { font-size:30px; font-weight:900; line-height:1; color:#0c5c58; }
+  .st-sum__pct small { font-size:17px; font-weight:900; }
+  .st-bar { height:10px; border-radius:6px; background:#cfe6e2; overflow:hidden; margin:10px 0; }
+  .st-bar > i { display:block; height:100%; background:#0f7d79; }
+  .st-g4 { display:grid; grid-template-columns:repeat(4,1fr); }
+  .st-sum .st-g4 { gap:0; text-align:center; }
+  .st-sum__n { font-size:17px; font-weight:900; }
+  .st-sum__c { font-size:10px; font-weight:800; color:var(--label); margin-top:1px; }
+  /* Nagłówek sekcji STREFY (n) ──── */
+  .st-shdr { display:flex; align-items:center; gap:10px; margin:2px 0 12px; }
+  .st-shdr__lbl { font-size:12px; font-weight:900; letter-spacing:.1em; text-transform:uppercase; color:var(--label); }
+  .st-shdr__pill { background:#cfe6e2; color:#0c5c58; font-size:12px; font-weight:900; padding:2px 10px; border-radius:999px; }
+  .st-shdr__line { flex:1; height:1px; background:#bcdcd6; }
+  /* Karta strefy */
+  .st-zone { border-radius:14px; margin-bottom:12px; overflow:hidden; box-shadow:0 1px 3px rgba(13,60,58,.14); }
+  .st-zhead { display:flex; align-items:center; gap:10px; padding:11px 13px; color:#fff; }
+  .st-zhead__pill { background:rgba(255,255,255,.22); font-size:11px; font-weight:900; letter-spacing:.1em; padding:3px 9px; border-radius:999px; }
+  .st-zhead__code { font-size:20px; font-weight:900; }
+  .st-zhead__cnt { margin-left:auto; font-size:15px; }
+  .st-zhead__cnt b { font-size:19px; font-weight:900; }
+  .st-zhead__cnt i { font-size:13px; opacity:.7; font-style:normal; }
+  .st-zbody { padding:12px 13px; }
+  .st-zbar { height:8px; border-radius:6px; overflow:hidden; margin-bottom:11px; }
+  .st-zbar > i { display:block; height:100%; }
+  /* Strefy jako JEDNA tabela: wiersz=strefa, kolumny=statusy. Neutralna kolorystyka,
+     akcent tylko na badge'u przewoźnika; zera wyszarzone (st-z0). */
+  /* Kontener luźny — każdy typ magazynu to OSOBNY obramowany blok (st-zgrp). */
+  .st-tbl { background:transparent; }
+  .st-tr--head { display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr 1fr;
+                 background:#e8f3f1; border:1px solid #b9d2cd; border-radius:12px;
+                 padding:8px 0 8px 12px; margin-bottom:8px; }
+  .st-tr--head > span { font-size:12px; font-weight:800; color:#41615d; text-align:center;
+                        border-left:1px solid #cfe0dd; padding:2px 4px; }
+  .st-tr--head > span:first-child { text-align:left; border-left:0; padding-left:0; }
+  .st-zgrp { background:#fff; border:1.5px solid #b9d2cd; border-radius:12px;
+             overflow:hidden; margin-bottom:10px; box-shadow:0 1px 4px rgba(13,60,58,.06); }
+  .st-tr { display:grid; grid-template-columns:1.6fr 1fr 1fr 1fr 1fr; align-items:center;
+           padding:10px 0 10px 12px; }
+  /* Wyraźniejsze pionowe linie między kolumnami liczb. */
+  .st-tr > .st-num { font-size:17px; font-weight:800; text-align:center; color:#134744;
+                     border-left:1px solid #d7e5e2; padding:4px 4px; align-self:stretch;
+                     display:flex; align-items:center; justify-content:center; }
+  .st-tz { display:flex; flex-direction:column; gap:3px; min-width:0; padding-right:6px; }
+  .st-tz b { font-size:17px; font-weight:800; color:#0c2b2a; }
+  .st-tz i { font-style:normal; font-size:11px; font-weight:800; letter-spacing:.06em;
+             padding:2px 8px; border-radius:999px; align-self:flex-start; }
+  .st-tz small { font-size:12px; font-weight:700; color:var(--muted); }
+  .st-z0 { color:#b8ccc8 !important; font-weight:600 !important; }
+  /* „Miejsca składowania" jako WYRAŹNIE oddzielony pas pod wierszem liczb — własne tło
+     i cienka linia, żeby objętość nie zlewała się z kolumnami HU powyżej. */
+  .st-trdet { border-top:1.5px solid #d7e5e2; padding:0 12px; background:#f4faf8; }
+  .st-zfoot { display:flex; align-items:center; gap:7px; font-size:13px; font-weight:700; padding:7px 0; }
+  .st-zfoot__v { margin-left:auto; font-weight:800; }
+  .st-zfoot svg { flex:0 0 auto; }
+  /* Lista HU po rozwinięciu */
+  details.st-det > summary { list-style:none; cursor:pointer; }
+  details.st-det > summary::-webkit-details-marker { display:none; }
+  .st-loc { display:flex; align-items:center; gap:7px; margin:12px 0 6px; }
+  .st-loc__code { font-size:16px; font-weight:900; color:#0c5c58; }
+  .st-loc__pill { background:#e2f4f1; color:#0c6f67; font-size:11px; font-weight:900; padding:2px 9px; border-radius:999px; }
+  .st-loc__v { margin-left:auto; font-size:13px; font-weight:800; color:#4a706c; }
+  .st-hu { display:flex; align-items:center; gap:8px; padding:8px 10px; margin-bottom:5px;
+           border-left:4px solid; border-radius:0 8px 8px 0; }
+  .st-hu__dot { width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+  .st-hu__ref { font-size:15px; font-weight:800; }
+  .st-badge { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:900;
+              letter-spacing:.04em; padding:2px 8px; border-radius:999px; }
+  .st-hu__sub { font-size:12px; font-weight:700; color:var(--muted); }
+  .st-hu__v { margin-left:auto; font-size:14px; font-weight:800; white-space:nowrap; }
+  .st-foot { font-size:10px; color:#8aa6a2; margin-top:10px; text-align:center; }
+</style>
+
+{# ── 1. Podsumowanie zbiorcze (ukryte gdy brak HU — bez "0 z 0 HU · 0%") ── #}
+{% if zones %}
+<div class="st-sum">
+  <div style="display:flex;align-items:flex-start">
+    <div style="flex:1">
+      <div class="st-sum__over">Wszystkie strefy</div>
+      <div class="st-sum__line st-num">{{ summary.done }} z {{ summary.scope }} HU
+        · poz. {{ summary.pos_done|default:0 }}/{{ summary.pos_total|default:0 }}
+        {% if summary.volume %}· {% if summary.estimated %}~{% endif %}{{ summary.volume|floatformat:1 }} m³{% endif %}</div>
+    </div>
+    <div class="st-sum__pct st-num">{{ summary.pct }}<small>%</small></div>
+  </div>
+  <div class="st-bar"><i style="width:{{ summary.pct }}%"></i></div>
+  <div class="st-g4">
+    <div><div class="st-sum__n st-num" style="color:#2f6b3a">{{ summary.ok }}</div><div class="st-sum__c">zgodne</div></div>
+    <div><div class="st-sum__n st-num" style="color:var(--teal-deep)">{{ summary.in_control }}</div><div class="st-sum__c">w kontroli</div></div>
+    <div><div class="st-sum__n st-num" style="color:#b3402f">{{ summary.to_recheck }}</div><div class="st-sum__c">rekontrola</div></div>
+    <div><div class="st-sum__n st-num" style="color:#4a706c">{{ summary.planned }}</div><div class="st-sum__c">zaplan.</div></div>
+  </div>
+  {% if summary.escaped %}<div class="st-sum__c" style="margin-top:6px;color:#992c1b">{{ escaped_label }}: <b class="st-num">{{ summary.escaped }}</b> (poza postępem)</div>{% endif %}
+</div>
+
+{# ── 2. Nagłówek sekcji ── #}
+<div class="st-shdr">
+  <span class="st-shdr__lbl">Strefy</span>
+  <span class="st-shdr__pill st-num">{{ zones|length }}</span>
+  <span class="st-shdr__line"></span>
+</div>
+{% endif %}
+
+{# ── 3. Strefy: JEDNA spokojna tabela (wiersz=strefa, kolumny=statusy); akcent tylko badge przewoźnika. #}
+<div class="st-tbl">
+  <div class="st-tr st-tr--head">
+    <span>Strefa</span><span>zaplan.</span><span>w kontroli</span><span>zgodne</span><span>rekontr.</span>
+  </div>
+{% for z in zones %}
+{% with t=z.theme %}
+  {# Każdy typ magazynu = osobny obramowany blok (wiersz liczb + pas Miejsc w jednej ramce). #}
+  <div class="st-zgrp">
+  <div class="st-tr">
+    <span class="st-tz">
+      {# Dwuwiersz: proces (pigułka) + kody stref wchodzących w proces (92EX + WCEX). #}
+      <b class="st-num">{{ z.zone_codes }}</b>
+      <i style="background:{{ t.pill_bg }};color:{{ t.pill_text }}">{{ t.carrier_label }}</i>
+      <small class="st-num">poz. {{ z.pos_done }}/{{ z.pos_total }}</small>
+    </span>
+    <span class="st-num{% if not z.planned %} st-z0{% endif %}">{{ z.planned }}</span>
+    <span class="st-num{% if not z.in_control %} st-z0{% endif %}" style="{% if z.in_control %}color:var(--teal-deep);font-weight:900{% endif %}">{{ z.in_control }}</span>
+    <span class="st-num{% if not z.ok %} st-z0{% endif %}" style="{% if z.ok %}color:#2f6b3a{% endif %}">{{ z.ok }}</span>
+    <span class="st-num{% if not z.to_recheck %} st-z0{% endif %}" style="{% if z.to_recheck %}color:#b3402f;font-weight:900{% endif %}">{{ z.to_recheck }}</span>
+  </div>
+  <div class="st-trdet">
+    <details class="st-det">
+      <summary class="st-zfoot" style="color:#0c5c58">
+        <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="#0c5c58" stroke-width="2"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"/><path d="M3 7l9 4 9-4"/><path d="M12 11v10"/></svg>
+        Miejsca składowania
+        {% if z.escaped %}<span style="background:#f6d9cd;color:#992c1b;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px">{{ escaped_label }} {{ z.escaped }}</span>{% endif %}
+        <span class="st-zfoot__v st-num" style="color:#0c5c58">{% if z.volume %}{% if z.estimated %}~{% endif %}{{ z.volume|floatformat:1 }} m³{% endif %}</span>
+      </summary>
+      {% for loc in z.locations %}
+      <div class="st-loc">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#0c5c58" stroke-width="2"><path d="M12 21s-7-6.5-7-11a7 7 0 0114 0c0 4.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <span class="st-loc__code">{{ loc.location }}</span>
+        <span class="st-loc__pill st-num">{{ loc.count }} HU</span>
+        <span class="st-loc__v st-num">{% if loc.volume %}{% if loc.estimated %}~{% endif %}{{ loc.volume|floatformat:2 }} m³{% endif %}</span>
+      </div>
+      {% for h in loc.hus %}
+      {% with tt=h.type_theme %}
+      <div class="st-hu" style="border-left-color:{{ tt.edge }};{% if tt.row_bg %}background:{{ tt.row_bg }}{% endif %}">
+        <span class="st-hu__dot" style="background:{% if h.status == 'ok' %}#2f6b3a{% elif h.status == 'to_recheck' %}#b3402f{% elif h.status == 'in_control' %}#0f7d79{% elif h.status == 'escaped' %}#b45309{% else %}#c3d6d3{% endif %}"></span>
+        <div style="min-width:0;flex:1">
+          <div style="display:flex;align-items:center;gap:7px">
+            <span class="st-hu__ref st-num" style="color:{{ tt.ref }}">{{ h.ref }}</span>
+            {% if h.vip %}<span class="st-badge" style="background:#fbbf24;color:#78350f">{% icon "star" %} VIP</span>{% endif %}
+            <span class="st-badge" style="background:{{ tt.badge_bg }};color:{{ tt.badge_text }}">{% if tt.badge_glyph %}{{ tt.badge_glyph }} {% endif %}{{ tt.label }}</span>
+          </div>
+          <div class="st-hu__sub">{% if h.client %}{{ h.client }} · {% endif %}{{ h.status_label }}</div>
+        </div>
+        <span class="st-hu__v st-num">poz. {{ h.pos_done }}/{{ h.pos_total }}{% if h.volume %} · {% if h.estimated %}~{% endif %}{{ h.volume|floatformat:2 }} m³{% endif %}</span>
+      </div>
+      {% endwith %}
+      {% endfor %}
+      {% endfor %}
+      <div class="st-foot">Objętość ≈ z master daty; ~ = szacunek</div>
+    </details>
+  </div>
+  </div>
+{% endwith %}
+{% empty %}
+<div class="card" style="text-align:center;color:#475569;font-size:15px">Brak HU.</div>
+{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,775 @@
+{
+ "all_skipped": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Nie znaleziono poprawnych wierszy (lokalizacja + data) — nic nie zaimportowano."
+   ]
+  ],
+  "redirect": "list"
+ },
+ "at_size_limit": {
+  "db": {
+   "activities": [
+    {
+     "batch": "Limit",
+     "confirmed_at": "2026-08-01 06:00:00+00:00",
+     "location_code": "A1",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-01",
+     "name": "Limit",
+     "row_count": 1
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 wierszy."
+   ]
+  ],
+  "redirect": "detail:Limit"
+ },
+ "blank_csv": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Nie znaleziono kolumny lokalizacji (lok/location/adres/msc.skład)."
+   ]
+  ],
+  "redirect": "list"
+ },
+ "bulk_chunking": {
+  "batch": {
+   "date_from": "2026-08-01",
+   "date_to": "2026-08-28",
+   "row_count": 1201
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1201 wierszy."
+   ]
+  ],
+  "redirect": "detail:Duża"
+ },
+ "bulk_error_chunk": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Błąd zapisu danych: awaria DB"
+   ]
+  ],
+  "redirect": "list"
+ },
+ "bulk_error_final": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Błąd zapisu danych: koniec"
+   ]
+  ],
+  "redirect": "list"
+ },
+ "csv_blank_name": {
+  "db": {
+   "activities": [
+    {
+     "batch": "spacje.csv",
+     "confirmed_at": "2026-08-01 06:00:00+00:00",
+     "location_code": "A1",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-01",
+     "name": "spacje.csv",
+     "row_count": 1
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 wierszy."
+   ]
+  ],
+  "redirect": "detail:spacje.csv"
+ },
+ "csv_combined": {
+  "db": {
+   "activities": [
+    {
+     "batch": "CSV",
+     "confirmed_at": "2026-08-01 06:00:00+00:00",
+     "location_code": "A-01",
+     "lot": "L1",
+     "material_code": "M1",
+     "picker_name": "Jan",
+     "qty": 2.0,
+     "task_type": "PICK",
+     "unit": "KAR"
+    },
+    {
+     "batch": "CSV",
+     "confirmed_at": "2026-08-02 07:15:30+00:00",
+     "location_code": "A-02",
+     "lot": "L2",
+     "material_code": "M2",
+     "picker_name": "Ewa",
+     "qty": 1234.5,
+     "task_type": "PUT",
+     "unit": "OP"
+    },
+    {
+     "batch": "CSV",
+     "confirmed_at": "2026-08-03 08:05:00+00:00",
+     "location_code": "A-03",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "Olek",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "CSV",
+     "confirmed_at": "2026-08-04 09:00:00+00:00",
+     "location_code": "A-04",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": 0.0,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "CSV",
+     "confirmed_at": "2026-08-05 10:30:00+00:00",
+     "location_code": "A-05",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": 1234.5,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "CSV",
+     "confirmed_at": "2026-08-06 11:45:00+00:00",
+     "location_code": "A-06",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "CSV",
+     "confirmed_at": "2026-08-07 22:00:00+00:00",
+     "location_code": "A-08",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "X",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "CSV",
+     "confirmed_at": "2026-08-10 06:00:00+00:00",
+     "location_code": "A-10",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "CSV",
+     "confirmed_at": "2026-08-11 06:00:00+00:00",
+     "location_code": "LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL",
+     "lot": "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ",
+     "material_code": "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+     "picker_name": "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP",
+     "qty": 3.0,
+     "task_type": "TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+     "unit": "UUUUUUUUUUUUUUUUUUUU"
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-11",
+     "name": "CSV",
+     "row_count": 9
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 9 wierszy."
+   ]
+  ],
+  "redirect": "detail:CSV"
+ },
+ "csv_cp1250": {
+  "db": {
+   "activities": [
+    {
+     "batch": "CP1250",
+     "confirmed_at": "2026-08-01 06:00:00+00:00",
+     "location_code": "A1",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "Łukasz",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-01",
+     "name": "CP1250",
+     "row_count": 1
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 wierszy."
+   ]
+  ],
+  "redirect": "detail:CP1250"
+ },
+ "csv_date_fallback": {
+  "db": {
+   "activities": [
+    {
+     "batch": "Fallback",
+     "confirmed_at": "2026-08-01 04:00:00+00:00",
+     "location_code": "C1",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "u1",
+     "qty": null,
+     "task_type": "3040",
+     "unit": ""
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-01",
+     "name": "Fallback",
+     "row_count": 1
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 wierszy."
+   ]
+  ],
+  "redirect": "detail:Fallback"
+ },
+ "csv_date_time_split": {
+  "db": {
+   "activities": [
+    {
+     "batch": "Split",
+     "confirmed_at": "2026-08-01 06:15:00+00:00",
+     "location_code": "B0-01-100A",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "Jan",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "Split",
+     "confirmed_at": "2026-08-01 06:15:00+00:00",
+     "location_code": "B0-01-100B",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "Jan",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "Split",
+     "confirmed_at": "2026-08-01 07:30:00+00:00",
+     "location_code": "B0-01-100C",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "Jan",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "Split",
+     "confirmed_at": "2026-08-01 05:00:00+00:00",
+     "location_code": "B0-01-100D",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "Jan",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "Split",
+     "confirmed_at": "2026-08-01 05:00:00+00:00",
+     "location_code": "B0-01-100E",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "Jan",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-01",
+     "name": "Split",
+     "row_count": 5
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 5 wierszy."
+   ]
+  ],
+  "redirect": "detail:Split"
+ },
+ "csv_default_name": {
+  "db": {
+   "activities": [
+    {
+     "batch": "Plik.csv",
+     "confirmed_at": "2026-08-01 06:00:00+00:00",
+     "location_code": "A1",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-01",
+     "name": "Plik.csv",
+     "row_count": 1
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 wierszy."
+   ]
+  ],
+  "redirect": "detail:Plik.csv"
+ },
+ "csv_qty_nbsp": {
+  "db": {
+   "activities": [
+    {
+     "batch": "NBSP",
+     "confirmed_at": "2026-08-01 06:00:00+00:00",
+     "location_code": "A1",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": 1234.0,
+     "task_type": "",
+     "unit": ""
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-01",
+     "name": "NBSP",
+     "row_count": 1
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 wierszy."
+   ]
+  ],
+  "redirect": "detail:NBSP"
+ },
+ "csv_timestamp_unit_quirk": {
+  "db": {
+   "activities": [
+    {
+     "batch": "TS",
+     "confirmed_at": "2026-08-01 06:00:00+00:00",
+     "location_code": "A1",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "Ola",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-01",
+     "name": "TS",
+     "row_count": 1
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 wierszy."
+   ]
+  ],
+  "redirect": "detail:TS"
+ },
+ "empty_xlsx": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik jest pusty."
+   ]
+  ],
+  "redirect": "list"
+ },
+ "header_only": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik nie zawiera wierszy danych (tylko nagłówek)."
+   ]
+  ],
+  "redirect": "list"
+ },
+ "no_date_col": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Nie znaleziono kolumny daty/czasu (data potw/conf/date)."
+   ]
+  ],
+  "redirect": "list"
+ },
+ "no_file": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Nie wybrano pliku."
+   ]
+  ],
+  "redirect": "list"
+ },
+ "no_loc_col": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Nie znaleziono kolumny lokalizacji (lok/location/adres/msc.skład)."
+   ]
+  ],
+  "redirect": "list"
+ },
+ "repeat_upload": {
+  "db": {
+   "activities": [
+    {
+     "batch": "Powtórka",
+     "confirmed_at": "2026-08-01 06:00:00+00:00",
+     "location_code": "A1",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "Powtórka",
+     "confirmed_at": "2026-08-01 06:00:00+00:00",
+     "location_code": "A1",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-01",
+     "name": "Powtórka",
+     "row_count": 1
+    },
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-01",
+     "name": "Powtórka",
+     "row_count": 1
+    }
+   ]
+  },
+  "first": {
+   "messages": [
+    [
+     "success",
+     "Zaimportowano 1 wierszy."
+    ]
+   ],
+   "redirect": "detail:Powtórka"
+  },
+  "second": {
+   "messages": [
+    [
+     "success",
+     "Zaimportowano 1 wierszy."
+    ],
+    [
+     "success",
+     "Zaimportowano 1 wierszy."
+    ]
+   ],
+   "redirect": "detail:Powtórka"
+  }
+ },
+ "too_large": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik jest zbyt duży (max 20 MB)."
+   ]
+  ],
+  "redirect": "list"
+ },
+ "txt_as_csv": {
+  "db": {
+   "activities": [
+    {
+     "batch": "Txt",
+     "confirmed_at": "2026-08-01 06:00:00+00:00",
+     "location_code": "A1",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-01",
+     "name": "Txt",
+     "row_count": 1
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 1 wierszy."
+   ]
+  ],
+  "redirect": "detail:Txt"
+ },
+ "xlsx_header_only": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik nie zawiera wierszy danych (tylko nagłówek)."
+   ]
+  ],
+  "redirect": "list"
+ },
+ "xlsx_numeric_headers": {
+  "db": {
+   "activities": [],
+   "batches": []
+  },
+  "messages": [
+   [
+    "error",
+    "Nie znaleziono kolumny lokalizacji (lok/location/adres/msc.skład)."
+   ]
+  ],
+  "redirect": "list"
+ },
+ "xlsx_typed": {
+  "db": {
+   "activities": [
+    {
+     "batch": "XLSX",
+     "confirmed_at": "2026-08-06 04:00:00+00:00",
+     "location_code": "12345",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "XLSX",
+     "confirmed_at": "2026-08-01 06:15:00+00:00",
+     "location_code": "B0-01-100A",
+     "lot": "55",
+     "material_code": "1001",
+     "picker_name": "Jan",
+     "qty": 2.0,
+     "task_type": "PICK",
+     "unit": "KAR"
+    },
+    {
+     "batch": "XLSX",
+     "confirmed_at": "2026-08-02 08:20:30+00:00",
+     "location_code": "B0-01-100B",
+     "lot": "L2",
+     "material_code": "M2",
+     "picker_name": "Ewa",
+     "qty": 1.5,
+     "task_type": "",
+     "unit": "OP"
+    },
+    {
+     "batch": "XLSX",
+     "confirmed_at": "2026-08-03 09:00:00+00:00",
+     "location_code": "B0-01-100C",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": 0.0,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "XLSX",
+     "confirmed_at": "2026-08-04 10:00:00+00:00",
+     "location_code": "B0-01-100D",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": null,
+     "task_type": "",
+     "unit": ""
+    },
+    {
+     "batch": "XLSX",
+     "confirmed_at": "2026-08-04 22:00:00+00:00",
+     "location_code": "B0-01-100E",
+     "lot": "",
+     "material_code": "",
+     "picker_name": "",
+     "qty": 7.0,
+     "task_type": "",
+     "unit": ""
+    }
+   ],
+   "batches": [
+    {
+     "date_from": "2026-08-01",
+     "date_to": "2026-08-06",
+     "name": "XLSX",
+     "row_count": 6
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Zaimportowano 6 wierszy."
+   ]
+  ],
+  "redirect": "detail:XLSX"
+ }
+}

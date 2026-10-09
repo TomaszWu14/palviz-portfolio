@@ -1,0 +1,262 @@
+{% load static i18n palviz_extras %}<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'pl' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  {% include "ui/_pwa_head.html" %}
+  {# Inter vendorowany lokalnie (@font-face w fonts.css, latin + latin-ext, pliki w static/ui/fonts/) — zero CDN, offline PWA. #}
+  {# Motyw pre-paint: profil serwera → localStorage → prefers-color-scheme. Inline, bo CSP+offline PWA. #}
+  <script>
+    try {
+      var s = "{{ ui_theme|default:'' }}";
+      var t = s || localStorage.getItem('ui-theme') ||
+              (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      document.documentElement.setAttribute('data-theme', t);
+      if (s) localStorage.setItem('ui-theme', s);
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="{% static 'ui/css/fonts.css' %}">
+  <link rel="stylesheet" href="{% static 'ui/css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'ui/css/app.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<a href="#content" class="skip-link">Przejdź do treści</a>
+
+{% if request.user.is_authenticated %}
+{# Launcher modułów (Ctrl+K) — Etap 3 audytu UI. Dane z nav_modules (te same moduły co pasek). #}
+<div class="gv-launcher" id="gv-launcher" role="dialog" aria-modal="true" aria-label="Szukaj modułu">
+  <div class="gv-launcher__box">
+    <input type="text" class="gv-launcher__input" id="gv-launcher-input" aria-label="Szukaj modułu" placeholder="Szukaj modułu…" autocomplete="off">
+    <ul class="gv-launcher__list" id="gv-launcher-list">
+      {% for m, murl in nav_modules %}
+      <li class="gv-launcher__item" data-url="{{ murl }}" data-key="{{ m.key }}" data-name="{{ m.name|lower }}">
+        <span class="gv-launcher__ico">{{ m.key|module_icon:20 }}</span>
+        <span>{{ m.name }}</span>
+        <span class="gv-launcher__desc">{{ m.description }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="gv-launcher__hint">↑↓ nawigacja · Enter otwórz · Esc zamknij</div>
+  </div>
+</div>
+{% endif %}
+
+<nav class="topnav">
+  <a class="topnav__brand" href="{% url 'ui:home' %}">
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <rect x="2" y="7" width="20" height="14" rx="2" stroke="white"/>
+      <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="white"/>
+      <line x1="12" y1="12" x2="12" y2="17" stroke="white"/>
+      <line x1="9.5" y1="14.5" x2="14.5" y2="14.5" stroke="white"/>
+    </svg>
+    {{ app_name }}
+  </a>
+
+  <div class="topnav__sep"></div>
+
+  {# Nawigacja 1b: sekcje z panelami + pozycje bezpośrednie (Zadania); dane z nav_grouped. #}
+  {% if nav_groups or nav_direct %}
+  <button type="button" class="gvnav-burger" id="gvnav-burger" aria-haspopup="true" aria-expanded="false" aria-controls="gvnav" aria-label="Menu nawigacji">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="gvnav" id="gvnav">
+    {% for label, items in nav_groups %}
+    <div class="gvnav__group">
+      <button type="button" class="gvnav__btn" aria-haspopup="true" aria-expanded="false">
+        <span>{{ label }}</span>
+        <svg class="gvnav__chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="gvnav__panel" role="menu">
+        <div class="gvnav__panel-label">{{ label }}</div>
+        {% for m, murl, ico in items %}
+        <a class="gvnav__item {% if request.path == murl %}is-active{% endif %}" href="{{ murl }}" role="menuitem">
+          <span class="gvnav__ico">{{ ico }}</span>
+          <span class="gvnav__text">
+            <span class="gvnav__name">{{ m.name }}</span>
+            <span class="gvnav__desc">{{ m.description }}</span>
+          </span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    {% for m, murl, ico in nav_direct %}
+    <a class="gvnav__direct {% if request.path == murl %}is-active{% endif %}" href="{{ murl }}">
+      <span class="gvnav__ico">{{ ico }}</span><span>{{ m.name }}</span>
+      {% if m.key == 'zadania' and unread_notifications %}<span class="gvnav__badge">{{ unread_notifications }}</span>{% endif %}
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="topnav__spacer"></div>
+
+  {# Przycisk launchera usunięty (2026-08) — skrót Ctrl+K nadal otwiera wyszukiwarkę modułów. #}
+
+  {# Dzwonek powiadomień jest teraz pozycją „Zadania" w pasku nawigacji (z licznikiem). #}
+
+  <!-- User menu -->
+  {% if request.user.is_authenticated %}
+  {% include "ui/_messages_bell.html" %}
+  <div class="usermenu" id="user-menu-wrap">
+    <button type="button" class="usermenu__btn" aria-haspopup="true" aria-expanded="false" aria-controls="user-dropdown">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      {{ request.user.username }}
+      <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div id="user-dropdown" class="usermenu__panel">
+      <div class="usermenu__who">
+        {{ request.user.get_full_name|default:request.user.username }}
+        {% if request.user.is_superuser %}
+          <span style="display:inline-block;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--yellow-light);color:var(--yellow-dark);margin-left:4px">SUPER</span>
+        {% endif %}
+      </div>
+      <a href="{% url 'ui:my_profile' %}" class="usermenu__item">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Mój profil
+      </a>
+      {% if can_manage_users %}
+      <a href="{% url 'ui:admin_panel' %}" class="usermenu__item usermenu__item--strong">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Panel administracyjny
+      </a>
+      <a href="{% url 'ui:admin_users' %}" class="usermenu__item">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Użytkownicy
+      </a>
+      <a href="{% url 'ui:admin_module_access' %}" class="usermenu__item">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        Macierz login × moduł
+      </a>
+      <a href="{% url 'ui:admin_role_matrix' %}" class="usermenu__item">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg>
+        Macierz ról
+      </a>
+      {% endif %}
+      {% if user.is_staff %}{# B-005: /admin/ wpuszcza tylko is_staff #}
+      <a href="/admin/" class="usermenu__item">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06A1.7 1.7 0 0015 19.4a1.7 1.7 0 00-1 1.55V21a2 2 0 11-4 0v-.09A1.7 1.7 0 009 19.4a1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.7 1.7 0 004.6 15a1.7 1.7 0 00-1.55-1H3a2 2 0 110-4h.09A1.7 1.7 0 004.6 9a1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06A1.7 1.7 0 009 4.6a1.7 1.7 0 001-1.55V3a2 2 0 114 0v.09a1.7 1.7 0 001 1.51 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06A1.7 1.7 0 0019.4 9c.06.65.65 1 1.55 1H21a2 2 0 110 4h-.09a1.7 1.7 0 00-1.51 1z"/></svg>
+        Django Admin
+      </a>
+      {% endif %}
+      <form method="post" action="{% url 'ui:logout' %}" style="margin:0">
+        {% csrf_token %}
+        <button type="submit" class="usermenu__item usermenu__item--danger">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+          Wyloguj
+        </button>
+      </form>
+    </div>
+  </div>
+  <script>
+    (function(){
+      var wrap = document.getElementById('user-menu-wrap');
+      if (!wrap) return;
+      var btn = wrap.querySelector('.usermenu__btn'),
+          dd  = document.getElementById('user-dropdown');
+      btn.addEventListener('click', function(){
+        var open = dd.classList.toggle('open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      document.addEventListener('click', function(e){
+        if (!wrap.contains(e.target)) { dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+      });
+      document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') { dd.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+      });
+    })();
+  </script>
+  {% endif %}
+
+  <script>
+    /* Nawigacja 1b: sekcje z panelami. Klik/hover otwiera panel; jedna sekcja naraz;
+       klik poza / Esc zamyka; sekcja z aktywnym modułem podświetlona; ☰ na mobile. */
+    (function(){
+      var nav = document.getElementById('gvnav');
+      if (!nav) return;
+      var groups = Array.prototype.slice.call(nav.querySelectorAll('.gvnav__group'));
+      function closeAll(except){
+        groups.forEach(function(g){
+          if (g === except) return;
+          g.classList.remove('open');
+          var b = g.querySelector('.gvnav__btn'); if (b) b.setAttribute('aria-expanded','false');
+        });
+      }
+      groups.forEach(function(g){
+        var btn = g.querySelector('.gvnav__btn');
+        // sekcja z aktywnym modułem → podświetl przycisk
+        if (g.querySelector('.gvnav__item.is-active')) g.classList.add('is-active');
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          var open = !g.classList.contains('open');
+          closeAll(g); g.classList.toggle('open', open);
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      });
+      document.addEventListener('click', function(e){ if (!nav.contains(e.target)) closeAll(null); });
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeAll(null); });
+      // Mobile: ☰ przełącza całą nawigację
+      var burger = document.getElementById('gvnav-burger');
+      if (burger){
+        burger.addEventListener('click', function(e){
+          e.stopPropagation();
+          var open = nav.classList.toggle('open');
+          burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+        document.addEventListener('click', function(e){
+          if (!nav.contains(e.target) && e.target !== burger && !burger.contains(e.target)){
+            nav.classList.remove('open'); burger.setAttribute('aria-expanded','false');
+          }
+        });
+      }
+    })();
+  </script>
+</nav>
+
+<main class="page" id="content" tabindex="-1">
+  {% block subnav %}{% endblock %}
+  <div class="container content">
+
+    {% if messages %}
+    <div class="messages-list" role="status" aria-live="polite">
+      {% for msg in messages %}
+      <div class="alert alert-{% if msg.tags == 'error' %}error{% elif msg.tags == 'success' %}success{% elif msg.tags == 'warning' %}warning{% else %}info{% endif %}">
+        <span>{{ msg }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </div>
+</main>
+
+{% block extra_scripts %}{% endblock %}
+
+<script src="{% static 'ui/js/app.js' %}" defer></script>
+<script src="{% static 'ui/js/ref-typeahead.js' %}" defer></script>
+<script>
+  // Double-submit guard for standard navigating POST forms: disable the submit control
+  // just AFTER the form starts posting (setTimeout(0) so its name/value still goes in the
+  // request), preventing duplicate records from an impatient double-click. The full page
+  // reloads afterwards, re-enabling everything. Deliberately skips GET forms and htmx/AJAX
+  // forms (they stay on the page, so a permanently-disabled button would break resubmits);
+  // opt out explicitly with data-allow-resubmit.
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    var method = (form.getAttribute('method') || 'get').toLowerCase();
+    var isHtmx = form.hasAttribute('data-allow-resubmit') ||
+      [].some.call(form.attributes, function (a) { return a.name.indexOf('hx-') === 0; });
+    if (method !== 'post' || isHtmx) return;
+    var btn = form.querySelector('button[type=submit], input[type=submit]');
+    if (!btn || btn.disabled) return;
+    setTimeout(function () { btn.disabled = true; btn.setAttribute('aria-busy', 'true'); }, 0);
+  }, true);
+</script>
+{% if request.user.is_authenticated %}{% include "ui/_notif_alert.html" %}{% endif %}
+</body>
+</html>

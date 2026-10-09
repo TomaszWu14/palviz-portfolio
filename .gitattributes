@@ -1,0 +1,6 @@
+# Git hooks are shell scripts — must stay LF or bash chokes on \r after #!/bin/bash
+.githooks/** text eol=lf
+graphify-out/graph.json merge=graphify
+# Skrypty powłoki uruchamiane w obrazie Linux — LF także w checkoutcie Windows
+# (inaczej lokalny docker build pada na \r w fetch_vendor.sh / docker-entrypoint.sh).
+*.sh text eol=lf

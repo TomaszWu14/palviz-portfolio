@@ -1,0 +1,126 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Cennik — {{ carrier.name }} — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_shipments' %}">Wysyłki</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_carriers' %}">Przewoźnicy</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{{ carrier.name }}</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{{ carrier.name }} — cennik</div>
+    <div class="page-header__sub">{{ carrier.get_carrier_type_display }} · dzielnik obj.: {{ carrier.dim_weight_divisor|floatformat:0 }}</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:planner_carrier_edit' carrier.pk %}" class="btn btn-secondary">Edytuj przewoźnika</a>
+  </div>
+</div>
+
+{% for zone in zones %}
+<div class="card" style="margin-bottom:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <strong style="font-size:15px">{{ zone.name }}</strong>
+      {% if zone.countries %}<span class="text-sm text-muted" style="margin-left:8px">{{ zone.countries }}</span>{% endif %}
+    </div>
+    <form method="post" onsubmit="return confirm('Usunąć strefę „{{ zone.name }}"?')">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="del_zone">
+      <input type="hidden" name="zone_id" value="{{ zone.pk }}">
+      <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red)">Usuń strefę</button>
+    </form>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Waga od [kg]</th>
+          <th>Waga do [kg]</th>
+          <th>Cena bazowa [EUR]</th>
+          <th>Dopłata/paleta [EUR]</th>
+          <th>Dopłata paliwowa [%]</th>
+          <th>Uwagi</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for rate in zone.rates.all %}
+      <tr>
+        <td>{{ rate.weight_from_kg }}</td>
+        <td>{% if rate.weight_to_kg %}{{ rate.weight_to_kg }}{% else %}<span class="text-muted">bez limitu</span>{% endif %}</td>
+        <td><strong>{{ rate.price_eur }} €</strong></td>
+        <td>{% if rate.per_pallet_eur %}{{ rate.per_pallet_eur }} €{% else %}<span class="text-muted">—</span>{% endif %}</td>
+        <td>{% if rate.fuel_surcharge_pct %}{{ rate.fuel_surcharge_pct }}%{% else %}<span class="text-muted">0%</span>{% endif %}</td>
+        <td class="text-sm text-muted">{{ rate.notes }}</td>
+        <td>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="del_rate">
+            <input type="hidden" name="rate_id" value="{{ rate.pk }}">
+            <button type="submit" class="btn btn-ghost btn-sm btn-icon" style="color:var(--red)" title="Usuń">
+              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-muted text-sm" style="padding:10px 16px">Brak stawek — dodaj poniżej.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add rate form -->
+  <div style="padding:12px 16px;background:var(--gray-50);border-top:1px solid var(--gray-100)">
+    <div style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Dodaj stawkę</div>
+    <form method="post" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_rate">
+      <input type="hidden" name="zone_id" value="{{ zone.pk }}">
+      {% for field in rate_form %}
+      <div style="min-width:90px;flex:1">
+        <label for="{{ field.id_for_label }}" style="font-size:11px;color:var(--gray-500);display:block;margin-bottom:2px">{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-sm">Dodaj</button>
+    </form>
+  </div>
+</div>
+{% empty %}
+<div class="card" style="margin-bottom:16px">
+  <div class="empty-state" style="padding:24px">
+    <div class="empty-state__icon">{% icon "clipboard-list" cls="icon--em" %}</div>
+    <div class="empty-state__title">Brak stref</div>
+    <div class="empty-state__desc">Dodaj pierwszą strefę / kraj poniżej</div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Add zone form -->
+<div class="card" style="background:#eff6ff;border-color:#bfdbfe">
+  <div class="card-body">
+    <div style="font-size:12px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Dodaj strefę</div>
+    <form method="post" style="display:flex;gap:10px;align-items:flex-end">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_zone">
+      <div style="flex:1">
+        <label for="{{ zone_form.name.id_for_label }}" style="font-size:12px;color:var(--blue-mid);display:block;margin-bottom:3px">{{ zone_form.name.label }}</label>
+        {{ zone_form.name }}
+      </div>
+      <div style="flex:2">
+        <label for="{{ zone_form.countries.id_for_label }}" style="font-size:12px;color:var(--blue-mid);display:block;margin-bottom:3px">{{ zone_form.countries.label }}</label>
+        {{ zone_form.countries }}
+      </div>
+      <button type="submit" class="btn btn-primary">Dodaj strefę</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

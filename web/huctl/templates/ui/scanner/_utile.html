@@ -1,0 +1,12 @@
+{# Kafel liczenia (t=dane z _count_tiles, locked): nazwa → rząd [−][liczba][+] → przelicznik. #}
+<div class="utile {{ t.cls }}{% if t.hint %} utile--hint{% endif %}">
+  <div class="utile__u">{{ t.unit }}</div>
+  <div class="utile__row">
+    {% if not locked %}<button type="button" class="ustep ustep--minus" onclick="palvizTileStep(this,-1)" aria-label="−1">−</button>{% endif %}
+    <input class="uconv" type="text" name="{{ t.field }}" inputmode="decimal"{% if t.is_base %} enterkeyhint="done"{% endif %}
+           placeholder="0" data-factor="{{ t.factor|stringformat:'g' }}" {% if locked %}readonly{% endif %}
+           value="{% if t.value %}{{ t.value|floatformat:'-2' }}{% endif %}">
+    {% if not locked %}<button type="button" class="ustep ustep--plus" onclick="palvizTileStep(this,1)" aria-label="+1">+</button>{% endif %}
+  </div>
+  <div class="utile__h">{% if t.is_base %}{{ t.name }}{% else %}× {{ t.factor|floatformat:'-2' }} {{ t.base_unit }}{% endif %}</div>
+</div>

@@ -1,0 +1,140 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Optymalizacja kartonów — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .co-nav { display:flex; gap:8px; margin-bottom:16px; }
+  .co-nav a { padding:8px 16px; border-radius:8px; text-decoration:none; font-weight:600;
+              font-size:13px; color:var(--gray-700); border:1px solid var(--gray-200); background:var(--surface); }
+  .co-nav a.active { background:var(--yellow-solid); border-color:var(--yellow-solid); color:#fff; }
+  .co-filters { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .co-tab { padding:7px 14px; border-radius:999px; border:1px solid var(--gray-200);
+            text-decoration:none; color:var(--gray-700); font-size:13px; font-weight:600;
+            background:var(--surface); }
+  .co-tab--active { background:var(--yellow-solid); border-color:var(--yellow-solid); color:#fff; }
+  .co-tab .badge { margin-left:6px; }
+  .co-issue { display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:start;
+              padding:14px 16px; border-bottom:1px solid var(--gray-100); }
+  .co-urg { width:5px; align-self:stretch; border-radius:3px; }
+  .co-urg--0 { background:var(--red-solid); } .co-urg--1 { background:var(--yellow-solid); } .co-urg--2 { background:var(--cyan-solid); }
+  .co-issue__type { font-weight:700; font-size:14px; color:var(--gray-900); }
+  .co-issue__meta { font-size:12px; color:var(--gray-500); margin-top:3px; }
+  .co-issue__desc { font-size:13px; color:var(--gray-700); margin-top:5px; }
+  .co-ref { font-family:monospace; font-weight:700; }
+  .co-detail { border-left:5px solid var(--yellow-solid); }
+  .st--open { color:var(--gray-700); } .st--in_review { color:var(--yellow); font-weight:700; }
+  .st--resolved { color:var(--green); font-weight:700; }
+  .co-actions { display:flex; gap:6px; flex-wrap:wrap; }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><span>Optymalizacja kartonów</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#d97706;--pcbg:#fffbeb">
+    <div class="panel-head__chip">{% icon "package" cls="icon--em" %}</div>
+    <div>
+      <div class="page-header__title">Optymalizacja kartonów</div>
+      <div class="page-header__sub">Zgłoszenia ze skanera o wypełnieniu palet — pilność, statusy</div>
+    </div>
+  </div>
+</div>
+
+<div class="co-nav">
+  <a href="{% url 'ui:carton_opt_inbox' %}" class="active">Skrzynka zgłoszeń</a>
+  <a href="{% url 'ui:carton_opt_dashboard' %}">Pilność wypełnienia</a>
+  <a href="{% url 'ui:carton_opt_variants' %}">Warianty kartonów</a>
+  <a href="{% url 'ui:carton_opt_redesigns' %}">Projekty A/B</a>
+</div>
+
+{% if single %}
+<div class="card co-detail" style="margin-bottom:16px;padding:16px">
+  <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">
+    <div>
+      <div class="co-issue__type">#{{ single.pk }} · {{ single.get_issue_type_display }}
+        · <span class="co-ref">{{ single.ref_code }}</span></div>
+      <div class="co-issue__meta">
+        {% if single.product %}{{ single.product.name }}{% endif %}
+        · zgłosił {% if single.reporter %}{{ single.reporter.get_full_name|default:single.reporter.username }}{% else %}—{% endif %}
+        · {{ single.created_at|date:"d.m.Y H:i" }}
+        {% if single.assigned_to %} · przyjął <strong>{{ single.assigned_to.get_full_name|default:single.assigned_to.username }}</strong>{% endif %}
+      </div>
+      {% if single.current_value or single.correct_value %}
+      <div class="co-issue__desc">Aktualnie: <strong>{{ single.current_value|default:"—" }}</strong>
+        → Powinno być: <strong>{{ single.correct_value|default:"—" }}</strong></div>
+      {% endif %}
+      {% if single.description %}<div class="co-issue__desc">{{ single.description }}</div>{% endif %}
+      {% if single.resolver_notes %}<div class="co-issue__desc">Rozwiązanie: {{ single.resolver_notes }}</div>{% endif %}
+    </div>
+    {% if single.photo %}<a href="{{ single.photo.url }}" target="_blank">
+      <img src="{{ single.photo.url }}" alt="foto" style="max-width:160px;border-radius:8px"></a>{% endif %}
+  </div>
+  <form method="post" action="{% url 'ui:carton_opt_set_status' single.pk %}"
+        style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <input name="resolver_notes" maxlength="300" placeholder="Notatka rozwiązania (opcjonalnie)"
+           value="{{ single.resolver_notes }}"
+           style="flex:1;min-width:220px;padding:9px 12px;border:1px solid var(--gray-200);border-radius:8px">
+    {% for val, lbl in statuses %}
+      {% if val != single.status %}
+      <button class="btn btn-secondary btn-sm" name="status" value="{{ val }}" type="submit">{{ lbl }}</button>
+      {% endif %}
+    {% endfor %}
+    {% if single.product %}
+    <a class="btn btn-secondary btn-sm" style="margin-left:auto"
+       href="{% url 'ui:carton_opt_variants' %}?product={{ single.product.code }}&issue={{ single.pk }}">Warsztat optymalizacji →</a>
+    {% endif %}
+  </form>
+  {% if single.product and not single.assigned_to %}
+  <form method="post" action="{% url 'ui:carton_opt_claim_issue' single.pk %}" style="margin-top:8px">
+    {% csrf_token %}
+    <button class="btn btn-primary btn-sm" type="submit">Przyjmij zgłoszenie (do optymalizacji)</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="co-filters">
+  {% for val, lbl in statuses %}
+  <a class="co-tab {% if f_status == val %}co-tab--active{% endif %}"
+     href="?status={{ val }}">{{ lbl }}<span class="badge badge-gray">{{ counts|get_item:val|default:0 }}</span></a>
+  {% endfor %}
+  <a class="co-tab {% if f_status == 'all' %}co-tab--active{% endif %}" href="?status=all">Wszystkie</a>
+</div>
+
+<div class="card" style="padding:0">
+  {% for i in issues %}
+  <div class="co-issue">
+    <div class="co-urg co-urg--{% if i.issue_type == 'carton_fit_pallet' %}0{% elif i.issue_type == 'carton_too_heavy' %}1{% else %}2{% endif %}"></div>
+    <div>
+      <div class="co-issue__type">
+        <a href="?status={{ f_status }}&issue={{ i.pk }}" style="text-decoration:none;color:inherit">
+          {{ i.get_issue_type_display }} · <span class="co-ref">{{ i.ref_code }}</span></a>
+      </div>
+      <div class="co-issue__meta">
+        {% if i.product %}{{ i.product.name|truncatechars:60 }}{% endif %}
+        · {% if i.reporter %}{{ i.reporter.get_full_name|default:i.reporter.username }}{% else %}—{% endif %}
+        · {{ i.created_at|date:"d.m.Y H:i" }}
+      </div>
+      {% if i.description %}<div class="co-issue__desc">{{ i.description|truncatechars:120 }}</div>{% endif %}
+    </div>
+    <div class="co-actions">
+      <span class="st--{{ i.status }}">{{ i.get_status_display }}</span>
+      {% if i.product_id %}
+      <form method="post" action="{% url 'ui:carton_opt_redesign_new' %}" style="display:inline">
+        {% csrf_token %}
+        <input type="hidden" name="product_id" value="{{ i.product_id }}">
+        <input type="hidden" name="scope" value="oba">
+        <button type="submit" class="btn btn-secondary btn-sm">Utwórz projekt A/B</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div style="padding:40px;text-align:center;color:var(--gray-500)">
+    Brak zgłoszeń w tym statusie. {% icon "party-popper" %}
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

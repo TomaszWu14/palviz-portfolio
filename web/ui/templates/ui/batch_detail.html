@@ -1,0 +1,64 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Batch #{{ batch.id }} — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_calc_index' %}">Paletyzacja</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:saved_list' %}">Zapisane</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Batch #{{ batch.id }}</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Batch #{{ batch.id }} — {{ batch.name }}</div>
+    <div class="page-header__sub">
+      Paleta {{ batch.pallet_code }} ({{ batch.pallet_length_cm }}×{{ batch.pallet_width_cm }}) ·
+      wys. total {{ batch.max_height_total_cm }} cm · max waga {{ batch.max_weight_kg }} kg ·
+      {{ batch.created_at|date:"d.m.Y H:i" }}
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <form method="post" action="{% url 'ui:delete_batch' batch.id %}"
+          onsubmit="return confirm('Usunąć cały batch #{{ batch.id }} wraz z wszystkimi SKU?');"
+          style="margin:0">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">{% icon "trash-2" %} Usuń batch</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr>
+        <th>ID</th><th>SKU</th><th>Wariant</th><th>Karton (L×W×H)</th>
+        <th class="text-right">Popyt [szt]</th><th class="text-right">Kart/pal {% icon "star" %}</th>
+        <th class="text-right">Warstwy {% icon "star" %}</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for it in items %}
+        {% with best=it.layouts.0 %}
+        <tr>
+          <td class="text-muted">{{ it.id }}</td>
+          <td><strong>{{ it.sku }}</strong></td>
+          <td>{{ it.variant }}</td>
+          <td>{{ it.carton_l }}×{{ it.carton_w }}×{{ it.carton_h }}</td>
+          <td class="text-right">{{ it.demand_pcs }}</td>
+          <td class="text-right"><strong>{{ best.cartons_per_pallet }}</strong></td>
+          <td class="text-right"><strong>{{ best.layers_used }}</strong></td>
+          <td style="display:flex;gap:6px;justify-content:flex-end">
+            <a href="{% url 'ui:pallet_detail' it.id %}" class="btn btn-ghost btn-sm">Widok</a>
+            <a href="{% url 'ui:export_excel' it.id %}" class="btn btn-secondary btn-sm">Excel</a>
+          </td>
+        </tr>
+        {% endwith %}
+      {% empty %}
+        <tr><td colspan="8"><div class="empty-state"><div class="empty-state__desc">Brak pozycji.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

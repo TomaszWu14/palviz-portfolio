@@ -1,0 +1,106 @@
+{% extends "ui/base.html" %}
+{% block title %}{% if instance %}Edytuj{% else %}Nowa{% endif %} lokalizacja — {{ app_name }}{% endblock %}
+{% block nav_locations %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_locations' %}">Lokalizacje</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if instance %}Edytuj: {{ instance.name }}{% else %}Nowa lokalizacja{% endif %}</span>
+</nav>
+
+<div class="page-header">
+  <div class="page-header__title">{% if instance %}Edytuj lokalizację{% else %}Nowa lokalizacja{% endif %}</div>
+</div>
+
+<div class="card" style="max-width:600px">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+        {{ form.name }}
+      </div>
+
+      <!-- Type classification -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div class="form-group">
+          <label for="{{ form.location_class.id_for_label }}">{{ form.location_class.label }}</label>
+          {{ form.location_class }}
+          <span class="help-text">Określa rodzaj miejsca magazynowego</span>
+        </div>
+        <div class="form-group">
+          <label for="{{ form.max_load_kg.id_for_label }}">{{ form.max_load_kg.label }}</label>
+          {{ form.max_load_kg }}
+          <span class="help-text">Opcjonalnie — maksymalne dopuszczalne obciążenie</span>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:8px;padding:10px 12px;background:var(--blue-light);border:1px solid #bfdbfe;border-radius:8px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600">
+          {{ form.is_pallet_location }} {{ form.is_pallet_location.label }}
+        </label>
+        {% if form.is_pallet_location.help_text %}
+        <span class="help-text">{{ form.is_pallet_location.help_text }}</span>
+        {% endif %}
+      </div>
+
+      <!-- Dimensions -->
+      <div style="font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px;border-top:1px solid var(--gray-100);padding-top:10px">
+        Wymiary lokalizacji
+      </div>
+
+      <div class="form-grid-3" style="margin-top:4px">
+        <div class="form-group">
+          <label for="{{ form.width_cm.id_for_label }}">{{ form.width_cm.label }}</label>
+          {{ form.width_cm }}
+          {% if form.width_cm.help_text %}<span class="help-text">{{ form.width_cm.help_text }}</span>{% endif %}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.depth_cm.id_for_label }}">{{ form.depth_cm.label }}</label>
+          {{ form.depth_cm }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.total_height_cm.id_for_label }}">{{ form.total_height_cm.label }}</label>
+          {{ form.total_height_cm }}
+        </div>
+      </div>
+
+      <div class="form-grid-2" style="margin-top:8px">
+        <div class="form-group">
+          <label for="{{ form.pallet_height_cm.id_for_label }}">{{ form.pallet_height_cm.label }}</label>
+          {{ form.pallet_height_cm }}
+          <span class="help-text">Zazwyczaj 15 cm dla palety Euro; 0 dla lokalizacji luzem</span>
+        </div>
+        <div class="form-group">
+          <label for="{{ form.manipulation_margin_cm.id_for_label }}">{{ form.manipulation_margin_cm.label }}</label>
+          {{ form.manipulation_margin_cm }}
+          {% if form.manipulation_margin_cm.help_text %}<span class="help-text">{{ form.manipulation_margin_cm.help_text }}</span>{% endif %}
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:12px">
+        <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+        {{ form.notes }}
+      </div>
+
+      <div class="form-group" style="margin-top:8px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          {{ form.is_active }} {{ form.is_active.label }}
+        </label>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button type="submit" class="btn btn-primary">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Zapisz
+        </button>
+        <a href="{% url 'ui:planner_locations' %}" class="btn btn-secondary">Anuluj</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

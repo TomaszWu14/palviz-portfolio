@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dane kierowcy — {{ shipment.name }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background:#f1f5f9; margin:0; color:#0f172a; }
+    .wrap { max-width:520px; margin:24px auto; background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 6px 24px rgba(2,6,23,.1); }
+    .head { background:#6b21a8; color:#fff; padding:16px 20px; }
+    .body { padding:20px; }
+    label { display:block; font-size:13px; font-weight:700; color:#475569; margin-bottom:4px; }
+    input { width:100%; padding:11px; font-size:16px; border:2px solid #cbd5e1; border-radius:9px; box-sizing:border-box; margin-bottom:14px; }
+    .btn { width:100%; padding:14px; border:0; border-radius:10px; background:#16a34a; color:#fff; font-size:17px; font-weight:700; cursor:pointer; }
+    .ok { background:#dcfce7; color:#166534; padding:14px; border-radius:10px; font-weight:600; }
+    .summary { background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;font-size:14px;margin-bottom:16px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head"><div style="font-weight:800;font-size:18px">Dane kierowcy do odbioru</div><div style="opacity:.9">{{ shipment.name }}</div></div>
+    <div class="body">
+      {% if saved %}<div class="ok">Dziękujemy! Dane kierowcy zapisane.</div>{% endif %}
+      <div class="summary">Adres odbioru/dostawy: <strong>{{ shipment.recipient_name }}{% if shipment.recipient_name %}, {% endif %}{{ shipment.destination_address|default:"—" }}</strong></div>
+      <form method="post">
+        {% csrf_token %}
+        <label>Nr auta (rejestracja)</label>
+        <input aria-label="Nr auta (rejestracja)" type="text" name="driver_plate" value="{{ da.driver_plate }}" placeholder="np. SZA 12345">
+        <label>Telefon do kierowcy</label>
+        <input aria-label="Telefon do kierowcy" type="tel" name="driver_phone" value="{{ da.driver_phone }}" placeholder="+48 600 000 000">
+        <label>Imię i nazwisko kierowcy (opcjonalnie)</label>
+        <input aria-label="Imię i nazwisko kierowcy (opcjonalnie)" type="text" name="driver_name" value="{{ da.driver_name }}">
+        <label>Język komunikacji</label>
+        <select aria-label="Język komunikacji" name="driver_language">
+          {% with lang=da.driver_language|default:"pl" %}
+          <option value="pl" {% if lang == "pl" %}selected{% endif %}>polski</option>
+          <option value="en" {% if lang == "en" %}selected{% endif %}>angielski</option>
+          <option value="ua" {% if lang == "ua" %}selected{% endif %}>ukraiński</option>
+          <option value="ru" {% if lang == "ru" %}selected{% endif %}>rosyjski</option>
+          <option value="de" {% if lang == "de" %}selected{% endif %}>niemiecki</option>
+          {% endwith %}
+        </select>
+        <label>Szacunkowa godzina podstawienia auta</label>
+        <input aria-label="Szacunkowa godzina podstawienia auta" type="datetime-local" name="truck_eta" value="{{ da.truck_eta|date:'Y-m-d\TH:i' }}">
+        <button class="btn" type="submit">Zapisz dane</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

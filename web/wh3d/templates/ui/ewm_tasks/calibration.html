@@ -1,0 +1,75 @@
+{% extends "ui/base.html" %}
+{% block title %}Kalibracja symulacji — {{ batch.name }} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .cal-form { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; }
+  .cal-form .form-group { margin: 0; }
+  .cal-form select { min-width: 260px; }
+  .cal-table td.num, .cal-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cal-k { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .cal-note { font-size: 13px; color: var(--gray-500); line-height: 1.55; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:ewm_tasks_list' %}">Zadania magazynowe EWM</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:ewm_tasks_profile' batch.pk %}?p={{ p }}">Dzień projektowy</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Kalibracja</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Kalibracja symulacji na obecnej hali</div>
+    <div class="page-header__sub">{{ batch.name }}{% if day %} · dzień P{{ p }}: {{ day|date:"d.m.Y" }}{% endif %} · realne czasy cykli z EWM vs fizyka symulacji</div>
+  </div>
+</div>
+
+<div class="card"><div class="card-body">
+  <form method="get" class="cal-form">
+    <div class="form-group">
+      <label for="cal-model">Model obecnej hali (regały z adresami EWM)</label>
+      <select id="cal-model" name="model">
+        <option value="">— wybierz —</option>
+        {% for m in models %}<option value="{{ m.pk }}" {% if wm and m.pk == wm.pk %}selected{% endif %}>{{ m.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="cal-p">Dzień</label>
+      <select id="cal-p" name="p">{% for q in percentiles %}<option value="{{ q }}" {% if q == p %}selected{% endif %}>P{{ q }}</option>{% endfor %}</select>
+    </div>
+    <button type="submit" class="btn btn-primary">Policz kalibrację</button>
+  </form>
+  <p class="cal-note" style="margin-top:12px">Cykl = odstęp między kolejnymi potwierdzeniami tego samego zasobu EWM (wózek; dla kompletacji — picker). Ten sam ruch liczony fizyką symulacji: droga wzdłuż alejek ÷ prędkość z katalogu, podnoszenie, chwyt. Odstępy &gt; {{ gap_max_min }} min to przerwy — pomijane; krótsze postoje zostają, więc współczynnik to ostrożne (górne) oszacowanie.</p>
+</div></div>
+
+{% if wm and not day %}
+<div class="alert alert-warning" style="margin-top:16px">Brak potwierdzonych zadań w tym imporcie — nie ma dnia projektowego.</div>
+{% elif result %}
+<div class="card" style="margin-top:16px"><div class="card-body">
+  <div class="section-title">Współczynniki korekty</div>
+  <div class="table-wrap"><table class="table cal-table">
+    <thead><tr><th>Grupa</th><th class="num">Par cykli</th><th class="num">Mediana realna [s]</th><th class="num">Mediana symulacji [s]</th><th class="num">Współczynnik ×</th></tr></thead>
+    <tbody>{% for g in result.groups %}<tr>
+      <td>{{ g.label }}{% if g.pairs and not g.reliable %} <span class="badge badge-yellow" title="Mniej niż {{ min_pairs }} par — mało wiarygodne">mało danych</span>{% endif %}</td>
+      <td class="num">{{ g.pairs }}</td><td class="num">{{ g.real_s|default:"—" }}</td><td class="num">{{ g.sim_s|default:"—" }}</td>
+      <td class="num"><span class="cal-k">{{ g.k|default:"—" }}</span></td></tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="cal-note">Zadań w dniu: {{ result.tasks }} · dopasowanych do regałów modelu: {{ result.mapped }} · spoza modelu: {{ result.skipped }} · zasobów: {{ result.resources }} (średnio {{ result.active_per_hour }} aktywnych na godzinę).</p>
+  <a class="btn btn-primary" href="{% url 'ui:ewm_tasks_simulate' batch.pk %}?{{ sim_query }}">Symuluj nową halę z tymi współczynnikami →</a>
+</div></div>
+
+<div class="card" style="margin-top:16px"><div class="card-body">
+  <div class="section-title">Według rodzaju zadania</div>
+  <div class="table-wrap"><table class="table cal-table">
+    <thead><tr><th>Rodzaj</th><th class="num">Par cykli</th><th class="num">Mediana realna [s]</th><th class="num">Mediana symulacji [s]</th></tr></thead>
+    <tbody>{% for r in kind_rows %}<tr><td>{{ r.label }}</td><td class="num">{{ r.pairs }}</td><td class="num">{{ r.real_s }}</td><td class="num">{{ r.sim_s }}</td></tr>
+    {% empty %}<tr><td colspan="4" class="text-muted">Brak par cykli — zasoby EWM bez kolejnych zadań w regałach modelu.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div></div>
+{% endif %}
+{% endblock %}

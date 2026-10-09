@@ -1,0 +1,11 @@
+# Konfiguracja gitleaks (skan sekretów w CI — security.yml).
+# Rozszerzamy domyślne reguły o allowlistę dla plików-szablonów: .env.example zawiera
+# wyłącznie placeholdery ("zmien-na-losowy-klucz…"), nie prawdziwe sekrety.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Szablony konfiguracji — placeholdery, nie sekrety"
+paths = [
+    '''\.env\.example$''',
+]

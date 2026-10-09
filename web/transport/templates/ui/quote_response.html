@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wycena transportu — {{ shipment.name }}</title>
+  <style>
+    *{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#eef2f7;margin:0;color:#0f172a}
+    .wrap{max-width:980px;margin:24px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 10px 40px rgba(2,6,23,.12)}
+    .head{padding:22px 26px;border-bottom:1px solid #eef2f7;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+    .head h1{margin:0;font-size:22px;font-weight:800}
+    .head .sub{color:#64748b;font-size:14px;margin-top:4px}
+    .pill{padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+    .pill--wait{background:#fef3c7;color:#92400e}
+    .pill--done{background:#dcfce7;color:#166534}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+    .col{padding:24px 26px}
+    .col--load{border-right:1px solid #eef2f7;background:#fafbfc}
+    .sec{font-size:11px;letter-spacing:.12em;color:#94a3b8;font-weight:800;text-transform:uppercase;margin-bottom:10px}
+    .ld{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-bottom:1px solid #eef2f7}
+    .ld__k{color:#475569;font-size:14px}
+    .ld__v{font-size:22px;font-weight:800}
+    .ld__v small{font-size:13px;color:#64748b;font-weight:600}
+    .ld__sub{font-size:12px;color:#94a3b8}
+    .route{margin-top:16px}
+    .route__pt{display:flex;gap:10px;margin-bottom:10px}
+    .route__dot{width:14px;height:14px;border-radius:50%;border:3px solid #2563eb;margin-top:3px;flex:none}
+    .route__dot--end{border-radius:3px;background:#2563eb}
+    .route__lbl{font-size:11px;letter-spacing:.1em;color:#94a3b8;font-weight:800;text-transform:uppercase}
+    label{display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px}
+    input,textarea{width:100%;padding:13px;font-size:16px;border:2px solid #d8dee9;border-radius:11px;background:#fff}
+    .row{margin-bottom:16px}
+    .amt{display:flex;gap:10px}
+    .toggle{display:flex;border:2px solid #d8dee9;border-radius:11px;overflow:hidden}
+    .toggle label{margin:0;display:flex;align-items:center;padding:0 16px;font-weight:800;cursor:pointer;color:#64748b}
+    .toggle input{display:none}
+    .toggle input:checked + span{color:#fff}
+    .toggle label:has(input:checked){background:#2563eb}
+    .toggle span{padding:0 2px}
+    .hint{font-size:12px;color:#94a3b8;margin-top:6px}
+    .rates{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .rate{background:#f1f5f9;border-radius:8px;padding:6px 10px;font-size:12px;color:#475569;font-weight:600}
+    .two{display:flex;gap:12px}
+    .two>div{flex:1}
+    .btn{width:100%;padding:16px;border:0;border-radius:12px;background:#2563eb;color:#fff;font-size:17px;font-weight:800;cursor:pointer;margin-top:6px}
+    .ok{background:#dcfce7;color:#166534;padding:16px;border-radius:12px;font-weight:700}
+    .err{background:#fee2e2;color:#b91c1c;padding:12px;border-radius:10px;font-weight:700;margin-bottom:14px}
+    @media(max-width:760px){.grid{grid-template-columns:1fr}.col--load{border-right:0;border-bottom:1px solid #eef2f7}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div>
+        <h1>Transport palet · {{ origin|cut:","|truncatewords:1|default:"Warszawa" }} → {{ shipment.destination_city|default:shipment.destination_address }}</h1>
+        <div class="sub">{{ company }}{% if offer.sender_name %} · {{ offer.sender_name }}{% endif %}</div>
+      </div>
+      {% if offer.submitted_at %}<span class="pill pill--done">✓ Wyceniono</span>{% else %}<span class="pill pill--wait">● Oczekuje na wycenę</span>{% endif %}
+    </div>
+
+    <div class="grid">
+      <!-- LOAD -->
+      <div class="col col--load">
+        <div class="sec">Ładunek</div>
+        <div class="ld"><span class="ld__k">Palety<div class="ld__sub">EUR 120×80 · do {{ height_cm }} cm</div></span>
+          <span class="ld__v">{{ n_pallets }} <small>szt</small></span></div>
+        <div class="ld"><span class="ld__k">Objętość łączna</span>
+          <span class="ld__v">{{ volume_m3|floatformat:4 }} <small>m³</small></span></div>
+        <div class="ld"><span class="ld__k">Waga brutto</span>
+          <span class="ld__v">{{ weight_kg|floatformat:2 }} <small>kg</small></span></div>
+
+        <div class="route">
+          <div class="route__pt"><div class="route__dot"></div>
+            <div><div class="route__lbl">Załadunek</div><strong>{{ origin }}</strong></div></div>
+          <div class="route__pt"><div class="route__dot route__dot--end"></div>
+            <div><div class="route__lbl">Rozładunek</div>
+              <strong>{{ dest|default:"—" }}</strong>{% if shipment.name %}<div class="ld__sub">ref {{ shipment.name }}</div>{% endif %}</div></div>
+        </div>
+        {% if embed_url %}
+        <iframe title="Trasa" width="100%" height="240" style="border:0;border-radius:12px;margin-top:8px"
+                loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="{{ embed_url }}"></iframe>
+        {% endif %}
+      </div>
+
+      <!-- OFFER -->
+      <div class="col">
+        <div class="sec">Twoja oferta</div>
+        {% if saved or locked %}
+          <div class="ok">{% if saved %}Dziękujemy! Wycena zapisana.{% else %}Ten formularz został już wypełniony.{% endif %}
+            <div style="font-weight:500;margin-top:6px">{{ offer.amount }} {{ offer.currency }} · załadunek {{ offer.truck_date|date:"d.m.Y"|default:"—" }} · dostawa {{ offer.delivery_date|date:"d.m.Y"|default:"—" }}</div>
+          </div>
+          <button class="btn" type="button" onclick="window.close()">Zamknij</button>
+          {% if saved %}<script>setTimeout(function(){try{window.close()}catch(e){}},1500)</script>{% endif %}
+        {% else %}
+        {% if error %}<div class="err">{{ error }}</div>{% endif %}
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="row">
+            <label>Kwota netto</label>
+            <div class="amt">
+              <input aria-label="Kwota netto" type="text" name="amount" id="amount" inputmode="decimal" value="{{ offer.amount|default:'' }}" placeholder="0" required>
+              <div class="toggle">
+                <label><input type="radio" name="currency" value="PLN" {% if offer.currency != 'EUR' %}checked{% endif %}><span>PLN</span></label>
+                <label><input type="radio" name="currency" value="EUR" {% if offer.currency == 'EUR' %}checked{% endif %}><span>EUR</span></label>
+              </div>
+            </div>
+            <div class="hint">Podaj kwotę netto, aby zobaczyć stawki jednostkowe.</div>
+            <div class="rates" id="rates">
+              <span class="rate" id="r_pallet"></span><span class="rate" id="r_vol"></span><span class="rate" id="r_kg"></span>
+            </div>
+          </div>
+          <div class="row two">
+            <div><label>Termin załadunku</label><input aria-label="Termin załadunku" type="date" name="truck_date" id="truck_date" min="{% now 'Y-m-d' %}" value="{{ offer.truck_date|date:'Y-m-d' }}"></div>
+            <div><label>Termin dostawy</label><input aria-label="Termin dostawy" type="date" name="delivery_date" id="delivery_date" min="{% now 'Y-m-d' %}" value="{{ offer.delivery_date|date:'Y-m-d' }}"></div>
+          </div>
+          <div class="row"><label>Uwagi (opcjonalnie)</label>
+            <textarea aria-label="Uwagi (opcjonalnie)" name="notes" rows="3" placeholder="Np. typ pojazdu, ADR, dostępność rampy…">{{ offer.notes }}</textarea></div>
+          <div class="row"><label>Załącznik (oferta/dokument, max 30 MB)</label>
+            {% if offer.attachment %}<div style="font-size:13px;margin-bottom:6px">Obecny: <a href="{{ offer.attachment.url }}" target="_blank" rel="noopener">{{ offer.attachment.name }}</a></div>{% endif %}
+            <input aria-label="Załącznik (oferta/dokument, max 30 MB)" type="file" name="attachment"></div>
+          <button class="btn" type="submit">Wyślij wycenę</button>
+        </form>
+        <script>
+          var pallets={{ n_pallets|default:0 }}, vol={{ volume_m3|default:0 }}, kg={{ weight_kg|default:0 }};
+          var amount=document.getElementById('amount'), rates=document.getElementById('rates');
+          function cur(){var c=document.querySelector('input[name=currency]:checked');return c?c.value:'PLN'}
+          function fmt(n){return (Math.round(n*100)/100).toLocaleString('pl-PL')}
+          function upd(){
+            var v=parseFloat((amount.value||'').replace(',','.').replace(/\s/g,''));
+            if(!v||v<=0){rates.style.display='none';return}
+            var c=cur();
+            document.getElementById('r_pallet').textContent=pallets?(fmt(v/pallets)+' '+c+'/pal'):'';
+            document.getElementById('r_vol').textContent=vol?(fmt(v/vol)+' '+c+'/m³'):'';
+            document.getElementById('r_kg').textContent=kg?(fmt(v/kg)+' '+c+'/kg'):'';
+            rates.style.display='flex';
+          }
+          amount.addEventListener('input',upd);
+          Array.prototype.forEach.call(document.querySelectorAll('input[name=currency]'),function(r){r.addEventListener('change',upd)});
+          // Delivery date cannot be earlier than the truck date.
+          var t=document.getElementById('truck_date'),d=document.getElementById('delivery_date');
+          function syncMin(){if(t.value){d.min=t.value;if(d.value&&d.value<t.value)d.value=t.value}}
+          t.addEventListener('change',syncMin);syncMin();upd();
+        </script>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,89 @@
+{% extends "ui/base.html" %}
+{% block title %}Wybór modułu — {{ app_name }}{% endblock %}
+{% block extra_head %}
+{% if scanner_app %}
+<script>
+  // Zainstalowana apka skanera (to okno, nie cała przeglądarka) → bez huba, wprost do skanera.
+  // Zwykła karta przeglądarki zostaje na hubie z kafelkami modułów.
+  if (window.pvInstalledApp && window.pvInstalledApp()) location.replace("{% url 'ui:scanner_launcher' %}");
+</script>
+{% endif %}
+<style>
+  /* Hub = ciemna scena platformy: topnav przechodzi płynnie w tło, kafelki modułów są
+     żywymi gradientowymi kartami (kolor modułu → głęboki granat). Lokalne tokeny STAŁE
+     (scena zawsze ciemna, niezależnie od data-theme — dlatego nie --app-bg, które flipuje). */
+  body {
+    --hub-top:#0f172a; --hub-mid:#0d1526; --hub-end:#111a2e;
+    --hub-tile-deep:#0b1220; --hub-muted:#8fa3bf;
+    background:
+      radial-gradient(1100px 520px at 72% -12%, rgba(59,130,246,.22), transparent 60%),
+      radial-gradient(800px 420px at 8% 108%, rgba(124,58,237,.14), transparent 55%),
+      linear-gradient(180deg, var(--hub-top) 0%, var(--hub-mid) 55%, var(--hub-end) 100%);
+  }
+  .hub { max-width: 1060px; margin: 44px auto 0; }
+  .hub__head { margin-bottom: 28px; }
+  .hub__head h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin: 0; color: #fff; }
+  .hub__head p { color: var(--hub-muted); font-size: 14px; margin-top: 5px; }
+  .hub__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .mtile {
+    text-decoration: none; display: flex; flex-direction: column;
+    border: 1px solid rgba(255,255,255,.09); border-radius: 16px;
+    /* 55% koloru modułu → biały tekst ≥ 4,5:1 dla KAŻDEGO koloru z rejestru (limonka/bursztyn też). */
+    background: linear-gradient(135deg, color-mix(in srgb, var(--mc) 55%, var(--hub-tile-deep)) 0%, color-mix(in srgb, var(--mc) 32%, var(--hub-tile-deep)) 100%);
+    box-shadow: 0 10px 28px rgba(2,6,23,.45);
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .mtile:hover, .mtile:focus-visible {
+    transform: translateY(-4px);
+    border-color: rgba(255,255,255,.28);
+    box-shadow: 0 18px 44px color-mix(in srgb, var(--mc) 40%, rgba(2,6,23,.5));
+  }
+  .mtile__head {
+    padding: 18px 18px 0;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .mtile__icon {
+    width: 42px; height: 42px; border-radius: 11px; background: rgba(255,255,255,.18);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .mtile__name { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; color: #fff; }
+  .mtile__body { padding: 10px 18px 16px; flex: 1; display: flex; flex-direction: column; }
+  .mtile__desc { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,.92); }
+  .mtile__cta {
+    margin-top: 12px; align-self: flex-start; display: inline-flex; align-items: center; gap: 5px;
+    font-size: 13px; font-weight: 700; color: #fff;
+  }
+  .mtile__cta svg { transition: transform .15s ease; }
+  .mtile:hover .mtile__cta svg { transform: translateX(3px); }
+  @media (prefers-reduced-motion: reduce) {
+    .mtile, .mtile:hover { transform: none; }
+    .mtile:hover .mtile__cta svg { transform: none; }
+  }
+
+</style>
+{% endblock %}
+{% block content %}
+<div class="hub">
+  <div class="hub__head">
+    <h1>{{ app_name }}</h1>
+    <p>Wybierz moduł, z którego chcesz korzystać.</p>
+  </div>
+  <div class="hub__grid">
+    {% for m in modules %}
+    <a href="{{ m.url }}" class="mtile" style="--mc:{{ m.color }};--mc-soft:{{ m.color }}40;--mc-strong:{{ m.color }}66">
+      <div class="mtile__head">
+        <div class="mtile__icon">{% include "ui/_module_icon.html" %}</div>
+        <div class="mtile__name">{{ m.label }}</div>
+      </div>
+      <div class="mtile__body">
+        <div class="mtile__desc">{{ m.desc }}</div>
+        <div class="mtile__cta">Otwórz
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

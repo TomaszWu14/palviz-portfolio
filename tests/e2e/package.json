@@ -1,0 +1,13 @@
+{
+  "name": "groove-e2e",
+  "private": true,
+  "description": "Testy wizualne GROOVE (Playwright toHaveScreenshot) — patrz tests/README-TESTS.md",
+  "scripts": {
+    "test:visual": "playwright test --grep-invert @flow",
+    "test:flow": "playwright test --grep @flow",
+    "test:visual:update": "playwright test --grep-invert @flow --update-snapshots"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

@@ -1,0 +1,1016 @@
+{% extends "ui/base.html" %}
+{% block title %}Edytor 3D magazynu{% endblock %}
+
+{% block content %}
+<style>
+.content { padding: 0 !important; }
+#e3d {
+  margin: 0 -24px;
+  display: flex;
+  height: calc(100vh - 60px);
+  background: #12121f;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #dde6f0;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── LEFT PANEL ── */
+#pnl-left {
+  width: 230px; min-width: 230px;
+  background: #161628;
+  border-right: 1px solid #1e2d50;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.ph {
+  padding: 8px 12px 5px;
+  font-size: 10px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: #7b9cc0;
+  border-bottom: 1px solid #1e2d50; flex-shrink: 0;
+}
+#lib-search {
+  background: #0d1a30; border: none; border-bottom: 1px solid #1e2d50;
+  color: #dde6f0; font-size: 12px; padding: 7px 12px; outline: none; width: 100%;
+  box-sizing: border-box; flex-shrink: 0;
+}
+#lib-search::placeholder { color: #7b9cc0; }
+#lib-list {
+  flex: 1; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: #1e2d50 transparent;
+}
+.lib-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px; cursor: pointer; font-size: 12px;
+  border-left: 3px solid transparent;
+  transition: background .1s;
+}
+.lib-row:hover { background: #1a2a45; }
+.lib-badge {
+  font-size: 9px; padding: 1px 5px; border-radius: 3px;
+  font-weight: 700; flex-shrink: 0; color: #12121f;
+}
+.lib-meta { font-size: 10px; color: #7b9cc0; margin-left: auto; white-space: nowrap; }
+
+#path-btn {
+  margin: 6px 8px; padding: 7px 10px;
+  border: 1px solid #1e2d50; background: none; color: #dde6f0;
+  font-size: 12px; border-radius: 5px; cursor: pointer;
+  display: flex; align-items: center; gap: 7px;
+  transition: background .15s;
+}
+#path-btn:hover { background: #1a2a45; }
+#path-btn.active { background: #e67e22; color: #12121f; border-color: #e67e22; }
+
+.ph-sub { margin-top: 2px; }
+#obj-list {
+  flex: 1; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: #1e2d50 transparent;
+  max-height: 180px;
+}
+.obj-row {
+  display: flex; align-items: center; padding: 4px 10px;
+  cursor: pointer; font-size: 11px; border-left: 3px solid transparent;
+}
+.obj-row:hover { background: #1a2a45; }
+.obj-row.sel { border-left-color: #4ecdc4; background: #152035; }
+.obj-del { margin-left:auto; background:none; border:none; color:#7b9cc0; cursor:pointer; font-size:14px; padding:0 2px; }
+.obj-del:hover { color:#e74c3c; }
+
+/* ── CANVAS ── */
+#cvs-wrap { flex:1; position:relative; overflow:hidden; }
+#cvs-wrap canvas { display:block; width:100% !important; height:100% !important; }
+
+#toolbar {
+  position:absolute; top:10px; left:50%; transform:translateX(-50%);
+  display:flex; gap:5px; background:rgba(18,18,31,.9);
+  border:1px solid #1e2d50; border-radius:8px; padding:5px 8px;
+  backdrop-filter:blur(4px);
+}
+.tb { padding:4px 11px; border-radius:4px; border:1px solid #1e2d50;
+      background:none; color:#c0d4e8; font-size:12px; cursor:pointer; transition:background .15s; }
+.tb:hover { background:#1a2a45; }
+.tb.on { background:#4ecdc4; color:#12121f; border-color:#4ecdc4; }
+#hint {
+  position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+  background:rgba(18,18,31,.7); color:#6a9abf; font-size:11px;
+  padding:4px 14px; border-radius:20px; pointer-events:none; white-space:nowrap;
+}
+#snap-lbl {
+  position:absolute; top:52px; right:12px;
+  background:rgba(18,18,31,.8); border:1px solid #1e2d50;
+  color:#6a9abf; font-size:11px; padding:3px 10px; border-radius:4px;
+}
+
+/* ── RIGHT PANEL ── */
+#pnl-right {
+  width:260px; min-width:260px;
+  background:#161628; border-left:1px solid #1e2d50;
+  display:flex; flex-direction:column; overflow-y:auto;
+  scrollbar-width:thin; scrollbar-color:#1e2d50 transparent;
+}
+#pnl-right .ph { position:sticky; top:0; background:#161628; z-index:1; }
+#p-empty { padding:18px 14px; color:#7b9cc0; font-size:12px; font-style:italic; }
+.pr { display:flex; flex-direction:column; padding:5px 12px; border-bottom:1px solid #0d1a30; }
+.pl { font-size:10px; color:#7b9cc0; margin-bottom:3px; text-transform:uppercase; letter-spacing:.06em; }
+.pi {
+  background:#0d1a30; border:1px solid #1a3060; border-radius:4px;
+  color:#dde6f0; font-size:12px; padding:5px 8px; outline:none;
+  width:100%; box-sizing:border-box;
+}
+.pi:focus { border-color:#4ecdc4; }
+select.pi { cursor:pointer; }
+.pr2 { display:flex; gap:6px; padding:5px 12px; border-bottom:1px solid #0d1a30; }
+.pr2 .pc { flex:1; display:flex; flex-direction:column; }
+.pr2 .pl { font-size:10px; color:#7b9cc0; margin-bottom:3px; text-transform:uppercase; }
+
+#p-actions { padding:8px 12px; display:flex; flex-direction:column; gap:5px; flex-shrink:0; }
+.ab { padding:6px 12px; border-radius:5px; border:none; font-size:12px;
+      cursor:pointer; font-weight:600; transition:opacity .15s; }
+.ab:hover { opacity:.85; }
+#b-apply  { background:#4ecdc4; color:#12121f; }
+#b-del    { background:#c0392b; color:#fff; }
+#b-save   { background:#196f3d; color:#fff; }
+#b-load   { background:#1f6391; color:#fff; }
+#b-export { background:#8e44ad; color:#fff; }
+#b-clear  { background:#c0392b; color:#fff; }
+.sep { height:1px; background:#1e2d50; margin:3px 0; }
+
+/* lib type colors */
+.t-pick { background:#e67e22; }
+.t-stor { background:#4ecdc4; }
+.t-comp { background:#9b59b6; }
+/* lil-gui (panel kalibracji) ma własną ciemną paletę — globalne style pól i etykiet z app.css
+   (białe tło inputu, szary tekst jasnego motywu) nie mogą do niego wyciekać. */
+.lil-gui input, .lil-gui select { background: var(--widget-color); color: var(--number-color); border: 0; }
+.lil-gui .name, .lil-gui .title { color: var(--text-color); }
+</style>
+
+{{ rack_library_json|json_script:"id_rack_lib" }}
+
+<div id="e3d">
+  <!-- LEFT -->
+  <div id="pnl-left">
+    <div class="ph">Biblioteka rzędów</div>
+    <input id="lib-search" type="text" placeholder="Szukaj np. B0-01…">
+    <div id="lib-list"></div>
+
+    <button id="path-btn">
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+        <polyline points="3,15 8,5 13,10 15,3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="3" cy="15" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+      </svg>
+      Rysuj ścieżkę / przejazd
+    </button>
+
+    <div class="ph ph-sub">Rozmieszczone obiekty</div>
+    <div id="obj-list"></div>
+  </div>
+
+  <!-- CANVAS -->
+  <div id="cvs-wrap">
+    <canvas id="c3d"></canvas>
+    <div id="toolbar">
+      <button class="tb on" id="tb-sel">&#9654; Zaznacz</button>
+      <button class="tb" id="tb-mv">&#8679; Przesuń</button>
+      <button class="tb" id="tb-rot">&#8635; Obróć</button>
+      <button class="tb on" id="tb-g05">Snap 0.5m</button>
+      <button class="tb" id="tb-g1">Snap 1m</button>
+    </div>
+    <div id="snap-lbl">Snap: <span id="snap-v">0.5 m</span></div>
+    <div id="hint">Kliknij rząd z biblioteki aby umieścić · LPM drag = kamera · scroll = zoom · Del = usuń zaznaczone</div>
+  </div>
+
+  <!-- RIGHT -->
+  <div id="pnl-right">
+    <div class="ph">Właściwości</div>
+    <div id="p-empty">Zaznacz obiekt aby edytować.</div>
+    <div id="p-form" style="display:none">
+      <div class="pr">
+        <label class="pl" for="p-name">Nazwa</label>
+        <input class="pi" id="p-name" type="text">
+      </div>
+      <div class="pr">
+        <label class="pl" for="p-type">Typ regału</label>
+        <select class="pi" id="p-type">
+          <option value="PA">PA – Paletowy standardowy</option>
+          <option value="PT">PT – Przejazdowy</option>
+          <option value="BL">BL – Blokowy</option>
+          <option value="PATH">Ścieżka</option>
+        </select>
+      </div>
+      <div id="pf-rack">
+        <div class="pr2">
+          <div class="pc"><label class="pl" for="p-bays">Pola (bays)</label><input class="pi" id="p-bays" type="number" min="1" max="60"></div>
+          <div class="pc"><label class="pl" for="p-bayw">Szer. pola (m)</label><input class="pi" id="p-bayw" type="number" step="0.05" min="0.5" max="3"></div>
+        </div>
+        <div class="pr2">
+          <div class="pc"><label class="pl" for="p-depth">Głębokość (m)</label><input class="pi" id="p-depth" type="number" step="0.05" min="0.5" max="4"></div>
+          <div class="pc"><label class="pl" for="p-levh">Wys. poziomu (m)</label><input class="pi" id="p-levh" type="number" step="0.1" min="0.5" max="4"></div>
+        </div>
+        <div class="pr2">
+          <div class="pc"><label class="pl" for="p-levs">Poziomy</label><input class="pi" id="p-levs" type="number" min="1" max="12"></div>
+          <div class="pc" id="pf-pt"><label class="pl" for="p-pass">Wys. przejazdu (m)</label><input class="pi" id="p-pass" type="number" step="0.1" min="1.5" max="5"></div>
+        </div>
+        <div class="pr2">
+          <div class="pc"><label class="pl" for="p-px">Poz. X (m)</label><input class="pi" id="p-px" type="number" step="0.5"></div>
+          <div class="pc"><label class="pl" for="p-pz">Poz. Z (m)</label><input class="pi" id="p-pz" type="number" step="0.5"></div>
+        </div>
+        <div class="pr">
+          <label class="pl" for="p-roty">Obrót Y (°)</label>
+          <input class="pi" id="p-roty" type="number" step="1">
+        </div>
+        <div class="pr">
+          <label class="pl" for="p-col">Kolor</label>
+          <input class="pi" id="p-col" type="color" style="height:32px;padding:2px 4px;cursor:pointer">
+        </div>
+      </div>
+      <div id="pf-loc" style="padding:5px 12px 8px">
+        <div class="pl" style="margin-bottom:4px">Lokalizacje w rzędzie</div>
+        <div id="p-locs" style="font-size:11px;color:#6a9abf;line-height:1.6"></div>
+      </div>
+    </div>
+
+    <div id="p-actions">
+      <button class="ab" id="b-apply">&#10003; Zastosuj</button>
+      <button class="ab" id="b-del">&#128465; Usuń</button>
+      <div class="sep"></div>
+      <button class="ab" id="b-save">&#128190; Zapisz (localStorage)</button>
+      <button class="ab" id="b-load">&#128194; Wczytaj (localStorage)</button>
+      <button class="ab" id="b-export">&#8595; Eksportuj JSON</button>
+      <button class="ab" id="b-fill">&#127981; Pokaż cały magazyn</button>
+      <button class="ab" id="b-clear">&#10006; Wyczyść wszystko</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script type="importmap">
+{
+  "imports": {
+    "three":           "/static/ui/vendor/three.module.js",
+    "three/addons/":   "/static/ui/vendor/addons/",
+    "camera-controls": "/static/ui/vendor/camera-controls.module.js",
+    "lil-gui":         "/static/ui/vendor/lil-gui.module.js"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { TransformControls } from 'three/addons/controls/TransformControls.js';
+import CameraControls from 'camera-controls';
+import GUI from 'lil-gui';
+CameraControls.install({ THREE });
+
+/* ── DATA FROM DJANGO ──────────────────────────────── */
+const _rlEl = document.getElementById('id_rack_lib');
+const RACK_LIB = _rlEl ? JSON.parse(_rlEl.textContent) : [];
+
+/* ── CONSTANTS ─────────────────────────────────────── */
+const GRID  = 200;
+const SNAP  = { fine: 0.5, coarse: 1.0 };
+let   snap  = SNAP.fine;
+
+/* suffix → vertical order index */
+const SUF_ORDER = {
+  A:0, B:0, 'C-1':1,'C-2':1, C:1, 'D-1':2,'D-2':2, D:2,
+  S:1, T:2, U:3, V:4, W:5,
+  X:1, Y:2, Z:3
+};
+
+const PICK_COLOR  = '#e67e22';
+const STOR_COLOR  = '#4ecdc4';
+const COMP_COLOR  = '#9b59b6';
+const PATH_COLOR  = '#f1c40f';
+
+function rackColor(lib) {
+  if (lib.isPicking)  return PICK_COLOR;
+  if (lib.hasCompact) return COMP_COLOR;
+  return STOR_COLOR;
+}
+
+/* ── SCENE ──────────────────────────────────────────── */
+const canvas   = document.getElementById('c3d');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x12121f);
+scene.fog = new THREE.FogExp2(0x12121f, 0.0025);
+
+const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 2000);
+camera.position.set(0, 35, 60);
+camera.lookAt(0, 0, 0);
+
+/* lights */
+const amb = new THREE.AmbientLight(0x404060, 1.4);
+scene.add(amb);
+const sun = new THREE.DirectionalLight(0xfff0e0, 2.5);
+sun.position.set(60, 120, 80);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left:-200, right:200, top:200, bottom:-200, near:0.5, far:600 });
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xc0d8ff, 0.5);
+fill.position.set(-80, 60, -60);
+scene.add(fill);
+
+/* floor */
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(GRID, GRID),
+  new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.95, metalness: 0.05 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+floor.name = '__floor__';
+scene.add(floor);
+
+/* grids */
+function makeGrid(divs, col) {
+  const g = new THREE.GridHelper(GRID, divs, col, col);
+  const mats = Array.isArray(g.material) ? g.material : [g.material];
+  mats.forEach(m => { m.transparent = true; m.opacity = 0.5; });
+  g.position.y = 0.01;
+  return g;
+}
+const gridFine   = makeGrid(GRID * 2, 0x1a3060);   // 0.5m grid
+const gridCoarse = makeGrid(GRID,     0x1e4080);    // 1m grid
+scene.add(gridFine);
+scene.add(gridCoarse);
+
+/* ── CONTROLS (camera-controls: smooth dolly-to-cursor + animated presets) ── */
+const clock = new THREE.Clock();
+const orbit = new CameraControls(camera, renderer.domElement);
+orbit.dampingFactor = 0.08;
+orbit.minDistance = 2; orbit.maxDistance = 600;
+// Stop the camera dropping to a near-horizontal grazing angle: at ~1° above the floor the
+// rack rows collapse into thin distorted slats and the floor grid moirés. Cap the tilt at
+// ~13° above the horizon so the aisles always read as 3-D while rotating.
+orbit.maxPolarAngle = Math.PI / 2 - 0.22;
+orbit.dollyToCursor = true;
+
+const xfm = new TransformControls(camera, renderer.domElement);
+xfm.setMode('translate'); xfm.setSpace('world');
+scene.add(xfm);
+xfm.addEventListener('dragging-changed', e => { orbit.enabled = !e.value; });
+xfm.addEventListener('objectChange', () => {
+  const o = xfm.object; if (!o) return;
+  o.position.x = Math.round(o.position.x / snap) * snap;
+  o.position.z = Math.round(o.position.z / snap) * snap;
+  o.position.y = 0;
+  syncPosToProps();
+  rebuildObjList();
+});
+
+/* ── STATE ───────────────────────────────────────────── */
+let objects    = [];
+let selectedId = null;
+let pathMode   = false;
+let pathPts    = [];
+let pathPend   = null;
+let _oid       = 1;
+
+/* ── GEOMETRY ───────────────────────────────────────── */
+const POST_W  = 0.05;
+const BEAM_H  = 0.06;
+const BEAM_D  = 0.05;
+const PAL_H   = 0.14;
+const PAL_MAR = 0.06;
+const SHELF_H = 0.04;
+
+function buildRackGroup(data) {
+  const { type, bays, bayW, depth, levels, levelH, passH, color,
+          isPicking, hasCompact } = data;
+  const totalW = bays * bayW;
+  const c      = new THREE.Color(color);
+  const grp    = new THREE.Group();
+
+  const mPost  = new THREE.MeshStandardMaterial({ color: c, roughness: 0.4, metalness: 0.3 });
+  const mBeam  = new THREE.MeshStandardMaterial({ color: new THREE.Color(c).multiplyScalar(0.55), roughness: 0.5 });
+  const mPal   = new THREE.MeshStandardMaterial({ color: 0xc8a06e, roughness: 0.9 });
+  const mShelf = new THREE.MeshStandardMaterial({ color: 0x778899, roughness: 0.6, metalness: 0.4 });
+  const mArch  = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.07 });
+
+  const floorStart = type === 'PT' ? (passH || 2.2) : 0;
+  const postH = floorStart + levels * levelH;
+
+  /* uprights */
+  for (let b = 0; b <= bays; b++) {
+    const x = b * bayW - totalW / 2;
+    [[depth / 2], [-depth / 2]].forEach(([z]) => {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(POST_W, postH, POST_W), mPost);
+      m.position.set(x, postH / 2, z);
+      m.castShadow = true;
+      grp.add(m);
+    });
+  }
+
+  /* levels */
+  for (let lv = 0; lv < levels; lv++) {
+    const fy = floorStart + lv * levelH;
+    /* front & back beams */
+    [[depth / 2 - BEAM_D / 2], [-(depth / 2 - BEAM_D / 2)]].forEach(([z]) => {
+      const bm = new THREE.Mesh(new THREE.BoxGeometry(totalW, BEAM_H, BEAM_D), mBeam);
+      bm.position.set(0, fy + BEAM_H / 2, z);
+      grp.add(bm);
+    });
+
+    if (isPicking && lv > 0) {
+      /* shelf boards */
+      const sh = new THREE.Mesh(new THREE.BoxGeometry(totalW, SHELF_H, depth - 0.05), mShelf);
+      sh.position.set(0, fy + SHELF_H / 2, 0);
+      grp.add(sh);
+    } else {
+      /* pallet silhouettes — the floor level of a C/D aisle splits into two ~40 cm
+         half-slots per bay (the divisible C-1/C-2 · D-1/D-2 positions). */
+      const splitLevel = (lv === 0) && data.hasSplit;
+      const pd = depth - PAL_MAR * 2;
+      for (let b = 0; b < bays; b++) {
+        const cx = (b + 0.5) * bayW - totalW / 2;
+        const py = fy + BEAM_H + PAL_H / 2;
+        if (splitLevel) {
+          const hw = bayW / 2 - PAL_MAR * 1.5;
+          [-1, 1].forEach(sgn => {
+            const pm = new THREE.Mesh(new THREE.BoxGeometry(hw, PAL_H, pd), mPal);
+            pm.position.set(cx + sgn * bayW / 4, py, 0);
+            pm.castShadow = true;
+            grp.add(pm);
+          });
+        } else {
+          const pm = new THREE.Mesh(new THREE.BoxGeometry(bayW - PAL_MAR * 2, PAL_H, pd), mPal);
+          pm.position.set(cx, py, 0);
+          pm.castShadow = true;
+          grp.add(pm);
+        }
+      }
+    }
+  }
+
+  /* PT arch */
+  if (type === 'PT' && passH) {
+    const arch = new THREE.Mesh(new THREE.BoxGeometry(totalW, passH, depth), mArch);
+    arch.position.set(0, passH / 2, 0);
+    grp.add(arch);
+  }
+
+  /* hit box */
+  const hitH = postH;
+  const hit = new THREE.Mesh(
+    new THREE.BoxGeometry(totalW, hitH, depth),
+    new THREE.MeshBasicMaterial({ visible: false })
+  );
+  hit.position.set(0, hitH / 2, 0);
+  hit.name = '__hit__';
+  grp.add(hit);
+
+  /* label */
+  grp.add(makeLabel(data.name || '', c, totalW, postH));
+
+  grp.castShadow = true;
+  return grp;
+}
+
+function buildPathLine(pts, col) {
+  const c   = new THREE.Color(col || PATH_COLOR);
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  const ln  = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: c, linewidth: 2 }));
+  const sgeo = new THREE.SphereGeometry(0.2, 8, 8);
+  const smat = new THREE.MeshBasicMaterial({ color: c });
+  pts.forEach(p => {
+    const s = new THREE.Mesh(sgeo, smat); s.position.copy(p); ln.add(s);
+  });
+  return ln;
+}
+
+function makeLabel(text, color, width, topY) {
+  const W = 1024, H = 160;   // hi-res canvas → crisp text when zoomed in
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  const c = new THREE.Color(color);
+  ctx.fillStyle = `rgba(${~~(c.r*255)},${~~(c.g*255)},${~~(c.b*255)},0.9)`;
+  ctx.roundRect(8, 20, W - 16, H - 32, 20); ctx.fill();
+  ctx.lineWidth = 6; ctx.strokeStyle = '#0d1a30'; ctx.stroke();
+  ctx.fillStyle = '#12121f';
+  ctx.font = 'bold 72px Segoe UI, system-ui, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(String(text).slice(0, 14), W / 2, H / 2);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.anisotropy = 4;
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false }));
+  spr.scale.set(Math.max(width || 3, 2.5), 0.8, 1);
+  // Float the label above the top of the rack so the aisle id is readable from any angle.
+  spr.position.set(0, (topY != null ? topY + 0.7 : -0.7), 0);
+  spr.name = '__lbl__';
+  return spr;
+}
+
+/* ── OBJECT MANAGEMENT ──────────────────────────────── */
+function addRackFromLib(libEntry, x = 0, z = 0) {
+  const id   = _oid++;
+  const col  = rackColor(libEntry);
+  const data = {
+    id, type: 'PA',
+    name:       libEntry.name,
+    libKey:     libEntry.key,
+    bays:       libEntry.bays,
+    bayW:       libEntry.bayW,
+    depth:      libEntry.depth,
+    levels:     libEntry.levels,
+    levelH:     libEntry.levelH,
+    passH:      2.2,
+    color:      col,
+    isPicking:  libEntry.isPicking,
+    hasCompact: libEntry.hasCompact,
+    hasSplit:   !!libEntry.hasSplit,
+    whTypes:    libEntry.whTypes,
+    suffixes:   libEntry.suffixes,
+    rotY:       0, posX: x, posZ: z,
+  };
+  const mesh = buildRackGroup(data);
+  mesh.position.set(x, 0, z);
+  mesh.userData._oid = id;
+  scene.add(mesh);
+  objects.push({ id, type: 'rack', mesh, data });
+  rebuildObjList();
+  return id;
+}
+
+function addPath(pts) {
+  const id   = _oid++;
+  const data = { id, type: 'PATH', name: `Ścieżka ${id}`, color: PATH_COLOR,
+                 points: pts.map(p => ({ x: p.x, y: p.y, z: p.z })) };
+  const ln = buildPathLine(pts.map(p => new THREE.Vector3(p.x, 0.06, p.z)), PATH_COLOR);
+  ln.userData._oid = id;
+  scene.add(ln);
+  objects.push({ id, type: 'PATH', mesh: ln, data });
+  rebuildObjList();
+  return id;
+}
+
+function removeObj(id) {
+  const i = objects.findIndex(o => o.id === id);
+  if (i < 0) return;
+  scene.remove(objects[i].mesh);
+  objects.splice(i, 1);
+  if (selectedId === id) deselect();
+  rebuildObjList();
+}
+
+const getObj = id => objects.find(o => o.id === id);
+
+/* ── SELECTION ──────────────────────────────────────── */
+function select(id) {
+  deselect();
+  selectedId = id;
+  const o = getObj(id);
+  if (!o) return;
+  if (o.type !== 'PATH') xfm.attach(o.mesh);
+  showProps(o);
+  rebuildObjList();
+}
+
+function deselect() {
+  xfm.detach();
+  selectedId = null;
+  hideProps();
+  rebuildObjList();
+}
+
+/* ── RAYCASTING ──────────────────────────────────────── */
+const ray = new THREE.Raycaster();
+const ptr = new THREE.Vector2();
+
+function floorHit(e) {
+  const r = canvas.getBoundingClientRect();
+  ptr.x =  ((e.clientX - r.left) / r.width)  * 2 - 1;
+  ptr.y = -((e.clientY - r.top)  / r.height) * 2 + 1;
+  ray.setFromCamera(ptr, camera);
+  const hits = ray.intersectObject(floor);
+  return hits.length ? hits[0].point : null;
+}
+
+function snapV(p) {
+  return new THREE.Vector3(
+    Math.round(p.x / snap) * snap, 0,
+    Math.round(p.z / snap) * snap
+  );
+}
+
+canvas.addEventListener('click', e => {
+  if (xfm.dragging) return;
+
+  if (pathMode) {
+    const fp = floorHit(e); if (!fp) return;
+    pathPts.push(snapV(fp)); updatePendPath(); return;
+  }
+
+  const r = canvas.getBoundingClientRect();
+  ptr.x =  ((e.clientX - r.left) / r.width)  * 2 - 1;
+  ptr.y = -((e.clientY - r.top)  / r.height) * 2 + 1;
+  ray.setFromCamera(ptr, camera);
+
+  const meshes = [];
+  objects.forEach(o => o.mesh.traverse(c => { if (c.isMesh) meshes.push(c); }));
+  const hits = ray.intersectObjects(meshes, false);
+  if (!hits.length) { deselect(); return; }
+
+  let node = hits[0].object;
+  while (node) {
+    if (node.userData._oid) { select(node.userData._oid); return; }
+    node = node.parent;
+  }
+  deselect();
+});
+
+canvas.addEventListener('dblclick', e => {
+  if (!pathMode) return;
+  if (pathPts.length >= 2) addPath(pathPts);
+  endPath();
+});
+
+/* ── PATH DRAWING ───────────────────────────────────── */
+function updatePendPath() {
+  if (pathPend) { scene.remove(pathPend); pathPend = null; }
+  if (pathPts.length < 2) return;
+  pathPend = buildPathLine(pathPts.map(p => new THREE.Vector3(p.x, 0.07, p.z)), PATH_COLOR);
+  scene.add(pathPend);
+}
+
+canvas.addEventListener('mousemove', e => {
+  if (!pathMode || !pathPts.length) return;
+  const fp = floorHit(e); if (!fp) return;
+  const sp = snapV(fp);
+  if (pathPend) { scene.remove(pathPend); pathPend = null; }
+  pathPend = buildPathLine(
+    [...pathPts, sp].map(p => new THREE.Vector3(p.x, 0.07, p.z)), PATH_COLOR
+  );
+  scene.add(pathPend);
+});
+
+function startPath() {
+  pathMode = true; pathPts = [];
+  if (pathPend) { scene.remove(pathPend); pathPend = null; }
+  deselect();
+  document.getElementById('path-btn').classList.add('active');
+  document.getElementById('hint').textContent =
+    'Kliknij aby dodawać punkty · Podwójny klik = zakończ · Esc = anuluj';
+  orbit.enabled = false;
+}
+
+function endPath() {
+  pathMode = false; pathPts = [];
+  if (pathPend) { scene.remove(pathPend); pathPend = null; }
+  document.getElementById('path-btn').classList.remove('active');
+  document.getElementById('hint').textContent =
+    'Kliknij rząd z biblioteki aby umieścić · LPM drag = kamera · scroll = zoom · Del = usuń zaznaczone';
+  orbit.enabled = true;
+}
+
+document.addEventListener('keydown', e => {
+  // Ignore shortcuts while typing in a form field — otherwise editing a rack's name and
+  // hitting 'r'/'g' would flip the transform mode and Delete would remove the rack.
+  const tag = (e.target.tagName || '').toUpperCase();
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || e.target.isContentEditable) return;
+  if (e.key === 'Escape')  { pathMode ? endPath() : deselect(); }
+  if (e.key === 'Delete' && selectedId !== null) removeObj(selectedId);
+  if (e.key === 'g' || e.key === 'G') activateMode('translate');
+  if (e.key === 'r' || e.key === 'R') activateMode('rotate');
+});
+
+/* ── PROPS PANEL ─────────────────────────────────────── */
+function showProps(o) {
+  document.getElementById('p-empty').style.display = 'none';
+  document.getElementById('p-form').style.display  = '';
+  const isPath = o.type === 'PATH';
+  document.getElementById('pf-rack').style.display = isPath ? 'none' : '';
+  document.getElementById('pf-pt').style.display   =
+    (!isPath && o.data.type === 'PT') ? '' : 'none';
+
+  const d = o.data;
+  document.getElementById('p-name').value  = d.name   || '';
+  document.getElementById('p-type').value  = d.type   || 'PA';
+  document.getElementById('p-bays').value  = d.bays   || 1;
+  document.getElementById('p-bayw').value  = d.bayW   || 1.0;
+  document.getElementById('p-depth').value = d.depth  || 1.1;
+  document.getElementById('p-levh').value  = d.levelH || 2.2;
+  document.getElementById('p-levs').value  = d.levels || 1;
+  document.getElementById('p-pass').value  = d.passH  || 2.2;
+  document.getElementById('p-col').value   = d.color  || STOR_COLOR;
+  document.getElementById('p-px').value    = Math.round((d.posX || 0) * 100) / 100;
+  document.getElementById('p-pz').value    = Math.round((d.posZ || 0) * 100) / 100;
+  document.getElementById('p-roty').value  = Math.round((d.rotY || 0) * 180 / Math.PI);
+
+  /* show suffixes / wh types */
+  const _e3 = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const locDiv = document.getElementById('p-locs');
+  if (!isPath && d.suffixes && d.suffixes.length) {
+    const wt = (d.whTypes || []).map(_e3).join(', ') || '—';
+    locDiv.innerHTML =
+      `<b>Typy magazynu:</b> ${wt}<br>` +
+      `<b>Sufiksy:</b> ${d.suffixes.slice(0, 30).map(_e3).join(', ')}` +
+      (d.suffixes.length > 30 ? '…' : '');
+    document.getElementById('pf-loc').style.display = '';
+  } else {
+    document.getElementById('pf-loc').style.display = 'none';
+  }
+}
+
+function hideProps() {
+  document.getElementById('p-empty').style.display = '';
+  document.getElementById('p-form').style.display  = 'none';
+}
+
+function syncPosToProps() {
+  const o = getObj(selectedId); if (!o || o.type === 'PATH') return;
+  document.getElementById('p-px').value   = Math.round(o.mesh.position.x * 100) / 100;
+  document.getElementById('p-pz').value   = Math.round(o.mesh.position.z * 100) / 100;
+  document.getElementById('p-roty').value = Math.round(o.mesh.rotation.y * 180 / Math.PI);
+  o.data.posX = o.mesh.position.x;
+  o.data.posZ = o.mesh.position.z;
+  o.data.rotY = o.mesh.rotation.y;
+}
+
+document.getElementById('b-apply').addEventListener('click', () => {
+  const o = getObj(selectedId); if (!o) return;
+  const d = o.data;
+
+  d.name   = document.getElementById('p-name').value.trim() || d.name;
+  d.type   = document.getElementById('p-type').value;
+  d.color  = document.getElementById('p-col').value;
+
+  if (o.type !== 'PATH') {
+    d.bays   = parseInt(document.getElementById('p-bays').value)   || d.bays;
+    d.bayW   = parseFloat(document.getElementById('p-bayw').value) || d.bayW;
+    d.depth  = parseFloat(document.getElementById('p-depth').value)|| d.depth;
+    d.levelH = parseFloat(document.getElementById('p-levh').value) || d.levelH;
+    d.levels = parseInt(document.getElementById('p-levs').value)   || d.levels;
+    d.passH  = parseFloat(document.getElementById('p-pass').value) || d.passH;
+    d.posX   = parseFloat(document.getElementById('p-px').value)   || 0;
+    d.posZ   = parseFloat(document.getElementById('p-pz').value)   || 0;
+    d.rotY   = (parseFloat(document.getElementById('p-roty').value) || 0) * Math.PI / 180;
+
+    scene.remove(o.mesh); xfm.detach();
+    const nm = buildRackGroup(d);
+    nm.position.set(d.posX, 0, d.posZ);
+    nm.rotation.y = d.rotY;
+    nm.userData._oid = o.id;
+    o.mesh = nm;
+    scene.add(nm); xfm.attach(nm);
+  } else if (o.mesh.material && o.mesh.material.color) {
+    // PATH: update line colour in place (geometry unchanged)
+    o.mesh.material.color.set(d.color);
+  }
+
+  document.getElementById('pf-pt').style.display = d.type === 'PT' ? '' : 'none';
+  rebuildObjList();
+});
+
+/* ── OBJECT LIST ─────────────────────────────────────── */
+function rebuildObjList() {
+  const el = document.getElementById('obj-list');
+  el.innerHTML = '';
+  objects.forEach(o => {
+    const row = document.createElement('div');
+    row.className = 'obj-row' + (o.id === selectedId ? ' sel' : '');
+    const badge = document.createElement('span');
+    badge.className = 'lib-badge';
+    badge.style.background = o.data.color || STOR_COLOR;
+    badge.textContent = o.type === 'PATH' ? 'PTH' : 'RCK';
+    const lbl = document.createElement('span');
+    lbl.textContent = o.data.name || o.type;
+    lbl.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+    const del = document.createElement('button');
+    del.className = 'obj-del'; del.textContent = '×'; del.title = 'Usuń';
+    del.onclick = ev => { ev.stopPropagation(); removeObj(o.id); };
+    row.append(badge, lbl, del);
+    row.onclick = () => select(o.id);
+    el.appendChild(row);
+  });
+}
+
+/* ── LIBRARY LIST ────────────────────────────────────── */
+function buildLibList(filter = '') {
+  const el = document.getElementById('lib-list');
+  el.innerHTML = '';
+  const f = filter.toLowerCase();
+  RACK_LIB.filter(r => !f || r.name.toLowerCase().includes(f)).forEach(lib => {
+    const row  = document.createElement('div');
+    row.className = 'lib-row';
+    const badge = document.createElement('span');
+    badge.className = 'lib-badge ' + (lib.isPicking ? 't-pick' : lib.hasCompact ? 't-comp' : 't-stor');
+    badge.textContent = lib.isPicking ? 'PICK' : lib.hasCompact ? 'COMP' : 'STOR';
+    const nm = document.createElement('span');
+    nm.textContent = lib.name;
+    const meta = document.createElement('span');
+    meta.className = 'lib-meta';
+    meta.textContent = `${lib.bays}p ${lib.levels}poz`;
+    row.append(badge, nm, meta);
+    row.onclick = () => {
+      const id = addRackFromLib(lib, 0, 0);
+      select(id);
+    };
+    el.appendChild(row);
+  });
+
+  if (!RACK_LIB.length) {
+    el.innerHTML = '<div style="padding:12px;color:#7b9cc0;font-size:11px">Brak master daty lokalizacji.<br>Wgraj master datę aby korzystać z biblioteki rzędów.</div>';
+  }
+}
+buildLibList();
+document.getElementById('lib-search').addEventListener('input', e => buildLibList(e.target.value));
+
+/* ── TOOLBAR ─────────────────────────────────────────── */
+function activateMode(mode) {
+  if (mode === 'translate' || mode === 'rotate') xfm.setMode(mode);
+  ['tb-sel','tb-mv','tb-rot'].forEach(id => document.getElementById(id).classList.remove('on'));
+  const map = { select:'tb-sel', translate:'tb-mv', rotate:'tb-rot' };
+  if (map[mode]) document.getElementById(map[mode]).classList.add('on');
+}
+document.getElementById('tb-sel').onclick = () => { deselect(); activateMode('select'); };
+document.getElementById('tb-mv').onclick  = () => activateMode('translate');
+document.getElementById('tb-rot').onclick = () => activateMode('rotate');
+
+document.getElementById('tb-g05').addEventListener('click', function() {
+  const on = this.classList.toggle('on');
+  snap = on ? SNAP.fine : SNAP.coarse;
+  document.getElementById('snap-v').textContent = on ? '0.5 m' : '1 m';
+  document.getElementById('tb-g1').classList.toggle('on', !on);
+});
+document.getElementById('tb-g1').addEventListener('click', function() {
+  const on = this.classList.toggle('on');
+  snap = on ? SNAP.coarse : SNAP.fine;
+  document.getElementById('snap-v').textContent = on ? '1 m' : '0.5 m';
+  document.getElementById('tb-g05').classList.toggle('on', !on);
+});
+
+document.getElementById('path-btn').onclick = () => pathMode ? endPath() : startPath();
+document.getElementById('b-del').onclick    = () => { if (selectedId !== null) removeObj(selectedId); };
+
+/* ── SAVE / LOAD / EXPORT ───────────────────────────── */
+function serialize() { return objects.map(o => ({ ...o.data })); }
+
+function deserialize(items) {
+  [...objects].forEach(o => removeObj(o.id));
+  items.forEach(d => {
+    if (d.type === 'PATH') {
+      const pts = (d.points||[]).map(p => new THREE.Vector3(p.x, 0.06, p.z));
+      if (pts.length >= 2) addPath(pts);
+    } else {
+      const libEntry = RACK_LIB.find(r => r.key === d.libKey);
+      if (!libEntry && d.libKey) {
+        console.warn(`[PalViz] Rząd "${d.libKey}" nie istnieje w aktualnej master dacie — obiekt pominięty.`);
+        return;
+      }
+      const merged = { ...(libEntry || {}), ...d, name: d.name, libKey: d.libKey };
+      const id = addRackFromLib(merged, d.posX||0, d.posZ||0);
+      const o  = getObj(id);
+      if (o) {
+        Object.assign(o.data, d, { id, libKey: d.libKey });
+        scene.remove(o.mesh); xfm.detach();
+        const nm = buildRackGroup(o.data);
+        nm.position.set(d.posX||0, 0, d.posZ||0);
+        nm.rotation.y = d.rotY||0;
+        nm.userData._oid = id;
+        o.mesh = nm; scene.add(nm);
+      }
+    }
+  });
+  rebuildObjList();
+}
+
+/* Safe localStorage wrapper — throws in Safari private mode */
+const _ls = (() => {
+  try { localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return localStorage; }
+  catch(e) { return { getItem:()=>null, setItem:()=>{}, removeItem:()=>{} }; }
+})();
+
+document.getElementById('b-save').onclick = () => {
+  _ls.setItem('pv_ed3d', JSON.stringify(serialize()));
+  alert('Zapisano!');
+};
+document.getElementById('b-load').onclick = () => {
+  const raw = _ls.getItem('pv_ed3d');
+  if (!raw) { alert('Brak zapisu.'); return; }
+  try {
+    if (confirm('Załadować zapis? Aktualny układ zostanie zastąpiony.')) deserialize(JSON.parse(raw));
+  } catch(e) { alert('Uszkodzony zapis — nie można wczytać.'); }
+};
+document.getElementById('b-export').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(serialize(), null, 2)], { type:'application/json' }));
+  a.download = 'palviz_layout.json'; a.click();
+};
+document.getElementById('b-clear').onclick = () => {
+  if (confirm('Wyczyścić wszystkie obiekty?')) [...objects].forEach(o => removeObj(o.id));
+};
+
+/* autosave */
+setInterval(() => {
+  if (objects.length) _ls.setItem('pv_ed3d_auto', JSON.stringify(serialize()));
+}, 30000);
+const saved = _ls.getItem('pv_ed3d_auto');
+let hadAutosave = false;
+if (saved) {
+  try {
+    const items = JSON.parse(saved);
+    if (items.length) {
+      hadAutosave = true;   // an autosave existed — respect the user's restore choice
+      if (confirm(`Przywrócić autosave (${items.length} obiektów)?`)) deserialize(items);
+    }
+  } catch(e) { /**/ }
+}
+
+/* ── Auto-fill: place every aisle from the warehouse data so the whole
+      imported magazyn is visible without manual dragging. ─────────────── */
+function frameAllObjects() {
+  if (!objects.length) return;
+  const box = new THREE.Box3();
+  objects.forEach(o => box.expandByObject(o.mesh));
+  if (box.isEmpty()) return;
+  const c = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z) || 30;
+  camera.far = Math.max(2000, maxDim * 12); camera.updateProjectionMatrix();  // never below the default
+  orbit.setLookAt(c.x, c.y + maxDim * 0.7, c.z + maxDim * 1.05, c.x, c.y, c.z, true);
+}
+function fillFromWarehouse() {
+  [...objects].forEach(o => removeObj(o.id));      // start clean
+  let z = 0;
+  RACK_LIB.forEach(lib => {
+    if (lib.posX != null && lib.posZ != null) {
+      // Real position + orientation from the layout (Excel plan)
+      const id = addRackFromLib(lib, lib.posX, lib.posZ);
+      if (lib.angle) {
+        const o = objects.find(x => x.id === id);
+        if (o) { o.mesh.rotation.y = lib.angle * Math.PI / 180; o.data.rotY = o.mesh.rotation.y; }
+      }
+    } else {
+      // Fallback: stack aisles sequentially along Z
+      const len = (lib.bays || 1) * (lib.bayW || 0.8);
+      addRackFromLib(lib, -len / 2, z);
+      z += (lib.depth || 1.1) + 1.5;
+    }
+  });
+  // Remember each rack's filled Z so the calibration panel can spread/compress aisles live.
+  objects.forEach(o => { o._baseZ = o.mesh.position.z; });
+  frameAllObjects();
+}
+document.getElementById('b-fill').onclick = fillFromWarehouse;
+
+/* ── CALIBRATION PANEL (lil-gui): tune the look without redeploying ── */
+const _cal = { aisleSpread: 1.0, labels: true, grid: true,
+               reframe: () => frameAllObjects(), fill: () => fillFromWarehouse() };
+const _gui = new GUI({ title: 'Kalibracja 3D' });
+_gui.add(_cal, 'aisleSpread', 0.5, 3, 0.05).name('Rozstaw alej').onChange(v => {
+  objects.forEach(o => {
+    if (o.type === 'rack' && o._baseZ != null) {
+      o.mesh.position.z = o._baseZ * v;
+      o.data.posZ = o.mesh.position.z;
+    }
+  });
+});
+_gui.add(_cal, 'labels').name('Etykiety regałów').onChange(vis => {
+  objects.forEach(o => o.mesh.traverse(c => { if (c.name === '__lbl__') c.visible = vis; }));
+});
+_gui.add(_cal, 'grid').name('Siatka podłogi').onChange(vis => { gridFine.visible = gridCoarse.visible = vis; });
+_gui.add(_cal, 'reframe').name('Wykadruj scenę');
+_gui.add(_cal, 'fill').name('Wypełnij magazynem');
+_gui.domElement.style.position = 'absolute';
+_gui.domElement.style.top = '10px';
+_gui.domElement.style.right = '10px';
+_gui.domElement.style.zIndex = '20';
+document.getElementById('cvs-wrap').appendChild(_gui.domElement);
+// Auto-show the warehouse only on a genuine first visit — never override a
+// deliberate empty scene (user declined the autosave-restore, or cleared it).
+if (!objects.length && !hadAutosave && RACK_LIB.length) {
+  fillFromWarehouse();
+}
+
+/* ── RESIZE / LOOP ───────────────────────────────────── */
+function resize() {
+  const w = document.getElementById('cvs-wrap').clientWidth;
+  const h = document.getElementById('cvs-wrap').clientHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h, false);
+}
+window.addEventListener('resize', resize);
+resize();
+
+// Karta w tle nie rysuje — edytor mutuje scenę interaktywnie (dodanie/przesunięcie
+// regału bez ruchu kamery), więc na 1. planie rysujemy co klatkę, ale zakładka w tle
+// nie miele GPU (shadow map 2048² + InstancedMeshe) bez końca.
+(function loop() {
+  requestAnimationFrame(loop);
+  if (document.hidden) return;
+  orbit.update(clock.getDelta());
+  renderer.render(scene, camera);
+})();
+</script>
+{% endblock %}

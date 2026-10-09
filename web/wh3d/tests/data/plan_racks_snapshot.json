@@ -1,0 +1,1309 @@
+{
+ "aisle_cfg_max_of_line": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "02",
+    "width": 2.4000000000000004,
+    "x": 18.0,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "03",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 6.6,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 9,
+   "floor": [
+    22.4,
+    9.7
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 3,
+   "skipped_codes": 0,
+   "slot_mm": 800
+  }
+ },
+ "aisle_cfg_overrides_real_gap": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "02",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 4.9,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 6,
+   "floor": [
+    6.4,
+    8.0
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 2,
+   "skipped_codes": 0,
+   "slot_mm": 800
+  }
+ },
+ "aisle_cfg_partial": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "02",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 3.2,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "03",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 6.8,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": true,
+   "cells": 9,
+   "floor": [
+    6.4,
+    9.9
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 3,
+   "skipped_codes": 0,
+   "slot_mm": 800
+  }
+ },
+ "duplicate_codes": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 180,
+    "depth": 1.2,
+    "depth_cm": 120,
+    "level_h": 2.15,
+    "level_height_cm": 215,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 3.6,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 2,
+   "floor": [
+    7.6,
+    5.2
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 900
+  }
+ },
+ "empty": {
+  "racks": [],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 0,
+   "floor": [
+    50.0,
+    30.0
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    0.0,
+    0.0
+   ],
+   "racks": 0,
+   "skipped_codes": 0,
+   "slot_mm": 900
+  }
+ },
+ "far_offset_map": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 350,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 7.0,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 6,
+   "floor": [
+    11.0,
+    5.1
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    -148.0,
+    -198.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "four_part_codes": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 200,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 3,
+    "rack_id": "01",
+    "width": 4.0,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 3,
+   "floor": [
+    8.0,
+    5.1
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "horizontal_ascending_master_levels": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 330,
+    "depth": 1.2,
+    "depth_cm": 120,
+    "level_h": 1.75,
+    "level_height_cm": 175,
+    "n_bays": 3,
+    "n_levels": 2,
+    "rack_id": "01",
+    "width": 9.9,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 18,
+   "floor": [
+    13.9,
+    5.2
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    -7.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 900
+  }
+ },
+ "horizontal_descending": {
+  "racks": [
+   {
+    "angle": 180.0,
+    "bay_width_cm": 367,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 3,
+    "n_levels": 1,
+    "rack_id": "02",
+    "width": 11.0,
+    "x": 13.0,
+    "y": 3.1,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 9,
+   "floor": [
+    15.0,
+    5.1
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    -3.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "level_none_and_zero_from_code": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 250,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 3,
+    "rack_id": "01",
+    "width": 5.0,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 4,
+   "floor": [
+    9.0,
+    5.1
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "lowercase_and_whitespace_codes": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 180,
+    "depth": 1.25,
+    "depth_cm": 125,
+    "level_h": 1.85,
+    "level_height_cm": 185,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 3.6,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 2,
+   "floor": [
+    7.6,
+    5.2
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 900
+  }
+ },
+ "master_zero_and_none_ignored": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 367,
+    "depth": 0.9,
+    "depth_cm": 90,
+    "level_h": 1.25,
+    "level_height_cm": 125,
+    "n_bays": 3,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 11.0,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 9,
+   "floor": [
+    15.0,
+    4.9
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "mixed_depths_line_uses_max": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.5,
+    "depth_cm": 150,
+    "level_h": 1.65,
+    "level_height_cm": 165,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 0.9,
+    "depth_cm": 90,
+    "level_h": 1.65,
+    "level_height_cm": 165,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "02",
+    "width": 2.4000000000000004,
+    "x": 10.0,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "03",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 3.6,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": true,
+   "cells": 9,
+   "floor": [
+    14.4,
+    6.7
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 3,
+   "skipped_codes": 0,
+   "slot_mm": 800
+  }
+ },
+ "mixed_horizontal_and_vertical": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 367,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 3,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 11.0,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 367,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 3,
+    "n_levels": 1,
+    "rack_id": "02",
+    "width": 11.0,
+    "x": 2.0,
+    "y": 3.2,
+    "zone": "B0"
+   },
+   {
+    "angle": -90.0,
+    "bay_width_cm": 233,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 3,
+    "n_levels": 1,
+    "rack_id": "05",
+    "width": 7.0,
+    "x": 23.1,
+    "y": 7.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": true,
+   "cells": 21,
+   "floor": [
+    25.1,
+    16.0
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 3,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "multi_row_aisle_majority_line": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 325,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 4,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 13.0,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 10,
+   "floor": [
+    17.0,
+    5.1
+   ],
+   "multi_row_aisles": [
+    "B0-01"
+   ],
+   "offset": [
+    2.0,
+    0.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "multi_row_tie_first_seen": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 250,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 5.0,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 2,
+   "floor": [
+    9.0,
+    5.1
+   ],
+   "multi_row_aisles": [
+    "B0-01"
+   ],
+   "offset": [
+    2.0,
+    -3.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "no_level1_uses_all_cells": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 300,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 2,
+    "rack_id": "01",
+    "width": 6.0,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 4,
+   "floor": [
+    10.0,
+    5.1
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "only_unparsable": {
+  "racks": [],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 0,
+   "floor": [
+    50.0,
+    30.0
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    0.0,
+    0.0
+   ],
+   "racks": 0,
+   "skipped_codes": 4,
+   "slot_mm": 900
+  }
+ },
+ "single_cell_tie_is_horizontal": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 90,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "09",
+    "width": 0.9,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 1,
+   "floor": [
+    4.9,
+    5.1
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    -1.6,
+    -1.6
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 900
+  }
+ },
+ "single_stack_many_levels": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 120,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 4,
+    "rack_id": "01",
+    "width": 1.2,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 4,
+   "floor": [
+    5.2,
+    5.1
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1200
+  }
+ },
+ "slot_default_900_without_widths": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 315,
+    "depth": 1.0,
+    "depth_cm": 100,
+    "level_h": 1.15,
+    "level_height_cm": 115,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 6.3,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 6,
+   "floor": [
+    10.3,
+    5.0
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 900
+  }
+ },
+ "slot_explicit_overrides_master": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 175,
+    "depth": 1.0,
+    "depth_cm": 100,
+    "level_h": 1.15,
+    "level_height_cm": 115,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 3.5,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 6,
+   "floor": [
+    7.5,
+    5.0
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 500
+  }
+ },
+ "stack_gaps_n_bays_counts_existing": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 633,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 3,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 19.0,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 9,
+   "floor": [
+    23.0,
+    5.1
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "tight_grid_pairs_and_corridors": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 280,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 5.6000000000000005,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 280,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "02",
+    "width": 5.6000000000000005,
+    "x": 2.0,
+    "y": 3.2,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 280,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "03",
+    "width": 5.6000000000000005,
+    "x": 2.0,
+    "y": 7.3,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 280,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "04",
+    "width": 5.6000000000000005,
+    "x": 2.0,
+    "y": 8.5,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": true,
+   "cells": 24,
+   "floor": [
+    9.6,
+    11.6
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 4,
+   "skipped_codes": 0,
+   "slot_mm": 800
+  }
+ },
+ "tight_parity_after_real_gap": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "02",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 6.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "03",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 7.2,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 240,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 1,
+    "n_levels": 1,
+    "rack_id": "04",
+    "width": 2.4000000000000004,
+    "x": 2.0,
+    "y": 11.3,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": true,
+   "cells": 12,
+   "floor": [
+    6.4,
+    14.4
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 4,
+   "skipped_codes": 0,
+   "slot_mm": 800
+  }
+ },
+ "two_aisles_same_line": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 350,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 7.0,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 350,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "02",
+    "width": 7.0,
+    "x": 22.0,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 12,
+   "floor": [
+    31.0,
+    5.1
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    -1.0
+   ],
+   "racks": 2,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "vertical_ascending": {
+  "racks": [
+   {
+    "angle": -90.0,
+    "bay_width_cm": 233,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 3,
+    "n_levels": 1,
+    "rack_id": "03",
+    "width": 7.0,
+    "x": 3.1,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 3,
+   "floor": [
+    5.1,
+    11.0
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    -5.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "vertical_descending": {
+  "racks": [
+   {
+    "angle": 90.0,
+    "bay_width_cm": 233,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 3,
+    "n_levels": 1,
+    "rack_id": "03",
+    "width": 7.0,
+    "x": 2.0,
+    "y": 9.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 3,
+   "floor": [
+    5.1,
+    11.0
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    -5.0,
+    2.0
+   ],
+   "racks": 1,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ },
+ "vertical_tight_lines": {
+  "racks": [
+   {
+    "angle": -90.0,
+    "bay_width_cm": 210,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 3,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 6.3,
+    "x": 3.1,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": -90.0,
+    "bay_width_cm": 210,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 3,
+    "n_levels": 1,
+    "rack_id": "02",
+    "width": 6.3,
+    "x": 4.3,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": -90.0,
+    "bay_width_cm": 210,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 3,
+    "n_levels": 1,
+    "rack_id": "03",
+    "width": 6.3,
+    "x": 8.4,
+    "y": 2.0,
+    "zone": "B0"
+   }
+  ],
+  "report": {
+   "assumed_spacing": true,
+   "cells": 9,
+   "floor": [
+    10.4,
+    10.3
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 3,
+   "skipped_codes": 0,
+   "slot_mm": 900
+  }
+ },
+ "zones_same_rack_id": {
+  "racks": [
+   {
+    "angle": 0.0,
+    "bay_width_cm": 350,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 7.0,
+    "x": 2.0,
+    "y": 2.0,
+    "zone": "B0"
+   },
+   {
+    "angle": 0.0,
+    "bay_width_cm": 350,
+    "depth": 1.1,
+    "depth_cm": 110,
+    "level_h": 2.0,
+    "level_height_cm": 200,
+    "n_bays": 2,
+    "n_levels": 1,
+    "rack_id": "01",
+    "width": 7.0,
+    "x": 2.0,
+    "y": 8.0,
+    "zone": "C1"
+   }
+  ],
+  "report": {
+   "assumed_spacing": false,
+   "cells": 12,
+   "floor": [
+    11.0,
+    11.1
+   ],
+   "multi_row_aisles": [],
+   "offset": [
+    2.0,
+    2.0
+   ],
+   "racks": 2,
+   "skipped_codes": 0,
+   "slot_mm": 1000
+  }
+ }
+}

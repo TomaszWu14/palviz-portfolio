@@ -1,0 +1,11 @@
+# Default owner for everything.
+* @TomaszWu14
+
+# High-impact areas — flag for review on change.
+/web/ui/models.py            @TomaszWu14
+/web/palletweb/settings.py   @TomaszWu14
+/web/palletweb/config.py     @TomaszWu14
+/palletizer/services/        @TomaszWu14
+/.github/                    @TomaszWu14
+/Dockerfile                  @TomaszWu14
+/docker-compose.yml          @TomaszWu14

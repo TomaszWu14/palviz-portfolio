@@ -1,0 +1,174 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% block title %}Dzień projektowy — {{ batch.name }} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'ui/js/echarts.min.js' %}"></script>
+<style>
+  .dd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .dd-h { font-size: 13px; font-weight: 700; color: var(--gray-700); margin-bottom: 4px; }
+  .dd-sub { font-size: 13px; color: var(--gray-500); margin-bottom: 10px; }
+  .dd-chart { width: 100%; height: 280px; }
+  .dd-pick { display: inline-flex; border: 1px solid var(--gray-300); border-radius: 8px; overflow: hidden; }
+  .dd-pick a { padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--gray-600, var(--gray-700)); text-decoration: none; }
+  .dd-pick a + a { border-left: 1px solid var(--gray-300); }
+  .dd-pick a[aria-current="true"] { background: var(--blue); color: #fff; }
+  .dd-table td.num, .dd-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .dd-table .is-p { background: var(--blue-light); font-weight: 700; }
+  .dd-matrix td { text-align: center; font-variant-numeric: tabular-nums; }
+  .dd-matrix th { text-align: center; }
+  .dd-matrix small { display: block; color: var(--gray-500); font-size: 11px; }
+  .dd-note { font-size: 13px; color: var(--gray-500); line-height: 1.55; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_map' %}">Magazyn 3D</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:ewm_tasks_list' %}">Zadania magazynowe EWM</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:ewm_tasks_detail' batch.pk %}">{{ batch.name }}</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Dzień projektowy</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Profil ruchów i dzień projektowy</div>
+    <div class="page-header__sub">{{ batch.name }}{% if profile %} · {{ profile.first_day|date:"d.m.Y" }} – {{ profile.last_day|date:"d.m.Y" }}{% endif %} · wymiarowanie magazynu na percentyl dnia, nie na średnią</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:ewm_tasks_simulate' batch.pk %}?p={{ p }}" class="btn btn-secondary btn-sm"
+       title="Ten dzień na modelu hali z generatora: flota AGV / kombi / EPT, wykorzystanie, czekanie">Symulacja dnia na modelu →</a>
+    <a href="{% url 'ui:ewm_tasks_calibration' batch.pk %}?p={{ p }}" class="btn btn-secondary btn-sm"
+       title="Realne czasy cykli wózków i pickerów z EWM vs fizyka symulacji na modelu obecnej hali">Kalibracja →</a>
+    <a href="{% url 'ui:ewm_tasks_compare' batch.pk %}?p={{ p }}" class="btn btn-secondary btn-sm"
+       title="Kilka wariantów hali na tym dniu: pojemność, flota dobrana symulacją, droga, czekanie">Porównanie wariantów →</a>
+    <a href="{% url 'ui:ewm_tasks_forecast' batch.pk %}" class="btn btn-secondary btn-sm"
+       title="Trend z historii tygodniowej → mnożnik wzrostu P50/P90 na horyzont lat">Prognoza wzrostu →</a>
+    <span class="text-muted text-sm">Percentyl dnia</span>
+    <nav class="dd-pick" aria-label="Percentyl dnia projektowego">
+      {% for q in percentiles %}<a href="?p={{ q }}" {% if q == p %}aria-current="true"{% endif %}>P{{ q }}</a>{% endfor %}
+    </nav>
+  </div>
+</div>
+
+{% if not profile %}
+<div class="alert alert-warning">Brak potwierdzonych zadań w tym imporcie — nie ma z czego liczyć profilu.</div>
+{% else %}
+{% if profile.days_working < min_days %}
+<div class="alert alert-warning" style="margin-bottom:16px">Tylko {{ profile.days_working }} dni roboczych — percentyl z tak krótkiej historii jest mało wiarygodny (P{{ p }} z {{ profile.days_working }} dni to praktycznie maksimum). Do wymiarowania wgraj co najmniej kilka miesięcy zadań.</div>
+{% endif %}
+<div class="stats-grid">
+  <div class="stat-card"><div><div class="stat-value">{{ profile.days_working }}</div><div class="stat-label">dni roboczych (z {{ profile.days_total }} z ruchem)</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ profile.design_day.target|floatformat:0 }}</div><div class="stat-label">ruchów w dniu P{{ p }}</div></div></div>
+  <div class="stat-card"><div><div class="stat-value" style="font-size:18px">{{ profile.design_day.date|date:"D d.m.Y" }}</div><div class="stat-label">dzień reprezentatywny ({{ profile.design_day.total }} ruchów) — do symulacji</div></div></div>
+  {% for s in profile.streams %}{% if s.key == "total" %}
+  <div class="stat-card"><div><div class="stat-value">{{ s.peak_hour|floatformat:0 }}</div><div class="stat-label">ruchów w godzinie szczytu (P{{ p }} godzin)</div></div></div>
+  {% endif %}{% endfor %}
+  {% if snapshot %}<div class="stat-card"><div><div class="stat-value">{{ snapshot.occupied_count }}</div><div class="stat-label">zajętych lokalizacji (snapshot {{ snapshot.uploaded_at|date:"d.m.Y" }}, z {{ snapshot.row_count }})</div></div></div>{% endif %}
+</div>
+
+<div class="card" style="margin-bottom:16px"><div class="card-body">
+  <div class="dd-h">Strumienie — wartości dzienne na dni robocze</div>
+  <div class="dd-sub">Kolumna P{{ p }} = wartość projektowa. Godzina szczytu = P{{ p }} wolumenów godzinowych (tylko godziny z ruchem).</div>
+  <div class="table-wrap"><table class="table dd-table">
+    <thead><tr><th>Strumień</th><th class="num">Średnia</th><th class="num">P50</th>
+      {% for q in percentiles %}<th class="num{% if q == p %} is-p{% endif %}">P{{ q }}</th>{% endfor %}
+      <th class="num">Max</th><th class="num">Godzina szczytu</th></tr></thead>
+    <tbody>{% for s in profile.streams %}<tr>
+      <td class="font-semibold">{{ s.label }}</td><td class="num">{{ s.mean }}</td>
+      <td class="num">{{ s.p50 }}</td>
+      {% for q, v in s.pcts %}<td class="num{% if q == p %} is-p{% endif %}">{{ v }}</td>{% endfor %}
+      <td class="num">{{ s.max }}</td><td class="num">{% if s.peak_hour %}{{ s.peak_hour }}{% else %}—{% endif %}</td>
+    </tr>{% endfor %}</tbody>
+  </table></div>
+</div></div>
+
+<div class="dd-grid">
+  <div class="card"><div class="card-body">
+    <div class="dd-h">Ruchy razem na dzień roboczy</div>
+    <div class="dd-sub">Linia przerywana = P{{ p }}; dni powyżej niej obsługujesz nadgodzinami lub drugą zmianą.</div>
+    <div id="dd-daily" class="dd-chart" role="img" aria-label="Wykres: ruchy razem na dzień roboczy z linią percentyla P{{ p }}"></div>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <div class="dd-h">Rozkład godzinowy</div>
+    <div class="dd-sub">Średnia dni roboczych vs dzień reprezentatywny {{ profile.design_day.date|date:"d.m" }}.</div>
+    <div id="dd-hours" class="dd-chart" role="img" aria-label="Wykres: ruchy na godzinę — średnia i dzień reprezentatywny"></div>
+  </div></div>
+</div>
+
+<div class="dd-grid">
+  {% if profile.abc_xyz %}
+  <div class="card"><div class="card-body">
+    <div class="dd-h">ABC × XYZ ({{ profile.abc_xyz.skus }} materiałów)</div>
+    <div class="dd-sub">ABC wg pobrań (kompletacja + wydania, progi 80/95 %); XYZ wg zmienności dziennej (CV &lt; 0,5 / &lt; 1,0 / ≥ 1,0). Komórka: materiały · udział pobrań.</div>
+    <table class="table dd-matrix">
+      <thead><tr><th></th><th>X (stabilne)</th><th>Y</th><th>Z (nieregularne)</th></tr></thead>
+      <tbody>{% for row in profile.abc_xyz.rows %}<tr><th>{{ row.abc }}</th>
+        {% for c in row.cells %}<td>{{ c.skus }}<small>{{ c.share }} % pobrań</small></td>{% endfor %}</tr>{% endfor %}</tbody>
+    </table>
+  </div></div>
+  {% endif %}
+  {% if profile.groups %}
+  <div class="card"><div class="card-body">
+    <div class="dd-h">Grupy asortymentowe (H1)</div>
+    <div class="dd-sub">Pobrania (kompletacja + wydania) w dni robocze wg hierarchii z danych materiałowych SAP — podstawa prognozy per grupa.</div>
+    <table class="table dd-table"><thead><tr><th>Grupa</th><th class="num">Materiałów</th><th class="num">Pobrań</th><th class="num">Udział</th></tr></thead>
+      <tbody>{% for g in profile.groups %}<tr><td>{{ g.label }}</td><td class="num">{{ g.skus }}</td><td class="num">{{ g.lines }}</td><td class="num">{{ g.share }} %</td></tr>{% endfor %}</tbody></table>
+  </div></div>
+  {% endif %}
+  {% if profile.orders %}
+  <div class="card"><div class="card-body">
+    <div class="dd-h">Profil zleceń ({{ profile.orders.orders }} dokumentów kompletacji)</div>
+    <div class="dd-sub">Linie na zlecenie: średnio {{ profile.orders.mean }}, P{{ p }} = {{ profile.orders.design }}.</div>
+    <table class="table dd-table"><thead><tr><th>Linii w zleceniu</th><th class="num">Zleceń</th><th class="num">Udział</th></tr></thead>
+      <tbody>{% for b in profile.orders.buckets %}<tr><td>{{ b.label }}</td><td class="num">{{ b.orders }}</td><td class="num">{{ b.share }} %</td></tr>{% endfor %}</tbody></table>
+  </div></div>
+  {% endif %}
+</div>
+
+<p class="dd-note">Założenia: 1 zadanie przyjęcia/wydania = 1 paleta, 1 zadanie kompletacji = 1 linia, zlecenie = unikalny dokument.
+  Dzień roboczy = ruch ≥ 10 % mediany. Pojemność (miejsca paletowe) wymiaruj na maksymalny stan, nie na percentyl ruchu —
+  dziś jedyne źródło to snapshot zajętości; historia stanów przyjdzie z importem stanów.</p>
+
+<script>
+(function () {
+  const d = {{ chart_json|safe }};
+  if (!d || typeof echarts === 'undefined') return;
+  const css = getComputedStyle(document.documentElement);
+  const ink = css.getPropertyValue('--gray-500').trim() || '#64748b';
+  const grid = css.getPropertyValue('--gray-200').trim() || '#e2e8f0';
+  const S1 = '#2563eb', S2 = '#ea580c';          // paleta zwalidowana (jasny i ciemny motyw)
+  const axis = { axisLine: { lineStyle: { color: grid } }, axisLabel: { color: ink }, splitLine: { lineStyle: { color: grid } } };
+  const base = { animation: false, grid: { left: 44, right: 16, top: 28, bottom: 36 },
+                 textStyle: { color: ink }, tooltip: { trigger: 'axis' } };
+
+  const daily = echarts.init(document.getElementById('dd-daily'));
+  daily.setOption({ ...base,
+    xAxis: { type: 'category', data: d.daily.dates, ...axis, axisLabel: { color: ink, formatter: v => v.slice(8, 10) + '.' + v.slice(5, 7) } },
+    yAxis: { type: 'value', ...axis },
+    series: [{ name: 'Ruchy razem', type: 'bar', data: d.daily.total, barMaxWidth: 14,
+               itemStyle: { color: S1, borderRadius: [4, 4, 0, 0] },
+               markLine: { symbol: 'none', silent: true, lineStyle: { color: S2, type: 'dashed', width: 2 },
+                           label: { color: ink, position: 'insideEndTop', formatter: 'P' + d.p + ' = ' + Math.round(d.daily.design) },
+                           data: [{ yAxis: d.daily.design }] } }] });
+
+  const hours = echarts.init(document.getElementById('dd-hours'));
+  const hrs = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0') + ':00');
+  hours.setOption({ ...base,
+    legend: { top: 0, right: 0, textStyle: { color: ink } },
+    xAxis: { type: 'category', data: hrs, ...axis },
+    yAxis: { type: 'value', ...axis },
+    series: [
+      { name: 'Średnia dni roboczych', type: 'line', data: d.hours.avg, lineStyle: { width: 2, color: S1 },
+        itemStyle: { color: S1 }, symbolSize: 8, showSymbol: false },
+      { name: 'Dzień reprezentatywny', type: 'line', data: d.hours.design_day, lineStyle: { width: 2, color: S2 },
+        itemStyle: { color: S2 }, symbolSize: 8, showSymbol: false } ] });
+  window.addEventListener('resize', () => { daily.resize(); hours.resize(); });
+})();
+</script>
+{% endif %}
+{% endblock %}

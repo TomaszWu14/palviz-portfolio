@@ -1,0 +1,935 @@
+{
+ "at_size_limit": {
+  "db": {
+   "inner_packs": [],
+   "instructions": [],
+   "products": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik nie zawiera danych."
+   ]
+  ]
+ },
+ "broken_xlsx_db": {
+  "db": {
+   "inner_packs": [],
+   "instructions": [],
+   "products": []
+  },
+  "messages": []
+ },
+ "empty_file": {
+  "db": {
+   "inner_packs": [],
+   "instructions": [],
+   "products": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik nie zawiera danych."
+   ]
+  ]
+ },
+ "format_a_aliases": {
+  "db": {
+   "inner_packs": [],
+   "instructions": [
+    {
+     "carton": [
+      30,
+      20,
+      10
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 12,
+     "pcs_per_inner_pack": null,
+     "product": "AL-1",
+     "unit_weight": 0.5,
+     "units_per_piece": 1,
+     "version": 1
+    }
+   ],
+   "products": [
+    {
+     "code": "AL-1",
+     "ean": "123",
+     "is_active": true,
+     "name": "AL-1",
+     "supplier_short": "",
+     "unit": [
+      1.0,
+      2.0,
+      3.0
+     ]
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import master daty: 1 nowych produktów, 0 zaktualizowanych, 1 instrukcji paletyzacji (0 z opak. zbiorczym). Układy przeliczą się przy pierwszym otwarciu produktu."
+   ]
+  ]
+ },
+ "format_a_rich": {
+  "db": {
+   "inner_packs": [
+    {
+     "dims": [
+      20.0,
+      15.0,
+      11.0
+     ],
+     "is_active": true,
+     "name": "MAT-OPZ-opz",
+     "sales_unit": [
+      6.0,
+      4.0,
+      5.0
+     ],
+     "sales_units_per_pack": 3,
+     "units_per_pack": 36
+    }
+   ],
+   "instructions": [
+    {
+     "carton": [
+      41,
+      28,
+      61
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 15000,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 180,
+     "max_weight_kg": 900,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 750,
+     "pcs_per_inner_pack": null,
+     "product": "MAT-100",
+     "unit_weight": 0.05,
+     "units_per_piece": 1,
+     "version": 1
+    },
+    {
+     "carton": [
+      29,
+      25,
+      22
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1080,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 509,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 10,
+     "pcs_per_inner_pack": null,
+     "product": "MAT-JU",
+     "unit_weight": 0.229,
+     "units_per_piece": 100,
+     "version": 1
+    },
+    {
+     "carton": [
+      30,
+      20,
+      10
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 20,
+     "pcs_per_inner_pack": null,
+     "product": "MAT-KW",
+     "unit_weight": 0.5,
+     "units_per_piece": 1,
+     "version": 1
+    },
+    {
+     "carton": [
+      10,
+      10,
+      10
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 1,
+     "pcs_per_inner_pack": null,
+     "product": "MAT-MI0",
+     "unit_weight": 5.0,
+     "units_per_piece": 1,
+     "version": 1
+    },
+    {
+     "carton": [
+      40,
+      30,
+      25
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 100,
+     "pcs_per_inner_pack": null,
+     "product": "MAT-OP",
+     "unit_weight": 0.02,
+     "units_per_piece": 1,
+     "version": 1
+    },
+    {
+     "carton": [
+      40,
+      30,
+      25
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": "MAT-OPZ-opz",
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": 7,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 240,
+     "pcs_per_inner_pack": 36,
+     "product": "MAT-OPZ",
+     "unit_weight": 0.01,
+     "units_per_piece": 1,
+     "version": 1
+    }
+   ],
+   "products": [
+    {
+     "code": "MAT-100",
+     "ean": "5901234123457",
+     "is_active": true,
+     "name": "MAT-100",
+     "supplier_short": "",
+     "unit": [
+      8.0,
+      8.0,
+      10.0
+     ]
+    },
+    {
+     "code": "MAT-JU",
+     "ean": "",
+     "is_active": true,
+     "name": "MAT-JU",
+     "supplier_short": "",
+     "unit": [
+      21.0,
+      12.0,
+      5.5
+     ]
+    },
+    {
+     "code": "MAT-KW",
+     "ean": "590KAR",
+     "is_active": true,
+     "name": "MAT-KW",
+     "supplier_short": "",
+     "unit": [
+      5.0,
+      5.0,
+      5.0
+     ]
+    },
+    {
+     "code": "MAT-MI0",
+     "ean": "",
+     "is_active": true,
+     "name": "MAT-MI0",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    },
+    {
+     "code": "MAT-OP",
+     "ean": "",
+     "is_active": true,
+     "name": "MAT-OP",
+     "supplier_short": "",
+     "unit": [
+      6.0,
+      4.0,
+      5.0
+     ]
+    },
+    {
+     "code": "MAT-OPZ",
+     "ean": "",
+     "is_active": true,
+     "name": "MAT-OPZ",
+     "supplier_short": "",
+     "unit": [
+      2.0,
+      2.0,
+      5.0
+     ]
+    },
+    {
+     "code": "MAT-UPD",
+     "ean": "999",
+     "is_active": true,
+     "name": "MAT-UPD",
+     "supplier_short": "SUP",
+     "unit": [
+      3.0,
+      3.0,
+      3.0
+     ]
+    },
+    {
+     "code": "MAT-ZERO",
+     "ean": "",
+     "is_active": true,
+     "name": "MAT-ZERO",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import master daty: 7 nowych produktów, 1 zaktualizowanych, 6 instrukcji paletyzacji (1 z opak. zbiorczym). Układy przeliczą się przy pierwszym otwarciu produktu."
+   ],
+   [
+    "warning",
+    "Niecałkowity licznik/mianownik MARM zaokrąglono do pełnych sztuk (1): MAT-JU OP: licznik 1.991 → 2"
+   ]
+  ]
+ },
+ "format_b_minimal": {
+  "db": {
+   "inner_packs": [],
+   "instructions": [
+    {
+     "carton": [
+      30,
+      20,
+      10
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 6,
+     "pcs_per_inner_pack": null,
+     "product": "M-1",
+     "unit_weight": 0.001,
+     "units_per_piece": 1,
+     "version": 1
+    }
+   ],
+   "products": [
+    {
+     "code": "M-1",
+     "ean": "",
+     "is_active": true,
+     "name": "M-1",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    },
+    {
+     "code": "M-2",
+     "ean": "",
+     "is_active": true,
+     "name": "M-2",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import master daty: 2 nowych produktów, 0 zaktualizowanych, 1 instrukcji paletyzacji (0 z opak. zbiorczym). Układy przeliczą się przy pierwszym otwarciu produktu."
+   ]
+  ]
+ },
+ "format_b_reimport_overwrite": {
+  "db": {
+   "inner_packs": [
+    {
+     "dims": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "is_active": true,
+     "name": "RECZNY-opz",
+     "sales_unit": [
+      null,
+      null,
+      null
+     ],
+     "sales_units_per_pack": 1,
+     "units_per_pack": null
+    }
+   ],
+   "instructions": [
+    {
+     "carton": [
+      30,
+      20,
+      20
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 8,
+     "pcs_per_inner_pack": null,
+     "product": "NEW-1",
+     "unit_weight": 0.001,
+     "units_per_piece": 1,
+     "version": 1
+    }
+   ],
+   "products": [
+    {
+     "code": "NEW-1",
+     "ean": "",
+     "is_active": true,
+     "name": "nowy",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    },
+    {
+     "code": "OLD-1",
+     "ean": "",
+     "is_active": true,
+     "name": "stary",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    },
+    {
+     "code": "OLD-2",
+     "ean": "",
+     "is_active": true,
+     "name": "nowszy",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    }
+   ]
+  },
+  "messages": [
+   [
+    [
+     "success",
+     "Import master daty: 2 nowych produktów, 0 zaktualizowanych, 2 instrukcji paletyzacji (1 z opak. zbiorczym). Układy przeliczą się przy pierwszym otwarciu produktu."
+    ]
+   ],
+   [
+    [
+     "success",
+     "Import master daty: 2 nowych produktów, 0 zaktualizowanych, 2 instrukcji paletyzacji (1 z opak. zbiorczym). Układy przeliczą się przy pierwszym otwarciu produktu."
+    ],
+    [
+     "success",
+     "Import master daty: 0 nowych produktów, 1 zaktualizowanych, 1 instrukcji paletyzacji (1 z opak. zbiorczym). Układy przeliczą się przy pierwszym otwarciu produktu."
+    ]
+   ],
+   [
+    [
+     "success",
+     "Import master daty: 2 nowych produktów, 0 zaktualizowanych, 2 instrukcji paletyzacji (1 z opak. zbiorczym). Układy przeliczą się przy pierwszym otwarciu produktu."
+    ],
+    [
+     "success",
+     "Import master daty: 0 nowych produktów, 1 zaktualizowanych, 1 instrukcji paletyzacji (1 z opak. zbiorczym). Układy przeliczą się przy pierwszym otwarciu produktu."
+    ],
+    [
+     "success",
+     "Import master daty: 1 nowych produktów, 0 zaktualizowanych, 1 instrukcji paletyzacji (0 z opak. zbiorczym). Układy przeliczą się przy pierwszym otwarciu produktu."
+    ]
+   ]
+  ]
+ },
+ "format_b_rich": {
+  "db": {
+   "inner_packs": [
+    {
+     "dims": [
+      20.0,
+      15.0,
+      11.0
+     ],
+     "is_active": true,
+     "name": "B-OPZ-NOOP-opz",
+     "sales_unit": [
+      null,
+      null,
+      null
+     ],
+     "sales_units_per_pack": 1,
+     "units_per_pack": 1
+    },
+    {
+     "dims": [
+      20.4,
+      15.6,
+      11.0
+     ],
+     "is_active": true,
+     "name": "B-OPZ-opz",
+     "sales_unit": [
+      6.0,
+      4.0,
+      5.0
+     ],
+     "sales_units_per_pack": 3,
+     "units_per_pack": 36
+    }
+   ],
+   "instructions": [
+    {
+     "carton": [
+      40,
+      30,
+      25
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": "B-OPZ-opz",
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": 7,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 240,
+     "pcs_per_inner_pack": 36,
+     "product": "B-OPZ",
+     "unit_weight": 0.001,
+     "units_per_piece": 1,
+     "version": 1
+    },
+    {
+     "carton": [
+      40,
+      30,
+      25
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": "B-OPZ-NOOP-opz",
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 100,
+     "pcs_per_inner_pack": null,
+     "product": "B-OPZ-NOOP",
+     "unit_weight": 0.001,
+     "units_per_piece": 1,
+     "version": 1
+    },
+    {
+     "carton": [
+      30,
+      20,
+      20
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 1,
+     "pcs_per_inner_pack": null,
+     "product": "B-SHORT",
+     "unit_weight": 0.001,
+     "units_per_piece": 1,
+     "version": 1
+    },
+    {
+     "carton": [
+      10,
+      10,
+      10
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Ręczna",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 1,
+     "pcs_per_inner_pack": null,
+     "product": "B-UPD",
+     "unit_weight": 1.0,
+     "units_per_piece": 1,
+     "version": 1
+    },
+    {
+     "carton": [
+      41,
+      28,
+      61
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 750,
+     "pcs_per_inner_pack": null,
+     "product": "B-UPD",
+     "unit_weight": 0.001,
+     "units_per_piece": 1,
+     "version": 2
+    },
+    {
+     "carton": [
+      30,
+      20,
+      20
+     ],
+     "carton_tare": 0.0,
+     "demand_pcs": 1000,
+     "inner_pack": null,
+     "is_active": true,
+     "layouts_empty": true,
+     "max_height_total_cm": 215,
+     "max_weight_kg": 1000,
+     "name": "Import migracji",
+     "packs_per_carton": null,
+     "pallet": [
+      120,
+      80
+     ],
+     "pallet_base_height_cm": 15,
+     "pallet_code": "EU",
+     "pcs_per_carton": 10,
+     "pcs_per_inner_pack": null,
+     "product": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+     "unit_weight": 0.001,
+     "units_per_piece": 1,
+     "version": 1
+    }
+   ],
+   "products": [
+    {
+     "code": "B-BADDIM",
+     "ean": "",
+     "is_active": true,
+     "name": "zły",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    },
+    {
+     "code": "B-NONAME",
+     "ean": "",
+     "is_active": true,
+     "name": "B-NONAME",
+     "supplier_short": "",
+     "unit": [
+      1.5,
+      2.0,
+      3.0
+     ]
+    },
+    {
+     "code": "B-OPZ",
+     "ean": "",
+     "is_active": true,
+     "name": "z opz",
+     "supplier_short": "",
+     "unit": [
+      2.0,
+      2.0,
+      5.0
+     ]
+    },
+    {
+     "code": "B-OPZ-NOCART",
+     "ean": "",
+     "is_active": true,
+     "name": "opz bez kartonu",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    },
+    {
+     "code": "B-OPZ-NOOP",
+     "ean": "",
+     "is_active": true,
+     "name": "opz bez op",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    },
+    {
+     "code": "B-SHORT",
+     "ean": "",
+     "is_active": true,
+     "name": "Krótki opis",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    },
+    {
+     "code": "B-UPD",
+     "ean": "5901",
+     "is_active": true,
+     "name": "nowa",
+     "supplier_short": "O013",
+     "unit": [
+      8.0,
+      8.0,
+      10.0
+     ]
+    },
+    {
+     "code": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC",
+     "ean": "",
+     "is_active": true,
+     "name": "długi 1",
+     "supplier_short": "",
+     "unit": [
+      null,
+      null,
+      null
+     ]
+    }
+   ]
+  },
+  "messages": [
+   [
+    "success",
+    "Import master daty: 7 nowych produktów, 1 zaktualizowanych, 5 instrukcji paletyzacji (2 z opak. zbiorczym). Układy przeliczą się przy pierwszym otwarciu produktu."
+   ],
+   [
+    "warning",
+    "Pominięto 2 zduplikowanych kodów produktu (także po przycięciu do 50 znaków) — obowiązuje pierwszy wiersz danego kodu."
+   ]
+  ]
+ },
+ "header_only": {
+  "db": {
+   "inner_packs": [],
+   "instructions": [],
+   "products": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik nie zawiera danych."
+   ]
+  ]
+ },
+ "no_file": {
+  "db": {
+   "inner_packs": [],
+   "instructions": [],
+   "products": []
+  },
+  "messages": [
+   [
+    "error",
+    "Nie wybrano pliku."
+   ]
+  ]
+ },
+ "too_large": {
+  "db": {
+   "inner_packs": [],
+   "instructions": [],
+   "products": []
+  },
+  "messages": [
+   [
+    "error",
+    "Plik zbyt duży (max 20 MB)."
+   ]
+  ]
+ }
+}

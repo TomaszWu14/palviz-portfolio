@@ -1,0 +1,1240 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% load palviz_extras %}
+{% block title %}{% if obj %}Edytuj{% else %}Nowy{% endif %} karton — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'ui/js/plotly.min.js' %}"></script>
+<script src="/static/ui/vendor/three.r128.min.js"></script>
+<script src="/static/ui/vendor/OrbitControls.r128.js"></script>
+<style>
+  .carton-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .carton-form-grid { grid-template-columns: 1fr; } }
+  #carton-preview-wrap { position: sticky; top: 72px; }
+  #carton-preview { width: 100%; height: 340px; background: var(--gray-50); border-radius: var(--radius); }
+  .preview-placeholder {
+    display: flex; align-items: center; justify-content: center;
+    height: 340px; color: var(--gray-400); font-size: 13px;
+    flex-direction: column; gap: 8px;
+    background: var(--gray-50); border: 2px dashed var(--gray-200); border-radius: var(--radius);
+  }
+  .section-divider {
+    font-size: 11px; font-weight: 700; color: var(--gray-400);
+    text-transform: uppercase; letter-spacing: .6px;
+    margin: 20px 0 10px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--gray-200); grid-column: 1/-1;
+  }
+  .carton-specs {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 10px 14px; background: var(--yellow-light); border-radius: 6px;
+    border: 1px solid var(--yellow-dark); font-size: 12px;
+  }
+  .carton-specs .spec { font-weight: 600; color: var(--yellow-dark); }
+  .carton-specs .spec-label { color: var(--gray-500); font-size: 11px; }
+  .tare-hint {
+    font-size: 11px; color: var(--gray-500); background: var(--gray-100);
+    border-radius: 4px; padding: 6px 8px; grid-column: 1/-1;
+  }
+  .tare-hint select { font-size: 11px; border: 1px solid var(--gray-300); border-radius: 3px; padding: 1px 4px; }
+  .tare-hint b { color: var(--blue-mid); }
+
+  /* ── Live model (sage-green theme) ───────────────────────────────────────── */
+  :root {
+    --sage:#4f8067; --sage-d:#3d6b54; --sage-soft:#eef5f0; --sage-line:#cfe2d6;
+    --blue-bar:#4f7dbf; --amber:#d99a3c;
+  }
+  .live-card { margin-top: 16px; }
+  .live-head {
+    display:flex; align-items:center; justify-content:space-between; width:100%;
+  }
+  .opt-pill {
+    display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600;
+    color:var(--sage-d); background:var(--sage-soft); border:1px solid var(--sage-line);
+    padding:5px 14px; border-radius:999px;
+  }
+  .live-controls {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px 28px; align-items: end;
+    padding-bottom: 18px; border-bottom: 1px solid var(--gray-200); margin-bottom: 18px;
+  }
+  @media (max-width: 900px){ .live-controls { grid-template-columns: 1fr 1fr; } }
+  .live-ctrl { display: flex; flex-direction: column; gap: 6px; }
+  .live-ctrl > label { font-size: 12px; font-weight: 500; color: var(--gray-500); }
+  .live-ctrl select, .live-ctrl input[type=number] {
+    font-size: 14px; padding: 9px 12px; border: 1px solid var(--gray-300); border-radius: 8px; width:100%;
+    background:var(--surface);
+  }
+  .slider-row { display:flex; align-items:center; gap:12px; }
+  .slider-row input[type=range] { flex:1; accent-color: var(--sage); height:4px; }
+  .slider-row input[type=number] { flex:1; }
+  .slider-val { font-size:13px; color:var(--gray-700); white-space:nowrap; min-width:54px; text-align:right; }
+  .slider-val b { color:var(--gray-800); font-weight:700; }
+  .chk-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray-700); }
+
+  .live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; align-items: stretch;
+    border:1px solid var(--gray-200); border-radius: 12px; overflow:hidden; }
+  @media (max-width: 1100px) { .live-grid { grid-template-columns: 1fr; } }
+  .viz-box { background: #fafbfc; padding: 14px 16px; }
+  .viz-box + .viz-box { border-left:1px solid var(--gray-200); }
+  .viz-title { font-size: 14px; font-weight: 600; color: var(--gray-800); margin-bottom: 10px;
+    display:flex; justify-content:space-between; align-items:center; }
+  .viz-title .viz-stat { font-size: 12px; font-weight:400; color:var(--gray-400); font-family:ui-monospace,monospace; }
+  #live-2d { width: 100%; display: block; touch-action: none; background:transparent; }
+  #live-3d { width: 100%; height: 560px; background:linear-gradient(#fdfdfd,#eef1f4); position:relative; overflow:hidden; border-radius:10px; }
+  #live-3d canvas { position:absolute; inset:0; display:block; }
+  .anim-btn {
+    position:absolute; right:10px; bottom:10px; z-index:5;
+    display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:500; color:var(--gray-700);
+    background:var(--surface); border:1px solid var(--gray-300); border-radius:8px; padding:6px 12px; cursor:pointer;
+    box-shadow:0 1px 3px rgba(0,0,0,.08);
+  }
+  .anim-btn:hover { background:var(--gray-50); }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 20px; }
+  @media (max-width: 1000px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px)  { .kpi-grid { grid-template-columns: 1fr; } }
+  .kpi { background: var(--surface); border: 1px solid var(--gray-200); border-radius: 12px; padding: 16px 18px; }
+  .kpi-head { display:flex; align-items:center; justify-content:space-between; }
+  .kpi .kpi-label { font-size: 13px; color: var(--gray-500); font-weight: 500; }
+  .kpi .kpi-ico { color:var(--gray-300); flex:none; }
+  .kpi .kpi-val { font-size: 30px; font-weight: 800; color: var(--sage); line-height: 1.05; margin-top: 6px; }
+  .kpi .kpi-val small { font-size:15px; font-weight:700; color:var(--sage); }
+  .kpi .kpi-sub { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
+  .kpi.kpi-warn { border-color: #f3c0bd; background: #fdf3f2; }
+  .kpi.kpi-warn .kpi-val { color: #c0392b; }
+  .fillbar { height: 8px; border-radius: 5px; background: var(--gray-100); overflow: hidden; margin-top: 10px; }
+  .fillbar > span { display: block; height: 100%; background: var(--sage); transition: width .25s; }
+
+  .layer-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+  .layer-tab { font-size: 12px; padding: 3px 10px; border: 1px solid var(--gray-300); border-radius: 999px;
+    background: var(--surface); cursor: pointer; color: var(--gray-700); }
+  .layer-tab.active { background: var(--sage); color: #fff; border-color: var(--sage); }
+  .manual-tools { display: none; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; font-size: 12px; }
+  .manual-tools.on { display: flex; }
+  .manual-tools button { font-size: 12px; padding: 4px 10px; border: 1px solid var(--gray-300); border-radius: 6px; background: var(--surface); cursor: pointer; }
+  .manual-tools button:hover { background: var(--sage-soft); border-color: var(--sage-line); }
+  .live-empty { color: var(--gray-400); font-size: 13px; padding: 30px; text-align: center; }
+
+  .suggest-panel { margin-bottom: 18px; border: 1px solid var(--gray-200); border-radius: 12px; overflow: hidden; }
+  .suggest-head { display:flex; justify-content:space-between; align-items:center;
+    font-size: 15px; font-weight: 600; color: var(--gray-800); padding: 14px 16px; border-bottom: 1px solid var(--gray-200); }
+  .suggest-head .sub { font-size:12px; font-weight:400; color:var(--gray-400); }
+  table.suggest-tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.suggest-tbl th { text-align: left; font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing:.4px;
+    font-weight:600; padding: 10px 16px; border-bottom: 1px solid var(--gray-200); }
+  table.suggest-tbl td { padding: 12px 16px; border-bottom: 1px solid var(--gray-100); vertical-align:middle; }
+  table.suggest-tbl tr { cursor: pointer; }
+  table.suggest-tbl tbody tr:hover { background: var(--gray-50); }
+  table.suggest-tbl tr.sel { background: var(--sage-soft); }
+  table.suggest-tbl tr.best { background: var(--sage-soft); box-shadow: inset 3px 0 0 var(--sage); }
+  .loc-name { font-weight: 600; color:var(--gray-800); }
+  .loc-name .star { color: var(--sage); }
+  .loc-sub { font-size: 12px; color:var(--gray-400); margin-top:2px; }
+  .gab { font-family: ui-monospace,monospace; color:var(--gray-500); letter-spacing:1px; }
+  .fit-badge { display:inline-block; font-size:12px; padding:3px 10px; border-radius:999px; font-weight:600; margin-right:4px; }
+  .fit-ok   { background:#eaf5ee; color:#2f7d52; border:1px solid #bfe3cd; }
+  .fit-tight{ background:#fef6e7; color:#a96a14; border:1px solid #f4d999; }
+  .fit-over { background:#fdecec; color:#c0392b; border:1px solid #f3c0bd; }
+  .row-bar { display:flex; align-items:center; gap:10px; }
+  .mini-bar { display: inline-block; width: 150px; height: 7px; border-radius: 4px; background: var(--gray-100); overflow: hidden; }
+  .mini-bar > span { display: block; height: 100%; }
+  .row-pct { font-weight:600; color:var(--gray-700); min-width:38px; }
+  .row-arrow { color:var(--gray-300); font-size:16px; }
+  .suggest-tbl tr:hover .row-arrow { color: var(--sage); }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_cartons' %}">Kartony</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if obj %}{{ obj.name }}{% else %}Nowy{% endif %}</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{% if obj %}Edytuj karton{% else %}Nowy karton{% endif %}</div>
+    {% if not obj %}
+    <div class="page-header__sub" style="margin-top:2px;font-size:12px;color:var(--gray-500)">
+      Zdefiniuj wymiary kartonu i zaprojektuj układ na palecie w wybranej lokalizacji — model przelicza się na żywo.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<form method="post" id="carton-form" enctype="multipart/form-data">
+{% csrf_token %}
+<input type="hidden" name="layout_design" id="id_layout_design" value="">
+
+<div class="carton-form-grid">
+
+  <!-- Left: form -->
+  <div>
+    <div class="card">
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+          <div class="form-group" style="grid-column:1/-1">
+            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% if form.name.errors %}<ul class="error-list">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            <div style="font-size:10px;color:var(--gray-400);margin-top:3px">Nazwa auto-uzupełnia się jako KAR-L×W×H gdy pole jest puste.</div>
+          </div>
+
+          <div class="section-divider">Wymiary kartonu</div>
+
+          <div class="form-group">
+            <label for="{{ form.width_cm.id_for_label }}">{{ form.width_cm.label }}</label>
+            {{ form.width_cm }}
+            {% if form.width_cm.errors %}<ul class="error-list">{% for e in form.width_cm.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.height_cm.id_for_label }}">{{ form.height_cm.label }}</label>
+            {{ form.height_cm }}
+            {% if form.height_cm.errors %}<ul class="error-list">{% for e in form.height_cm.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.length_cm.id_for_label }}">{{ form.length_cm.label }}</label>
+            {{ form.length_cm }}
+            {% if form.length_cm.errors %}<ul class="error-list">{% for e in form.length_cm.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div></div>
+
+          <!-- Stats strip -->
+          <div id="carton-stats" class="carton-specs" style="display:none">
+            <span><span class="spec-label">Objętość</span><br><span class="spec" id="stat-vol">—</span></span>
+            <span style="color:var(--gray-300)">│</span>
+            <span><span class="spec-label">dm³</span><br><span class="spec" id="stat-dm3">—</span></span>
+            <span style="color:var(--gray-300)">│</span>
+            <span><span class="spec-label">Waga brutto kartonu</span><br><span class="spec" id="stat-weight">—</span></span>
+          </div>
+
+          <div class="tare-hint" id="tare-hint" style="display:none">
+            Grubość tektury kartonu:
+            <select aria-label="Grubość tektury kartonu" id="tare-select">
+              <option value="0.15">E-flet (cienka) — lekkie produkty do 3 kg</option>
+              <option value="0.25" selected>B-flet (standardowa) — do 10 kg ładunku</option>
+              <option value="0.40">C-flet (wzmocniona) — do 20 kg ładunku</option>
+              <option value="0.60">BC dwuwarstwowa — do 35 kg ładunku</option>
+              <option value="0.80">ECT ciężka przemysłowa — powyżej 35 kg</option>
+            </select>
+            → tara auto z L×W×H ≈ <b id="tare-result">—</b> (wpisywana automatycznie do pola Tara)
+          </div>
+
+          <div class="section-divider">Dane towaru</div>
+
+          <div class="form-group">
+            <label for="{{ form.unit_weight_kg.id_for_label }}">{{ form.unit_weight_kg.label }}</label>
+            {{ form.unit_weight_kg }}
+            {% if form.unit_weight_kg.errors %}<ul class="error-list">{% for e in form.unit_weight_kg.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.tare_kg.id_for_label }}">{{ form.tare_kg.label }}</label>
+            {{ form.tare_kg }}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.pieces_per_carton.id_for_label }}">{{ form.pieces_per_carton.label }}</label>
+            {{ form.pieces_per_carton }}
+            {% if form.pieces_per_carton.errors %}<ul class="error-list">{% for e in form.pieces_per_carton.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div></div>
+
+          {% if obj %}
+          <div class="section-divider">Szczegóły opakowania</div>
+
+          <div class="form-group">
+            <label for="{{ form.ean.id_for_label }}">{{ form.ean.label }}
+              <span style="font-size:10px;color:var(--gray-400);font-weight:400"> — uzupełnij przy przypisaniu do materiału</span>
+            </label>
+            {{ form.ean }}
+          </div>
+          <div></div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label for="{{ form.inner_pack.id_for_label }}">{{ form.inner_pack.label }}</label>
+            {{ form.inner_pack }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.packs_per_carton.id_for_label }}">{{ form.packs_per_carton.label }}</label>
+            {{ form.packs_per_carton }}
+          </div>
+          <div></div>
+          {% endif %}
+
+          <div class="form-group" style="grid-column:1/-1">
+            <label for="{{ form.glb_model.id_for_label }}">{{ form.glb_model.label }}</label>
+            {{ form.glb_model }}
+            <div style="font-size:12px;color:var(--gray-500);margin-top:2px">Opcjonalnie: realny skan/model 3D (.glb) zastępuje generowaną bryłę w widoku hierarchii.</div>
+            {% if obj.glb_model %}<div style="font-size:12px;color:var(--gray-500);margin-top:2px">Obecny plik: {{ obj.glb_model.name }}</div>{% endif %}
+            {% if form.glb_model.errors %}<ul class="error-list">{% for e in form.glb_model.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+
+          <div class="form-group" style="grid-column:1/-1">
+            <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+            {{ form.notes }}
+          </div>
+
+          <div class="form-group">
+            <div class="form-check">
+              {{ form.is_active }}
+              <label for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+            </div>
+          </div>
+        </div>
+
+        {% if not obj %}
+        <div style="font-size:11px;color:var(--gray-400);margin-top:6px">
+          Po zapisaniu możesz uzupełnić EAN, szt/karton i opakowanie zbiorcze w edycji.
+        </div>
+        {% endif %}
+
+        <div style="display:flex;gap:8px;margin-top:20px">
+          <button type="submit" class="btn btn-primary">
+            {% if obj %}Zapisz zmiany{% else %}Utwórz karton{% endif %}
+          </button>
+          <a href="{% url 'ui:planner_cartons' %}" class="btn btn-secondary">Anuluj</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: 3D preview of single carton -->
+  <div id="carton-preview-wrap">
+    <div class="card">
+      <div class="card-header" style="padding:10px 14px">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+          <span class="card-header__title" style="font-size:12px">Podgląd 3D kartonu</span>
+          <span id="preview-dims" style="font-size:11px;color:var(--gray-500);font-family:monospace"></span>
+        </div>
+      </div>
+      <div class="card-body" style="padding:12px">
+        <div id="carton-preview-placeholder" class="preview-placeholder">
+          <svg width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="var(--gray-300)" stroke-width="1.5">
+            <path d="M20 7H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/>
+            <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+          </svg>
+          <span>Wprowadź wymiary kartonu</span>
+        </div>
+        <div id="carton-preview" style="display:none"></div>
+        <div id="carton-specs-bar" style="display:none;margin-top:8px;padding:8px 10px;background:var(--yellow-light);border-radius:5px;border:1px solid var(--yellow-dark);font-size:12px;line-height:1.8">
+          <b id="spec-name" style="font-size:13px;color:var(--yellow-dark)"></b><br>
+          <span style="color:var(--gray-500)">
+            L×W×H: <b id="spec-dims"></b> cm &nbsp;│&nbsp;
+            Objętość: <b id="spec-vol"></b> m³ &nbsp;│&nbsp; <b id="spec-dm3"></b> dm³
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Full-width live model: carton on a pallet in a warehouse location ── -->
+<div class="card live-card">
+  <div class="card-header" style="padding:14px 18px">
+    <div class="live-head">
+      <span class="card-header__title">{% icon "printer" %} Model na żywo — karton na palecie w lokalizacji</span>
+      <span class="opt-pill" id="opt-pill" style="display:none">{% icon "star" %} Optimum: <b id="opt-loc">—</b></span>
+    </div>
+  </div>
+  <div class="card-body">
+
+    <div class="live-controls">
+      <div class="live-ctrl">
+        <label>Lokalizacja</label>
+        <select aria-label="Lokalizacja" id="live-loc"></select>
+      </div>
+      <div class="live-ctrl">
+        <label>Tolerancja przewieszenia</label>
+        <div class="slider-row">
+          <input aria-label="Tolerancja przewieszenia" type="range" id="live-tol" value="0" min="0" max="20" step="0.5">
+          <span class="slider-val"><b id="live-tol-val">0</b> cm</span>
+        </div>
+      </div>
+      <div class="live-ctrl">
+        <label>Zapotrzebowanie</label>
+        <div class="slider-row">
+          <input aria-label="Zapotrzebowanie" type="number" id="live-demand" value="0" min="0" step="1">
+          <span class="slider-val">szt</span>
+        </div>
+      </div>
+      <div class="live-ctrl">
+        <label>Docelowe wypełnienie</label>
+        <div class="slider-row">
+          <input aria-label="Docelowe wypełnienie" type="range" id="live-target" value="85" min="0" max="100" step="1">
+          <span class="slider-val"><b id="live-target-val">85</b>%</span>
+        </div>
+      </div>
+      <div class="live-ctrl">
+        <label>Maks. wysokość</label>
+        <div class="slider-row">
+          <input aria-label="Maks. wysokość" type="range" id="live-maxh" value="250" min="50" max="260" step="5">
+          <span class="slider-val"><b id="live-maxh-val">250</b> cm</span>
+        </div>
+      </div>
+      <div class="live-ctrl" style="justify-content:flex-end">
+        <label class="chk-row">
+          <input type="checkbox" id="live-irregular"> Układ nieregularny warstwy (edycja ręczna)
+        </label>
+      </div>
+    </div>
+
+    <div id="live-empty" class="live-empty">Wprowadź wymiary kartonu (L×W×H), aby zobaczyć model.</div>
+
+    <div id="live-body" style="display:none">
+
+      <!-- System suggestion: rank defined locations by fill -->
+      <div class="suggest-panel">
+        <div class="suggest-head">Podpowiedź systemu — ranking lokalizacji
+          <span class="sub">wg wykorzystania objętości</span></div>
+        <table class="suggest-tbl">
+          <thead><tr>
+            <th>Lokalizacja</th><th>Gabaryt [cm]</th><th>Dopasowanie</th><th>Wypełnienie</th><th></th>
+          </tr></thead>
+          <tbody id="suggest-rows"></tbody>
+        </table>
+      </div>
+
+      <div class="live-grid">
+        <!-- 2D editable top view -->
+        <div class="viz-box">
+          <div class="viz-title">
+            <span>Rzut warstwy 2D <span id="live-layer-no" style="color:var(--gray-400);font-weight:400">· w.1</span></span>
+            <span class="viz-stat" id="live-2d-stat"></span>
+          </div>
+          <div class="layer-tabs" id="live-layer-tabs"></div>
+          <svg id="live-2d" viewBox="0 0 440 320"></svg>
+          <div class="manual-tools" id="live-manual">
+            <span>Kartonów w warstwie:</span>
+            <input aria-label="Kartonów w warstwie" type="number" id="live-layer-count" value="0" min="0" step="1" style="width:70px;font-size:12px;padding:3px 6px;border:1px solid var(--gray-300);border-radius:4px">
+            <button type="button" id="live-apply-count">Ustaw</button>
+            <button type="button" id="live-rotate">Obróć zaznaczony (R)</button>
+            <button type="button" id="live-add">+ Karton</button>
+            <button type="button" id="live-del">Usuń zaznaczony</button>
+            <button type="button" id="live-reset-layer">Reset warstwy z auto</button>
+          </div>
+        </div>
+        <!-- 3D stack -->
+        <div class="viz-box">
+          <div class="viz-title">
+            <span>Stos 3D</span>
+            <span class="viz-stat" id="live-3d-stat"></span>
+          </div>
+          <div id="live-3d">
+            <button type="button" class="anim-btn" id="live-animate">▶ Animuj</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-head"><span class="kpi-label">Kartony / warstwa</span>{% include "ui/planner/_kpi_ico.html" with i="cube" %}</div><div class="kpi-val" id="kpi-per-layer">—</div><div class="kpi-sub" id="kpi-per-layer-sub"></div></div>
+        <div class="kpi"><div class="kpi-head"><span class="kpi-label">Warstwy</span>{% include "ui/planner/_kpi_ico.html" with i="layers" %}</div><div class="kpi-val" id="kpi-layers">—</div><div class="kpi-sub" id="kpi-layers-sub"></div></div>
+        <div class="kpi"><div class="kpi-head"><span class="kpi-label">Kartony / paleta</span>{% include "ui/planner/_kpi_ico.html" with i="box" %}</div><div class="kpi-val" id="kpi-per-pallet">—</div><div class="kpi-sub" id="kpi-per-pallet-sub"></div></div>
+        <div class="kpi"><div class="kpi-head"><span class="kpi-label">Wypełnienie powierzchni</span></div><div class="kpi-val" id="kpi-fill-area">—</div><div class="fillbar"><span id="bar-area"></span></div></div>
+
+        <div class="kpi"><div class="kpi-head"><span class="kpi-label">Wypełnienie wysokości</span></div><div class="kpi-val" id="kpi-fill-h">—</div><div class="fillbar"><span id="bar-h"></span></div></div>
+        <div class="kpi"><div class="kpi-head"><span class="kpi-label">Wypełnienie objętości</span></div><div class="kpi-val" id="kpi-fill-vol">—</div><div class="fillbar"><span id="bar-vol"></span></div></div>
+        <div class="kpi" id="kpi-weight-box"><div class="kpi-head"><span class="kpi-label">Waga / paleta</span>{% include "ui/planner/_kpi_ico.html" with i="weight" %}</div><div class="kpi-val" id="kpi-weight">—</div><div class="kpi-sub" id="kpi-weight-sub"></div></div>
+        <div class="kpi"><div class="kpi-head"><span class="kpi-label">Przewieszenie</span>{% include "ui/planner/_kpi_ico.html" with i="over" %}</div><div class="kpi-val" id="kpi-overhang">—</div><div class="kpi-sub" id="kpi-overhang-sub">poza obrys oczka</div></div>
+
+        <div class="kpi"><div class="kpi-head"><span class="kpi-label">Palety na zapotrz.</span>{% include "ui/planner/_kpi_ico.html" with i="truck" %}</div><div class="kpi-val" id="kpi-pallets-needed">—</div><div class="kpi-sub" id="kpi-pallets-sub"></div></div>
+        <div class="kpi"><div class="kpi-head"><span class="kpi-label">Optimum systemu</span>{% include "ui/planner/_kpi_ico.html" with i="star" %}</div><div class="kpi-val" id="kpi-opt">—</div><div class="kpi-sub" id="kpi-opt-sub"></div></div>
+        <div class="kpi" id="kpi-gap-box"><div class="kpi-head"><span class="kpi-label">Do celu brakuje</span>{% include "ui/planner/_kpi_ico.html" with i="target" %}</div><div class="kpi-val" id="kpi-gap">—</div><div class="kpi-sub" id="kpi-gap-sub"></div></div>
+        <div class="kpi"><div class="kpi-head"><span class="kpi-label">Kartony łącznie</span>{% include "ui/planner/_kpi_ico.html" with i="grid" %}</div><div class="kpi-val" id="kpi-total-cartons">—</div><div class="kpi-sub" id="kpi-total-sub"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</form>
+
+{% if obj %}
+{% url 'ui:carton_artwork_list' obj.pk as au_list %}
+{% url 'ui:carton_artwork_upload' obj.pk as au_upload %}
+{% url 'ui:carton_artwork_update' 0 as au_upd0 %}
+{% url 'ui:carton_artwork_delete' 0 as au_del0 %}
+{% include "ui/planner/_artwork_designer.html" with art_title="Wygląd kartonu — nadruki i etykiety (3D)" art_l=obj.length_cm art_w=obj.width_cm art_h=obj.height_cm art_url_list=au_list art_url_upload=au_upload art_url_update0=au_upd0 art_url_delete0=au_del0 %}
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{{ dim_groups|json_script:"dim-groups-data" }}
+{{ saved_layout|json_script:"layout-design-data" }}
+<script>
+/* Canvas / ECharts / Plotly nie rozwiązują var(--…) — kolor z tokenu czytamy w chwili rysowania
+   (B-014; idzie też za motywem jasny/ciemny). */
+function cssVar(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+(function () {
+  const PREVIEW_URL = "{% url 'ui:planner_carton_preview' %}";
+  const PALLET_BASE_CM = 15;
+  let debounceTimer = null;
+  let nameEdited = false;
+
+  const DIM_GROUPS = JSON.parse(document.getElementById('dim-groups-data').textContent || "[]");
+  {# SEC-006: nazwy typów lokalizacji to dane z bazy — escapuj przed wstawieniem do innerHTML. #}
+  const escHtml = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const SAVED_LAYOUT = JSON.parse(document.getElementById('layout-design-data').textContent || "null");
+
+  // ── carton inputs ──────────────────────────────────────────────────────────
+  function getDims() {
+    return {
+      s:   parseInt(document.getElementById('id_width_cm')?.value)  || 0,  // W
+      w:   parseInt(document.getElementById('id_height_cm')?.value) || 0,  // H
+      d:   parseInt(document.getElementById('id_length_cm')?.value) || 0,  // L
+      uw:  parseFloat(document.getElementById('id_unit_weight_kg')?.value) || 0,
+      pcs: parseInt(document.getElementById('id_pieces_per_carton')?.value) || 1,
+      tare:parseFloat(document.getElementById('id_tare_kg')?.value) || 0,
+    };
+  }
+  function cartonGrossKg(d) { return (d.uw * d.pcs) + d.tare; }
+
+  function autoName(d) {
+    if (nameEdited) return;
+    const nameEl = document.getElementById('id_name');
+    if (!nameEl) return;
+    if (d.s > 0 && d.w > 0 && d.d > 0) nameEl.value = `KAR-${d.s}x${d.w}x${d.d}`;
+  }
+
+  function autoTare(d) {
+    // tara auto-live: pole powierzchni × gramatura tektury
+    const tareEl = document.getElementById('id_tare_kg');
+    if (!tareEl) return 0;
+    if (!(d.s > 0 && d.w > 0 && d.d > 0)) return 0;
+    const surfM2 = 2 * (d.s*d.w + d.s*d.d + d.w*d.d) / 10000;
+    const factor = parseFloat(document.getElementById('tare-select')?.value || 0.25);
+    const tare = Math.round(surfM2 * factor * 100) / 100;
+    document.getElementById('tare-result').textContent = tare.toFixed(2) + ' kg';
+    // only auto-fill if user hasn't manually overridden (tracked via dataset)
+    if (!tareEl.dataset.manual) tareEl.value = tare.toFixed(2);
+    return tare;
+  }
+
+  function updateStats(d) {
+    const vol_m3  = (d.s * d.w * d.d) / 1_000_000;
+    const vol_dm3 = (d.s * d.w * d.d) / 1_000;
+    const valid   = d.s > 0 && d.w > 0 && d.d > 0;
+    autoTare(d);
+    const dd = getDims();
+    const gross = cartonGrossKg(dd);
+
+    document.getElementById('stat-vol').textContent    = valid ? vol_m3.toFixed(4) + ' m³' : '—';
+    document.getElementById('stat-dm3').textContent    = valid ? vol_dm3.toFixed(2) + ' dm³' : '—';
+    document.getElementById('stat-weight').textContent = valid ? gross.toFixed(2) + ' kg' : '—';
+    document.getElementById('carton-stats').style.display = valid ? 'flex' : 'none';
+    document.getElementById('tare-hint').style.display    = valid ? 'block' : 'none';
+
+    const dimsEl = document.getElementById('preview-dims');
+    if (dimsEl) dimsEl.textContent = valid ? `${d.s}×${d.w}×${d.d} cm` : '';
+
+    const bar = document.getElementById('carton-specs-bar');
+    if (bar) {
+      if (valid) {
+        bar.style.display = 'block';
+        const name = document.getElementById('id_name')?.value || '';
+        document.getElementById('spec-name').textContent = name || `KAR-${d.s}x${d.w}x${d.d}`;
+        document.getElementById('spec-dims').textContent = `${d.s}×${d.w}×${d.d}`;
+        document.getElementById('spec-vol').textContent  = vol_m3.toFixed(4);
+        document.getElementById('spec-dm3').textContent  = vol_dm3.toFixed(2);
+      } else { bar.style.display = 'none'; }
+    }
+  }
+
+  // ── 3D carton preview (single carton) ───────────────────────────────────────
+  function schedulePreview() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => { fetchPreview(); recompute(); }, 250);
+  }
+  function fetchPreview() {
+    const d = getDims();
+    autoName(d);
+    updateStats(d);
+    if (d.s <= 0 || d.w <= 0 || d.d <= 0) { showPlaceholder(); return; }
+    fetch(`${PREVIEW_URL}?l=${d.d}&w=${d.s}&h=${d.w}&pcs=${d.pcs}`)
+      .then(r => r.json())
+      .then(data => { if (data.ok) { try { renderPreview(JSON.parse(data.fig)); } catch(e) { showPlaceholder(); } } else showPlaceholder(); })
+      .catch(showPlaceholder);
+  }
+  function renderPreview(fig) {
+    document.getElementById('carton-preview-placeholder').style.display = 'none';
+    const div = document.getElementById('carton-preview');
+    div.style.display = 'block';
+    Plotly.react(div, fig.data, Object.assign({}, fig.layout, {
+      margin: {l:0,r:0,t:4,b:0}, paper_bgcolor:cssVar('--gray-50'), autosize:true,
+    }), {responsive:true, displayModeBar:false});
+  }
+  function showPlaceholder() {
+    document.getElementById('carton-preview-placeholder').style.display = 'flex';
+    document.getElementById('carton-preview').style.display = 'none';
+    document.getElementById('carton-specs-bar').style.display = 'none';
+  }
+
+  // ── Live packing engine ──────────────────────────────────────────────────────
+  // footprint W×D in cm, carton footprint a×b → array of {x,y,dx,dy}
+  function fillGrid(x0,y0,W,D,a,b){
+    const out=[]; const nx=Math.floor(W/a), ny=Math.floor(D/b);
+    for(let i=0;i<nx;i++) for(let j=0;j<ny;j++) out.push({x:x0+i*a, y:y0+j*b, dx:a, dy:b});
+    return out;
+  }
+  function packMixed(W,D,a,b){
+    let best=[];
+    for(const [p,q] of [[a,b],[b,a]]){
+      // vertical strip split
+      const nx=Math.floor(W/p);
+      let cand=fillGrid(0,0,nx*p,D,p,q).concat(fillGrid(nx*p,0,W-nx*p,D,q,p));
+      if(cand.length>best.length) best=cand;
+      // horizontal strip split
+      const ny=Math.floor(D/q);
+      let cand2=fillGrid(0,0,W,ny*q,p,q).concat(fillGrid(0,ny*q,W,D-ny*q,q,p));
+      if(cand2.length>best.length) best=cand2;
+    }
+    return best;
+  }
+
+  // Compute auto packing + KPIs for one location group (pure, no DOM).
+  function computeForLoc(loc, d, gross, tolCm, maxHcm) {
+    // Footprint comes straight from the defined location: depth = L axis, width = W axis.
+    // Height is the net usable value shown on the locations page (pallet + margin already removed).
+    const PL = loc.d_cm, PW = loc.w_cm;
+    const h = Math.max(0, loc.usable_h_cm != null ? loc.usable_h_cm : loc.h_cm);
+    const hEff=Math.min(h, maxHcm||h);
+    const auto=packMixed(PL+2*tolCm, PW+2*tolCm, d.d, d.s);
+    const perLayer=auto.length;
+    let layersByH = d.w>0 ? Math.floor(hEff/d.w) : 0;
+    let layersByW = layersByH;
+    if(perLayer>0 && gross>0 && loc.max_weight_kg>0) layersByW=Math.floor(loc.max_weight_kg/(perLayer*gross));
+    let nLayers=Math.max(0, Math.min(layersByH, layersByW));
+    if(nLayers===0 && perLayer>0 && hEff>=d.w) nLayers=1;
+    const total=perLayer*nLayers;
+    const slotVol=PL*PW*h, usedVol=total*d.d*d.s*d.w;
+    const volFill=slotVol? Math.min(100, usedVol/slotVol*100) : 0;
+    let usedArea=0, maxX=0, maxY=0;
+    auto.forEach(p=>{ usedArea+=p.dx*p.dy; maxX=Math.max(maxX,p.x+p.dx); maxY=Math.max(maxY,p.y+p.dy); });
+    const areaFill=(PL*PW)? Math.min(100, usedArea/(PL*PW)*100) : 0;
+    const hFill=h? Math.min(100, nLayers*d.w/h*100) : 0;
+    const ohx=Math.max(0, maxX-PL), ohy=Math.max(0, maxY-PW);
+    const residualH=h - nLayers*d.w;
+    const fits=perLayer>0 && nLayers>0;
+    const tightH=fits && residualH>=0 && residualH < Math.min(3, d.w);
+    const xs=new Set(auto.map(p=>p.x)), ys=new Set(auto.map(p=>p.y));
+    return {PL,PW,usableH:h,hEff,auto,perLayer,nLayers,total,volFill,areaFill,hFill,
+            ohx,ohy,residualH,fits,tightH,nx:xs.size,ny:ys.size};
+  }
+
+  // Rank all defined locations: fitting ones first, then by volumetric fill.
+  function evaluateAllLocations(d, gross, tolCm, maxHcm) {
+    return DIM_GROUPS
+      .map((g,idx)=>Object.assign({idx, g}, computeForLoc(g, d, gross, tolCm, maxHcm)))
+      .sort((a,b)=> (b.fits-a.fits) || b.volFill-a.volFill || b.total-a.total);
+  }
+
+  function renderSuggest(evals) {
+    const tb = document.getElementById('suggest-rows');
+    const selIdx = parseInt(document.getElementById('live-loc').value);
+    tb.innerHTML = evals.map((e,rank)=>{
+      const g=e.g, isBest=(rank===0 && e.fits);
+      let badges='';
+      if(!e.fits) badges='<span class="fit-badge fit-over">Nie mieści</span>';
+      else {
+        badges += (e.ohx>0||e.ohy>0)
+          ? '<span class="fit-badge fit-over">⚠ Przewieszenie</span>'
+          : '<span class="fit-badge fit-ok">Mieści się</span>';
+        if(e.tightH) badges += '<span class="fit-badge fit-tight">styk H</span>';
+      }
+      let sub;
+      if(isBest) sub='Optymalne dopasowanie';
+      else if(!e.fits) sub = e.perLayer===0?'Karton nie mieści się w obrysie':'Brak miejsca na warstwę';
+      else if(e.ohx>0||e.ohy>0) sub=`Przewieszenie ${e.ohx.toFixed(0)}×${e.ohy.toFixed(0)} cm`;
+      else if(e.tightH) sub=`Wysokość na styk (${Math.round(e.nLayers*LM.ch)} vs ${Math.round(e.usableH)})`;
+      else sub=`Zapas wysokości ${Math.round(e.residualH)} cm`;
+      const col=e.volFill>=85?'var(--sage)':(e.volFill>=60?'var(--blue-bar)':'var(--amber)');
+      const fillCell = e.fits
+        ? `<div class="row-bar"><span class="mini-bar"><span style="width:${Math.min(100,e.volFill)}%;background:${col}"></span></span><span class="row-pct">${e.volFill.toFixed(0)}%</span></div>`
+        : '<span class="row-pct" style="color:var(--gray-300)">—</span>';
+      return `<tr class="${e.idx===selIdx?'sel ':''}${isBest?'best':''}" data-idx="${e.idx}">
+        <td><div class="loc-name">${isBest?'<span class="star">★</span> ':''}${escHtml(g.label)}</div><div class="loc-sub">${sub}</div></td>
+        <td class="gab">${g.w_cm} × ${g.d_cm} × ${g.h_cm}</td>
+        <td>${badges}</td>
+        <td>${fillCell}</td>
+        <td class="row-arrow">→</td>
+      </tr>`;
+    }).join('');
+    tb.querySelectorAll('tr').forEach(tr=>{
+      tr.addEventListener('click', ()=>{ document.getElementById('live-loc').value=tr.dataset.idx; recompute(false); });
+    });
+  }
+
+  // ── Live model state ─────────────────────────────────────────────────────────
+  const LM = {
+    loc: null,           // selected dim group
+    layers: [],          // [{placements:[{x,y,dx,dy}], manual:bool}]
+    activeLayer: 0,
+    nLayers: 0,
+    autoLayer: [],       // auto placements for current carton+loc
+    sel: -1,             // selected carton index in active layer
+    irregular: false,
+    cl:0, cw:0, ch:0,
+    PL:0, PW:0, usableH:0, tolCm:0, maxH:260,
+    animLayers:null,     // null = show all; number = reveal first N (animation)
+  };
+
+  function selectedLoc() {
+    const i = parseInt(document.getElementById('live-loc').value);
+    return DIM_GROUPS[i] || null;
+  }
+
+  function recompute(preserveManual) {
+    const d = getDims();
+    const loc = selectedLoc();
+    const bodyEl = document.getElementById('live-body');
+    const emptyEl = document.getElementById('live-empty');
+    if (!(d.d>0 && d.s>0 && d.w>0) || !loc) {
+      bodyEl.style.display='none'; emptyEl.style.display='block'; return;
+    }
+    emptyEl.style.display='none'; bodyEl.style.display='block';
+
+    LM.loc = loc;
+    LM.cl = d.d; LM.cw = d.s; LM.ch = d.w;   // L(=x), W(=y), H(=z)
+    LM.tolCm = parseFloat(document.getElementById('live-tol').value)||0;
+    LM.maxH  = parseFloat(document.getElementById('live-maxh').value)||260;
+    LM.irregular = document.getElementById('live-irregular').checked;
+    LM.animLayers = null;
+    const gross = cartonGrossKg(d);
+
+    // selected location packing via the shared helper
+    const cur = computeForLoc(loc, d, gross, LM.tolCm, LM.maxH);
+    LM.PL = cur.PL; LM.PW = cur.PW; LM.usableH = cur.usableH;
+    LM.autoLayer = cur.auto;
+    let nLayers = cur.nLayers;
+
+    // system optimum across all defined locations
+    const evals = evaluateAllLocations(d, gross, LM.tolCm, LM.maxH);
+    const best = evals.find(e=>e.fits) || evals[0];
+    LM.optVolFill = best ? best.volFill : 0;
+    LM.bestLabel  = best ? best.g.label : '';
+    const pill = document.getElementById('opt-pill');
+    if (best && best.fits) { pill.style.display='inline-flex'; document.getElementById('opt-loc').textContent = best.g.label; }
+    else { pill.style.display='none'; }
+    renderSuggest(evals);
+
+    // (re)build per-layer placements
+    if (!preserveManual || LM.layers.length===0) {
+      LM.layers = [];
+      for (let i=0;i<nLayers;i++) LM.layers.push({placements: LM.autoLayer.map(p=>Object.assign({},p)), manual:false});
+      LM.nLayers = nLayers;
+      LM.activeLayer = Math.min(LM.activeLayer, Math.max(0,nLayers-1));
+    } else {
+      // keep manual layers but adjust count
+      if (nLayers > LM.layers.length) {
+        for (let i=LM.layers.length;i<nLayers;i++) LM.layers.push({placements: LM.autoLayer.map(p=>Object.assign({},p)), manual:false});
+      } else if (nLayers < LM.layers.length) {
+        LM.layers.length = Math.max(1, nLayers);
+      }
+      LM.nLayers = LM.layers.length;
+    }
+    LM.sel = -1;
+    renderLayerTabs();
+    render2D();
+    render3D();
+    renderKPIs(d, gross);
+    serialize();
+  }
+
+  function activePlacements() {
+    const L = LM.layers[LM.activeLayer];
+    return L ? L.placements : [];
+  }
+
+  // ── 2D top view (SVG, editable) ──────────────────────────────────────────────
+  const SVG_W = 440, SVG_H = 320, PAD = 36;
+  let dragState = null;
+
+  function worldToScreen() {
+    const packW = LM.PL + 2*LM.tolCm, packD = LM.PW + 2*LM.tolCm;
+    const sc = Math.min((SVG_W-2*PAD)/packW, (SVG_H-2*PAD)/packD);
+    const ox = PAD + ((SVG_W-2*PAD) - packW*sc)/2;
+    const oy = PAD + ((SVG_H-2*PAD) - packD*sc)/2;
+    return {sc, ox, oy, packW, packD};
+  }
+  function render2D() {
+    const svg = document.getElementById('live-2d');
+    const {sc,ox,oy,packW,packD} = worldToScreen();
+    const palX = ox + LM.tolCm*sc, palY = oy + LM.tolCm*sc;
+    const PLs = LM.PL*sc, PWs = LM.PW*sc;
+    let html = '';
+    if (LM.tolCm>0)
+      html += `<rect x="${ox}" y="${oy}" width="${packW*sc}" height="${packD*sc}" fill="none" stroke="var(--gray-200)" stroke-dasharray="4 3"/>`;
+    html += `<rect x="${palX}" y="${palY}" width="${PLs}" height="${PWs}" fill="#fff" stroke="#9db8cf"/>`;
+    const ps = activePlacements();
+    ps.forEach((p,i) => {
+      const x = ox + p.x*sc, y = oy + p.y*sc, w = p.dx*sc, h = p.dy*sc;
+      const sel = (i===LM.sel);
+      const fill = sel ? '#fcd9a3' : '#dce9f3', stroke = sel ? '#d99a3c' : '#9db8cf';
+      html += `<rect data-i="${i}" x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${fill}" stroke="${stroke}" stroke-width="1" class="lm-box" style="cursor:${LM.irregular?'move':'pointer'}"/>`;
+      html += `<text x="${x+w/2}" y="${y+h/2}" text-anchor="middle" dominant-baseline="central" font-size="12" fill="#5b7d9a" style="pointer-events:none">${i+1}</text>`;
+    });
+    // centre of gravity crosshair
+    if (ps.length) {
+      let cx=0,cy=0; ps.forEach(p=>{ cx+=p.x+p.dx/2; cy+=p.y+p.dy/2; }); cx/=ps.length; cy/=ps.length;
+      const gx=ox+cx*sc, gy=oy+cy*sc;
+      html += `<circle cx="${gx}" cy="${gy}" r="7" fill="none" stroke="#5e9b78" stroke-width="1.5"/>`+
+              `<line x1="${gx-11}" y1="${gy}" x2="${gx+11}" y2="${gy}" stroke="#5e9b78" stroke-width="1.5"/>`+
+              `<line x1="${gx}" y1="${gy-11}" x2="${gx}" y2="${gy+11}" stroke="#5e9b78" stroke-width="1.5"/>`;
+    }
+    // dimension labels
+    html += `<text x="${palX+PLs/2}" y="${palY+PWs+22}" text-anchor="middle" font-size="11" fill="var(--gray-400)" font-family="ui-monospace,monospace">L = ${LM.PL} cm</text>`;
+    html += `<text x="${palX-16}" y="${palY+PWs/2}" text-anchor="middle" font-size="11" fill="var(--gray-400)" font-family="ui-monospace,monospace" transform="rotate(-90 ${palX-16} ${palY+PWs/2})">W = ${LM.PW}</text>`;
+    svg.setAttribute('viewBox', `0 0 ${SVG_W} ${SVG_H}`);
+    svg.innerHTML = html;
+    document.getElementById('live-layer-no').textContent = '· w.' + (LM.activeLayer+1);
+    document.getElementById('live-layer-count').value = ps.length;
+    svg.querySelectorAll('.lm-box').forEach(el=> el.addEventListener('pointerdown', onBoxDown));
+  }
+
+  function onBoxDown(e) {
+    const i = parseInt(e.target.dataset.i);
+    LM.sel = i;
+    if (LM.irregular) {
+      const {sc,ox,oy} = worldToScreen();
+      const p = activePlacements()[i];
+      dragState = {i, sc, ox, oy, startX:e.clientX, startY:e.clientY, origX:p.x, origY:p.y, axis:null};
+      // listen on window so the mid-drag re-render (which rebuilds the SVG) can't drop the gesture
+      window.addEventListener('pointermove', onBoxMove);
+      window.addEventListener('pointerup', onBoxUp);
+      e.preventDefault();
+    }
+    render2D();
+  }
+  function onBoxMove(e) {
+    if (!dragState) return;
+    const p = activePlacements()[dragState.i];
+    const rawX = e.clientX - dragState.startX, rawY = e.clientY - dragState.startY;
+    // lock the move to a single axis once it commits to a direction — straight X/Y only, no diagonal (skos)
+    if (dragState.axis === null && Math.max(Math.abs(rawX), Math.abs(rawY)) > 4)
+      dragState.axis = Math.abs(rawX) >= Math.abs(rawY) ? 'x' : 'y';
+    const ddx = dragState.axis === 'y' ? 0 : rawX/dragState.sc;
+    const ddy = dragState.axis === 'x' ? 0 : rawY/dragState.sc;
+    let nx = Math.round(dragState.origX + ddx);
+    let ny = Math.round(dragState.origY + ddy);
+    nx = Math.max(0, Math.min(LM.PL+2*LM.tolCm - p.dx, nx));
+    ny = Math.max(0, Math.min(LM.PW+2*LM.tolCm - p.dy, ny));
+    p.x = nx; p.y = ny;
+    markManual();
+    render2D();
+  }
+  function onBoxUp() {
+    window.removeEventListener('pointermove', onBoxMove);
+    window.removeEventListener('pointerup', onBoxUp);
+    if (dragState) { dragState = null; refreshDerived(); }
+  }
+
+  function markManual() {
+    const L = LM.layers[LM.activeLayer];
+    if (L) L.manual = true;
+  }
+  function refreshDerived() {
+    render3D(); renderKPIs(getDims(), cartonGrossKg(getDims())); serialize();
+  }
+
+  // ── Layer tabs ───────────────────────────────────────────────────────────────
+  function renderLayerTabs() {
+    const wrap = document.getElementById('live-layer-tabs');
+    let html='';
+    for (let i=0;i<LM.layers.length;i++) {
+      html += `<span class="layer-tab ${i===LM.activeLayer?'active':''}" data-i="${i}">Warstwa ${i+1}${LM.layers[i].manual?' ✎':''}</span>`;
+    }
+    wrap.innerHTML = html;
+    wrap.querySelectorAll('.layer-tab').forEach(el=>{
+      el.addEventListener('click',()=>{ LM.activeLayer=parseInt(el.dataset.i); LM.sel=-1; renderLayerTabs(); render2D(); });
+    });
+    document.getElementById('live-manual').classList.toggle('on', LM.irregular);
+  }
+
+  // ── 3D stack (Three.js — textured cartons, real lighting & contact shadow) ────
+  const CARTON_COLOR = 0xE7D6B6;           // light beige kraft tone for every box
+  const EDGE_COLOR   = 0x5B3F22;           // dark seam lines drawn around each carton
+  const GAP = 0.3;                         // hair gap so neighbour faces don't z-fight
+  const S3D = { inited:false, framed:false };
+
+  // Procedural kraft-cardboard texture (base + fibre speckle + faint flute lines).
+  function s3dKraftTexture() {
+    const c=document.createElement('canvas'); c.width=c.height=256;
+    const x=c.getContext('2d');
+    x.fillStyle='#e3d2b0'; x.fillRect(0,0,256,256);
+    for(let i=0;i<16000;i++){
+      const dark=Math.random()>0.5;
+      x.fillStyle = dark ? 'rgba(160,130,90,0.035)' : 'rgba(248,238,214,0.05)';
+      x.fillRect(Math.random()*256, Math.random()*256, 1.5, 1.5);
+    }
+    x.globalAlpha=0.03;
+    for(let yy=0; yy<256; yy+=4){ x.fillStyle=(yy/4)%2 ? '#b89a6a' : '#f0e3c8'; x.fillRect(0,yy,256,2); }
+    x.globalAlpha=1;
+    const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping;
+    if('encoding' in t && THREE.sRGBEncoding) t.encoding=THREE.sRGBEncoding;
+    return t;
+  }
+
+  function s3dInit() {
+    const host=document.getElementById('live-3d');
+    const w=host.clientWidth||640, h=host.clientHeight||560;
+    const renderer=new THREE.WebGLRenderer({antialias:true, alpha:true});
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+    renderer.setSize(w,h);
+    renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+    if('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding=THREE.sRGBEncoding;
+    host.appendChild(renderer.domElement);
+
+    const scene=new THREE.Scene();
+    const camera=new THREE.PerspectiveCamera(38, w/h, 1, 8000);
+    camera.up.set(0,0,1);                                  // Z is up (matches our data)
+    const controls=new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping=true; controls.dampingFactor=0.09; controls.rotateSpeed=0.85;
+
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8c7e6a, 0.55));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.22));
+    const key=new THREE.DirectionalLight(0xfff0dc, 1.05);
+    key.castShadow=true; key.shadow.mapSize.set(2048,2048); key.shadow.bias=-0.0006;
+    scene.add(key); scene.add(key.target);
+    const fill=new THREE.DirectionalLight(0xcad8ff, 0.22); fill.position.set(-1,1,0.5); scene.add(fill);
+
+    const groundMat = THREE.ShadowMaterial ? new THREE.ShadowMaterial({opacity:0.18})
+                                           : new THREE.MeshBasicMaterial({color:0xe9edf1});
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(6000,6000), groundMat);
+    ground.receiveShadow=true; scene.add(ground);
+
+    Object.assign(S3D, {
+      inited:true, host, renderer, scene, camera, controls, key, ground,
+      tex:s3dKraftTexture(), unitGeo:new THREE.BoxGeometry(1,1,1),
+      cartonMat:null, edgeMat:new THREE.LineBasicMaterial({color:EDGE_COLOR, transparent:true, opacity:0.5}),
+      cartons:null, edges:null, pallet:null,
+    });
+    S3D.cartonMat=new THREE.MeshStandardMaterial({map:S3D.tex, color:CARTON_COLOR, roughness:0.94, metalness:0.0});
+
+    (function loop(){ S3D._raf=requestAnimationFrame(loop); controls.update(); renderer.render(scene,camera); })();
+    const resize=()=>{ const W=host.clientWidth||640,H=host.clientHeight||560;
+      renderer.setSize(W,H); camera.aspect=W/H; camera.updateProjectionMatrix(); };
+    window.addEventListener('resize', resize);
+    if(window.ResizeObserver) new ResizeObserver(resize).observe(host);
+  }
+
+  function s3dPallet(PL, PW) {
+    const grp=new THREE.Group();
+    const matTop=new THREE.MeshStandardMaterial({color:0xcaa46c, roughness:0.82});
+    const matBlk=new THREE.MeshStandardMaterial({color:0x8f6536, roughness:0.85});
+    const matBd =new THREE.MeshStandardMaterial({color:0xb07f4a, roughness:0.85});
+    const deckH=2.5, blockH=PALLET_BASE_CM-2*deckH, botH=2.5, bw=12, bd=12, boardW=14;
+    const add=(x,y,z,dx,dy,dz,mat)=>{
+      const m=new THREE.Mesh(new THREE.BoxGeometry(dx,dy,dz), mat);
+      m.position.set(x+dx/2, y+dy/2, z+dz/2); m.castShadow=true; m.receiveShadow=true; grp.add(m);
+    };
+    add(0,0,-deckH, PL,PW,deckH, matTop);                                   // top deck slab
+    const xs=[0,(PL-bw)/2,PL-bw], ys=[0,(PW-bd)/2,PW-bd];
+    xs.forEach(bx=>ys.forEach(by=>add(bx,by,-deckH-blockH, bw,bd,blockH, matBlk)));   // 9 blocks
+    const ysB=[0,(PW-boardW)/2,PW-boardW];
+    ysB.forEach(by=>add(0,by,-PALLET_BASE_CM, PL,boardW,botH, matBd));      // 3 bottom boards
+    return grp;
+  }
+
+  // Remove a previously-added object, freeing only its *own* GPU buffers — never the
+  // shared unit geometry / kraft material reused across renders.
+  function s3dRemove(obj){
+    if(!obj) return;
+    S3D.scene.remove(obj);
+    if(obj.isInstancedMesh){ obj.dispose(); return; }        // keep shared geo + material
+    if(obj.isLineSegments){ obj.geometry.dispose(); return; } // keep shared edge material
+    obj.traverse(o=>{                                         // pallet group: unique geo + mats
+      if(o.geometry) o.geometry.dispose();
+      if(o.material) (Array.isArray(o.material)?o.material:[o.material]).forEach(mt=>mt.dispose());
+    });
+  }
+
+  function render3D() {
+    if(!window.THREE || !THREE.OrbitControls){ return; }     // CDN not ready yet
+    if(!S3D.inited) s3dInit();
+    const palletOn = !!(LM.loc && LM.loc.is_pallet);
+
+    // collect carton boxes (with a hair gap so seams read cleanly)
+    const visible=(LM.animLayers!=null)?LM.animLayers:LM.layers.length;
+    const maxRenderLayers=Math.min(LM.layers.length, visible, 30);
+    const boxes=[];
+    for(let li=0; li<maxRenderLayers; li++){
+      const z=li*LM.ch;
+      LM.layers[li].placements.forEach(p=>{
+        boxes.push({ x:p.x+GAP, y:p.y+GAP, z:z+GAP*0.5,
+          dx:Math.max(1,p.dx-2*GAP), dy:Math.max(1,p.dy-2*GAP), dz:Math.max(1,LM.ch-GAP) });
+      });
+    }
+
+    // cartons → one InstancedMesh
+    s3dRemove(S3D.cartons); S3D.cartons=null;
+    s3dRemove(S3D.edges);   S3D.edges=null;
+    if(boxes.length){
+      const inst=new THREE.InstancedMesh(S3D.unitGeo, S3D.cartonMat, boxes.length);
+      inst.castShadow=true; inst.receiveShadow=true;
+      const m=new THREE.Matrix4();
+      boxes.forEach((b,idx)=>{ m.makeScale(b.dx,b.dy,b.dz);
+        m.setPosition(b.x+b.dx/2, b.y+b.dy/2, b.z+b.dz/2); inst.setMatrixAt(idx,m); });
+      inst.instanceMatrix.needsUpdate=true; S3D.scene.add(inst); S3D.cartons=inst;
+
+      // crisp edges → merged LineSegments
+      const pos=[]; const E=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+      boxes.forEach(b=>{
+        const x0=b.x,x1=b.x+b.dx,y0=b.y,y1=b.y+b.dy,z0=b.z,z1=b.z+b.dz;
+        const c=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]];
+        E.forEach(([a,bb])=>{ pos.push(c[a][0],c[a][1],c[a][2], c[bb][0],c[bb][1],c[bb][2]); });
+      });
+      const g=new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+      S3D.edges=new THREE.LineSegments(g, S3D.edgeMat); S3D.scene.add(S3D.edges);
+    }
+
+    // pallet
+    s3dRemove(S3D.pallet); S3D.pallet=null;
+    if(palletOn){ S3D.pallet=s3dPallet(LM.PL, LM.PW); S3D.scene.add(S3D.pallet); }
+
+    // ground + framing
+    const zmax=Math.max(LM.usableH, LM.ch*Math.max(1,maxRenderLayers), 1);
+    S3D.ground.position.set(LM.PL/2, LM.PW/2, palletOn?-PALLET_BASE_CM:0);
+    s3dFrame(LM.PL, LM.PW, LM.ch*Math.max(1,maxRenderLayers), palletOn);
+  }
+
+  function s3dFrame(PL, PW, H, palletOn){
+    const cx=PL/2, cy=PW/2, base=palletOn?-PALLET_BASE_CM:0;
+    S3D.controls.target.set(cx, cy, base + H*0.45);
+    const d=Math.max(PL,PW,H);
+    // key light high to the front-right; shadow frustum sized to the load
+    S3D.key.position.set(cx + d*0.65, cy - d*0.95, base + H + d*1.3);
+    S3D.key.target.position.set(cx, cy, base + H*0.35);
+    const sc=S3D.key.shadow.camera, r=d*1.25;
+    sc.left=-r; sc.right=r; sc.top=r; sc.bottom=-r; sc.near=1; sc.far=d*7; sc.updateProjectionMatrix();
+    if(!S3D.framed){   // set the initial viewpoint once; respect the user's orbit afterwards
+      S3D.camera.position.set(cx + d*1.35, cy - d*1.55, base + H*0.7 + d*0.6);
+      S3D.framed=true;
+    }
+  }
+  function animateStack() {
+    if (!LM.layers.length) return;
+    const total = Math.min(LM.layers.length, 8);
+    clearInterval(LM._animTimer);
+    LM.animLayers = 0; render3D();
+    let n = 0;
+    LM._animTimer = setInterval(()=>{
+      n++; LM.animLayers = n; render3D();
+      if (n >= total) { clearInterval(LM._animTimer); LM.animLayers = null; }
+    }, 300);
+  }
+
+  // ── KPIs ─────────────────────────────────────────────────────────────────────
+  function renderKPIs(d, gross) {
+    const ps = LM.layers[0] ? LM.layers[0].placements : [];
+    const perLayer = ps.length;
+    const nLayers = LM.layers.length;
+    let totalCartons = 0; LM.layers.forEach(L=>totalCartons+=L.placements.length);
+
+    const xs=new Set(ps.map(p=>p.x)), ys=new Set(ps.map(p=>p.y));
+    const arrange = (perLayer>0 && xs.size*ys.size===perLayer) ? `układ ${xs.size} × ${ys.size}` : 'układ mieszany';
+    document.getElementById('kpi-per-layer').textContent = perLayer;
+    document.getElementById('kpi-per-layer-sub').textContent = perLayer ? arrange : '—';
+    document.getElementById('kpi-layers').textContent = nLayers;
+    document.getElementById('kpi-layers-sub').textContent = `H towaru ${Math.round(nLayers*LM.ch)} cm`;
+    document.getElementById('kpi-per-pallet').textContent = totalCartons;
+    document.getElementById('kpi-per-pallet-sub').textContent = `${totalCartons*d.pcs} szt.`;
+
+    const slotArea = LM.PL*LM.PW;
+    let usedArea=0, maxX=0, maxY=0;
+    ps.forEach(p=>{ usedArea+=p.dx*p.dy; maxX=Math.max(maxX,p.x+p.dx); maxY=Math.max(maxY,p.y+p.dy); });
+    const fillArea = slotArea? Math.min(100, usedArea/slotArea*100) : 0;
+    const fillH = LM.usableH? Math.min(100, nLayers*LM.ch/LM.usableH*100) : 0;
+    const slotVol = slotArea*LM.usableH;
+    const usedVol = totalCartons*LM.cl*LM.cw*LM.ch;
+    const fillVol = slotVol? Math.min(100, usedVol/slotVol*100) : 0;
+    setFill('area', fillArea); setFill('h', fillH); setFill('vol', fillVol);
+
+    const wpp = totalCartons*gross;
+    document.getElementById('kpi-weight').innerHTML = Math.round(wpp)+' <small>kg</small>';
+    const box = document.getElementById('kpi-weight-box');
+    const over = LM.loc.max_weight_kg>0 && wpp>LM.loc.max_weight_kg;
+    box.classList.toggle('kpi-warn', over);
+    document.getElementById('kpi-weight-sub').textContent =
+      LM.loc.max_weight_kg>0 ? `limit ${LM.loc.max_weight_kg} kg${over?' — przekr.':''}` : 'brak limitu';
+
+    const ohx=Math.max(0, maxX-LM.PL), ohy=Math.max(0, maxY-LM.PW);
+    document.getElementById('kpi-overhang').innerHTML = (ohx||ohy) ? `${ohx.toFixed(0)}×${ohy.toFixed(0)} <small>cm</small>` : '0 <small>cm</small>';
+    document.getElementById('kpi-overhang-sub').textContent = `tol. ${LM.tolCm} cm`;
+
+    // demand → pallets / total cartons
+    const demand = parseInt(document.getElementById('live-demand').value)||0;
+    const cartonsNeeded = d.pcs>0 ? Math.ceil(demand/d.pcs) : 0;
+    const pallets = totalCartons>0 ? Math.ceil(cartonsNeeded/totalCartons) : 0;
+    document.getElementById('kpi-pallets-needed').textContent = demand>0 ? pallets : '—';
+    if (demand>0 && totalCartons>0) {
+      const full=Math.floor(cartonsNeeded/totalCartons), rem=cartonsNeeded%totalCartons;
+      document.getElementById('kpi-pallets-sub').textContent = `${full} pełne${rem?` + ${rem} kart.`:''}`;
+    } else document.getElementById('kpi-pallets-sub').textContent = 'podaj zapotrzebowanie';
+
+    // optimum + gap-to-target + total cartons
+    const optFill = LM.optVolFill||0;
+    document.getElementById('kpi-opt').innerHTML = optFill.toFixed(0)+' <small>%</small>';
+    document.getElementById('kpi-opt-sub').textContent = LM.bestLabel || '';
+    const target = parseFloat(document.getElementById('live-target').value)||0;
+    const gap = Math.max(0, target - fillVol);
+    document.getElementById('kpi-gap-box').classList.toggle('kpi-warn', gap>0.05);
+    document.getElementById('kpi-gap').innerHTML = gap.toFixed(0)+' <small>pp</small>';
+    document.getElementById('kpi-gap-sub').textContent = `cel ${target}%`;
+    document.getElementById('kpi-total-cartons').textContent = cartonsNeeded || '—';
+    document.getElementById('kpi-total-sub').textContent = demand>0 ? `dla ${demand} szt.` : 'podaj zapotrzebowanie';
+
+    // viz header stats
+    document.getElementById('live-2d-stat').textContent = `${perLayer} kart./warstwa · ${fillArea.toFixed(0)}% pokrycia`;
+    document.getElementById('live-3d-stat').textContent = `${totalCartons} kart. · H ${Math.round(nLayers*LM.ch)} cm`;
+  }
+  function setFill(key, pct) {
+    document.getElementById('kpi-fill-'+key).innerHTML = pct.toFixed(0)+' <small>%</small>';
+    const bar = document.getElementById('bar-'+key);
+    bar.style.width = Math.min(100,pct)+'%';
+    bar.style.background = pct>=85?'var(--sage)':(pct>=60?'var(--blue-bar)':'var(--amber)');
+  }
+
+  // ── serialize layout for saving ──────────────────────────────────────────────
+  function serialize() {
+    if (!LM.loc) { document.getElementById('id_layout_design').value=''; return; }
+    const payload = {
+      version: 1,
+      carton: {l:LM.cl, w:LM.cw, h:LM.ch},
+      location: {id:LM.loc.id, name:LM.loc.name, w_cm:LM.loc.w_cm, d_cm:LM.loc.d_cm, h_cm:LM.loc.h_cm,
+                 usable_h_cm:LM.loc.usable_h_cm, is_pallet:LM.loc.is_pallet, label:LM.loc.label},
+      pallet: {l_cm:LM.PL, w_cm:LM.PW},
+      tolerance_cm: parseFloat(document.getElementById('live-tol').value)||0,
+      max_h_cm: parseFloat(document.getElementById('live-maxh').value)||260,
+      usable_h_cm: LM.usableH,
+      irregular: LM.irregular,
+      target_fill_pct: parseFloat(document.getElementById('live-target').value)||0,
+      demand_pcs: parseInt(document.getElementById('live-demand').value)||0,
+      layers: LM.layers.map(L=>({manual:L.manual, placements:L.placements})),
+    };
+    document.getElementById('id_layout_design').value = JSON.stringify(payload);
+  }
+
+  // ── manual tools ─────────────────────────────────────────────────────────────
+  function applyCount() {
+    const n = Math.max(0, parseInt(document.getElementById('live-layer-count').value)||0);
+    const L = LM.layers[LM.activeLayer]; if(!L) return;
+    // start from auto layout, then trim/extend to n
+    let base = LM.autoLayer.map(p=>Object.assign({},p));
+    if (n <= base.length) base = base.slice(0,n);
+    else {
+      // append extra cartons stacked at origin offset for manual placement
+      let k = base.length;
+      while (k < n) { base.push({x:0,y:0,dx:LM.cl,dy:LM.cw}); k++; }
+    }
+    L.placements = base; L.manual = true;
+    LM.sel = -1; render2D(); renderLayerTabs(); refreshDerived();
+  }
+  function rotateSel() {
+    if (LM.sel<0) return;
+    const p = activePlacements()[LM.sel]; if(!p) return;
+    const c = {dx:p.dy, dy:p.dx};
+    p.dx=c.dx; p.dy=c.dy;
+    p.x = Math.max(0, Math.min(LM.PL+2*LM.tolCm-p.dx, p.x));
+    p.y = Math.max(0, Math.min(LM.PW+2*LM.tolCm-p.dy, p.y));
+    markManual(); render2D(); refreshDerived();
+  }
+  function addCarton() {
+    const L = LM.layers[LM.activeLayer]; if(!L) return;
+    L.placements.push({x:0,y:0,dx:LM.cl,dy:LM.cw}); L.manual=true;
+    LM.sel = L.placements.length-1; render2D(); refreshDerived();
+  }
+  function delSel() {
+    if (LM.sel<0) return;
+    const L = LM.layers[LM.activeLayer]; if(!L) return;
+    L.placements.splice(LM.sel,1); L.manual=true; LM.sel=-1;
+    render2D(); renderLayerTabs(); refreshDerived();
+  }
+  function resetLayer() {
+    const L = LM.layers[LM.activeLayer]; if(!L) return;
+    L.placements = LM.autoLayer.map(p=>Object.assign({},p)); L.manual=false; LM.sel=-1;
+    render2D(); renderLayerTabs(); refreshDerived();
+  }
+
+  // ── populate location dropdown ───────────────────────────────────────────────
+  function populateLocations() {
+    const sel = document.getElementById('live-loc');
+    if (!DIM_GROUPS.length) { sel.innerHTML = '<option value="-1">Brak zdefiniowanych lokalizacji — dodaj w zakładce Lokalizacje</option>'; return; }
+    sel.innerHTML = DIM_GROUPS.map((g,i)=>
+      `<option value="${i}">${escHtml(g.name)} · ${g.w_cm}×${g.d_cm}×${g.h_cm} cm ${g.is_pallet?'· paletowa':'· półkowa'}${g.max_weight_kg?` · ${g.max_weight_kg} kg`:''}</option>`
+    ).join('');
+  }
+
+  // ── restore saved layout (edit mode) ─────────────────────────────────────────
+  function restoreSaved() {
+    if (!SAVED_LAYOUT || !SAVED_LAYOUT.layers) return false;
+    // pick matching loc group if present
+    const loc = SAVED_LAYOUT.location;
+    let idx = loc.id!=null ? DIM_GROUPS.findIndex(g=>g.id===loc.id) : -1;
+    if (idx<0) idx = DIM_GROUPS.findIndex(g=>g.name===loc.name);
+    if (idx<0) idx = DIM_GROUPS.findIndex(g=>g.w_cm===loc.w_cm && g.d_cm===loc.d_cm && g.h_cm===loc.h_cm);
+    if (idx<0) idx = 0;
+    document.getElementById('live-loc').value = idx;
+    document.getElementById('live-tol').value = SAVED_LAYOUT.tolerance_cm||0;
+    if (SAVED_LAYOUT.max_h_cm != null) document.getElementById('live-maxh').value = SAVED_LAYOUT.max_h_cm;
+    if (SAVED_LAYOUT.target_fill_pct != null) document.getElementById('live-target').value = SAVED_LAYOUT.target_fill_pct;
+    if (SAVED_LAYOUT.demand_pcs != null) document.getElementById('live-demand').value = SAVED_LAYOUT.demand_pcs;
+    document.getElementById('live-irregular').checked = !!SAVED_LAYOUT.irregular;
+    syncReadouts();
+    recompute(false);
+    // overwrite layers with saved
+    LM.layers = SAVED_LAYOUT.layers.map(L=>({manual:!!L.manual, placements:(L.placements||[]).map(p=>Object.assign({},p))}));
+    LM.nLayers = LM.layers.length; LM.activeLayer=0; LM.sel=-1;
+    renderLayerTabs(); render2D(); render3D(); renderKPIs(getDims(), cartonGrossKg(getDims())); serialize();
+    return true;
+  }
+
+  // ── events ────────────────────────────────────────────────────────────────────
+  ['id_width_cm','id_height_cm','id_length_cm','id_pieces_per_carton','id_unit_weight_kg'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('input', schedulePreview);
+  });
+  document.getElementById('id_tare_kg')?.addEventListener('input', function(){ this.dataset.manual='1'; recompute(true); });
+  document.getElementById('tare-select')?.addEventListener('change', ()=>{ const t=document.getElementById('id_tare_kg'); if(t) delete t.dataset.manual; updateStats(getDims()); recompute(true); });
+  function setReadout(id, valId){ const el=document.getElementById(id), v=document.getElementById(valId); if(el&&v) v.textContent=el.value; }
+  function syncReadouts(){ setReadout('live-tol','live-tol-val'); setReadout('live-target','live-target-val'); setReadout('live-maxh','live-maxh-val'); }
+  document.getElementById('live-loc')?.addEventListener('change', ()=>recompute(false));
+  document.getElementById('live-tol')?.addEventListener('input', ()=>{ setReadout('live-tol','live-tol-val'); recompute(false); });
+  document.getElementById('live-maxh')?.addEventListener('input', ()=>{ setReadout('live-maxh','live-maxh-val'); recompute(false); });
+  document.getElementById('live-demand')?.addEventListener('input', ()=>renderKPIs(getDims(), cartonGrossKg(getDims())));
+  document.getElementById('live-target')?.addEventListener('input', ()=>{ setReadout('live-target','live-target-val'); renderKPIs(getDims(), cartonGrossKg(getDims())); });
+  document.getElementById('live-animate')?.addEventListener('click', animateStack);
+  document.getElementById('live-irregular')?.addEventListener('change', ()=>{ LM.irregular=document.getElementById('live-irregular').checked; renderLayerTabs(); render2D(); serialize(); });
+  document.getElementById('live-apply-count')?.addEventListener('click', applyCount);
+  document.getElementById('live-rotate')?.addEventListener('click', rotateSel);
+  document.getElementById('live-add')?.addEventListener('click', addCarton);
+  document.getElementById('live-del')?.addEventListener('click', delSel);
+  document.getElementById('live-reset-layer')?.addEventListener('click', resetLayer);
+  document.addEventListener('keydown', (e)=>{ if(e.key==='r'||e.key==='R'){ if(LM.irregular && LM.sel>=0){ rotateSel(); } } });
+
+  const nameEl = document.getElementById('id_name');
+  if (nameEl) {
+    nameEl.addEventListener('input', ()=>{ nameEdited = nameEl.value.trim()!==''; });
+    if (nameEl.value.trim()) nameEdited = true;
+  }
+
+  // ── init ──────────────────────────────────────────────────────────────────────
+  populateLocations();
+  syncReadouts();
+  const d0 = getDims();
+  updateStats(d0);
+  if (d0.s>0 && d0.w>0 && d0.d>0) {
+    fetchPreview();
+    if (!restoreSaved()) recompute(false);
+  } else {
+    showPlaceholder();
+  }
+})();
+</script>
+{% endblock %}

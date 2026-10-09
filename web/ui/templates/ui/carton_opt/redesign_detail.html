@@ -1,0 +1,163 @@
+{% extends "ui/base.html" %}
+{% block title %}A/B {{ rd.product.code }} — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:carton_opt_redesigns' %}">Projekty A/B</a> › <span>{{ rd.product.code }}</span></nav>
+<div class="page-header">
+  <div>
+    <div class="page-header__title" style="font-family:monospace">{{ rd.product.code }}</div>
+    <div class="page-header__sub">{{ rd.product.name }} · zakres: {{ rd.get_scope_display }} ·
+      <span class="badge {% if locked %}badge-green{% else %}badge-gray{% endif %}">{{ rd.get_status_display }}</span></div>
+  </div>
+</div>
+
+<form method="post" action="{% url 'ui:carton_opt_redesign_save' rd.pk %}"
+      enctype="multipart/form-data" id="rd-form">
+{% csrf_token %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  {# ── Kolumna A: stan obecny, zamrożony. #}
+  <div class="card" style="padding:16px 18px">
+    <span class="badge badge-gray">WERSJA OBECNA — niezmienna</span>
+    <div style="width:100%;height:260px;border-radius:8px;overflow:hidden;margin:10px 0;background:radial-gradient(120% 120% at 50% 34%, #3d4d6b 0%, #16203a 55%, #0b1220 100%)">
+      <canvas id="canvas-a" width="400" height="260" style="width:100%;height:100%"
+              {% if pallet_a.three %}data-three='{{ pallet_a.three }}'{% endif %}></canvas>
+    </div>
+    {% include "ui/carton_opt/_pallet_spec.html" with s=pallet_a.spec err=pallet_a.error %}
+    {% if not locked %}
+    <div class="form-group" style="margin-top:8px">
+      <label>Render wersji A (.glb / PNG / JPG)</label>
+      <input aria-label="Render wersji A (.glb / PNG / JPG)" type="file" name="a_render" accept=".glb,image/png,image/jpeg">
+      {% if rd.a_render %}<span class="help-text">Wgrany: {{ rd.a_render.name }}</span>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {# ── Kolumna B: docelowa, edytowalna do akceptacji. #}
+  <div class="card" style="padding:16px 18px">
+    <span class="badge badge-blue">WERSJA DOCELOWA (B)</span>
+    <div style="width:100%;height:260px;border-radius:8px;overflow:hidden;margin:10px 0;background:radial-gradient(120% 120% at 50% 34%, #3d4d6b 0%, #16203a 55%, #0b1220 100%)">
+      <canvas id="canvas-b" width="400" height="260" style="width:100%;height:100%"
+              {% if pallet_b.three %}data-three='{{ pallet_b.three }}'{% endif %}></canvas>
+    </div>
+    <div id="spec-b">{% include "ui/carton_opt/_pallet_spec.html" with s=pallet_b.spec err=pallet_b.error %}</div>
+    {% if orientations and not locked %}
+    <div class="card" style="padding:10px 12px;margin-top:8px">
+      <div style="font-weight:700;font-size:12px;margin-bottom:4px">Orientacje kartonu B — który bok do góry</div>
+      <table class="table" style="font-size:12px">
+        {% for o in orientations %}
+        <tr>
+          <td>{{ o.label }}{% if o.best %} <span class="badge badge-green">najlepsza</span>{% endif %}</td>
+          <td class="text-right" style="font-family:monospace">{{ o.l }}×{{ o.w }}×{{ o.h }}</td>
+          <td class="text-right">{% if o.fill is not None %}{{ o.fill }}% · {{ o.per_pallet }}/pal{% else %}—{% endif %}</td>
+          <td class="text-right"><button type="button" class="btn btn-ghost btn-sm rd-orient"
+              data-l="{{ o.l }}" data-w="{{ o.w }}" data-h="{{ o.h }}">Ustaw jako B</button></td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endif %}
+    <div style="font-size:11px;color:var(--gray-500);margin:4px 0 10px">Paleta B przelicza się na żywo przy zmianie wymiarów.</div>
+    {% if rd.scope != 'op' %}
+    <div style="display:flex;gap:8px">
+      <div class="form-group"><label>Karton L</label><input aria-label="Karton L" type="number" step="0.1" name="b_carton_l" value="{{ rd.b_carton_l|default_if_none:'' }}" {% if locked %}disabled{% endif %} class="rd-b"></div>
+      <div class="form-group"><label>W</label><input aria-label="W" type="number" step="0.1" name="b_carton_w" value="{{ rd.b_carton_w|default_if_none:'' }}" {% if locked %}disabled{% endif %} class="rd-b"></div>
+      <div class="form-group"><label>H</label><input aria-label="H" type="number" step="0.1" name="b_carton_h" value="{{ rd.b_carton_h|default_if_none:'' }}" {% if locked %}disabled{% endif %} class="rd-b"></div>
+    </div>
+    <div class="form-group"><label>Szt/karton (B)</label><input aria-label="Szt/karton (B)" type="number" name="b_pcs_per_carton" value="{{ rd.b_pcs_per_carton|default_if_none:'' }}" {% if locked %}disabled{% endif %} class="rd-b"></div>
+    {% endif %}
+    {% if rd.scope != 'karton' %}
+    <div style="display:flex;gap:8px">
+      <div class="form-group"><label>OP L</label><input aria-label="OP L" type="number" step="0.1" name="b_op_l" value="{{ rd.b_op_l|default_if_none:'' }}" {% if locked %}disabled{% endif %}></div>
+      <div class="form-group"><label>W</label><input aria-label="W" type="number" step="0.1" name="b_op_w" value="{{ rd.b_op_w|default_if_none:'' }}" {% if locked %}disabled{% endif %}></div>
+      <div class="form-group"><label>H</label><input aria-label="H" type="number" step="0.1" name="b_op_h" value="{{ rd.b_op_h|default_if_none:'' }}" {% if locked %}disabled{% endif %}></div>
+    </div>
+    <div class="form-group"><label>Szt/OP (B)</label><input aria-label="Szt/OP (B)" type="number" name="b_units_per_pack" value="{{ rd.b_units_per_pack|default_if_none:'' }}" {% if locked %}disabled{% endif %}></div>
+    {% endif %}
+    <div class="form-group"><label>Wolumen roczny [szt]</label><input aria-label="Wolumen roczny [szt]" type="number" name="annual_volume_pcs" value="{{ rd.annual_volume_pcs|default_if_none:'' }}" {% if locked %}disabled{% endif %} class="rd-b"></div>
+  </div>
+</div>
+
+{# ── Pasek porównania A | B | Δ (aktualizowany na żywo endpointem metryk). #}
+<div class="card" style="margin-top:16px;padding:14px 18px">
+  <div class="table-wrap"><table class="table" id="rd-metrics">
+    <thead><tr><th>Metryka</th><th class="text-right">A</th><th class="text-right">B</th><th class="text-right">Δ</th></tr></thead>
+    <tbody>
+      <tr data-k="fill"><td>Wypełnienie palety %</td><td class="text-right" data-side="a"></td><td class="text-right" data-side="b"></td><td class="text-right" data-side="delta"></td></tr>
+      <tr data-k="cartons_per_pallet"><td>Kartonów / paletę</td><td class="text-right" data-side="a"></td><td class="text-right" data-side="b"></td><td class="text-right" data-side="delta"></td></tr>
+      <tr data-k="pcs_per_pallet"><td>Szt / paletę</td><td class="text-right" data-side="a"></td><td class="text-right" data-side="b"></td><td class="text-right" data-side="delta"></td></tr>
+      <tr data-k="carton_m3"><td>m³ kartonu</td><td class="text-right" data-side="a"></td><td class="text-right" data-side="b"></td><td class="text-right" data-side="delta"></td></tr>
+      <tr data-k="pallets_per_year"><td>Palet / rok</td><td class="text-right" data-side="a"></td><td class="text-right" data-side="b"></td><td class="text-right" data-side="delta"></td></tr>
+      <tr data-k="trucks_per_year"><td>Kursów / rok (33 pal./auto)</td><td class="text-right" data-side="a"></td><td class="text-right" data-side="b"></td><td class="text-right" data-side="delta"></td></tr>
+    </tbody>
+  </table></div>
+</div>
+
+<div class="form-group" style="margin-top:12px"><label>Notatki</label>
+  <textarea aria-label="Notatki" name="notes" rows="2" maxlength="1000" {% if locked %}disabled{% endif %}>{{ rd.notes }}</textarea></div>
+<div style="display:flex;gap:10px;margin-top:8px">
+  {% if not locked %}
+  <button type="submit" name="action" value="save" class="btn btn-secondary">Zapisz szkic</button>
+  <button type="submit" name="action" value="accept" class="btn btn-primary"
+          onclick="return confirm('Zaakceptować projekt? Wersja B zostanie zablokowana.')">Akceptuj</button>
+  <button type="submit" name="action" value="reject" class="btn btn-secondary">Odrzuć</button>
+  {% endif %}
+</div>
+</form>
+
+{{ metrics|json_script:"rd-initial" }}
+<script type="importmap">{ "imports": { "three": "/static/ui/vendor/three.module.js" } }</script>
+<script type="module">
+import { renderPalVizLevel } from "/static/ui/js/palviz-three.js";
+// Palety A/B — pełna paletyzacja liczona silnikiem po stronie serwera → render z data-three.
+let viewerB = null;
+document.querySelectorAll("canvas[data-three]").forEach(cv => {
+  try {
+    const v = renderPalVizLevel(cv, JSON.parse(cv.dataset.three));
+    if (cv.id === "canvas-b") viewerB = v;
+  } catch (e) { console.warn("PalViz 3D:", e); }
+});
+function redrawB(threeJson) {
+  if (!threeJson) return;
+  try { if (viewerB && viewerB.destroy) viewerB.destroy(); } catch (e) {}
+  try { viewerB = renderPalVizLevel(document.getElementById("canvas-b"), JSON.parse(threeJson)); }
+  catch (e) { console.warn("PalViz 3D B:", e); }
+}
+// Metryki A|B|Δ na żywo: debounce 400 ms → endpoint JSON (silnik liczy po stronie serwera).
+const table = document.getElementById("rd-metrics");
+function paint(d) {
+  table.querySelectorAll("tr[data-k]").forEach(tr => {
+    const k = tr.dataset.k;
+    tr.querySelector('[data-side=a]').textContent = d.a[k] ?? "—";
+    tr.querySelector('[data-side=b]').textContent = d.b[k] ?? "—";
+    const dl = d.delta[k];
+    const cell = tr.querySelector('[data-side=delta]');
+    cell.textContent = dl == null ? "—" : (dl > 0 ? "+" + dl : dl);
+    // Δ zielone gdy B lepsze: dla m³ i palet/rok mniej = lepiej.
+    const lowerBetter = (k === "carton_m3" || k === "pallets_per_year" || k === "trucks_per_year");
+    cell.style.color = dl == null ? "" : ((lowerBetter ? dl < 0 : dl > 0) ? "var(--green)" : (dl === 0 ? "" : "var(--red)"));
+  });
+}
+paint(JSON.parse(document.getElementById("rd-initial").textContent));
+let t = null;
+// „Ustaw jako B": wpisz wymiary wybranej orientacji i wyzwól przeliczenie (live 3D + spec).
+document.querySelectorAll(".rd-orient").forEach(btn => btn.addEventListener("click", () => {
+  const set = (n, v) => { const el = document.querySelector(`[name=${n}]`); if (el) el.value = v; };
+  set("b_carton_l", btn.dataset.l); set("b_carton_w", btn.dataset.w); set("b_carton_h", btn.dataset.h);
+  const trig = document.querySelector("[name=b_carton_l]");
+  if (trig) trig.dispatchEvent(new Event("input", {bubbles: true}));
+}));
+document.querySelectorAll("input.rd-b").forEach(el => el.addEventListener("input", () => {
+  clearTimeout(t);
+  t = setTimeout(() => {
+    const v = n => (document.querySelector(`[name=${n}]`) || {}).value || "";
+    const q = new URLSearchParams({pk: "{{ rd.pk }}", b_carton_l: v("b_carton_l"),
+      b_carton_w: v("b_carton_w"), b_carton_h: v("b_carton_h"),
+      b_pcs_per_carton: v("b_pcs_per_carton"), annual_volume_pcs: v("annual_volume_pcs")});
+    fetch("{% url 'ui:carton_opt_redesign_metrics' %}?" + q)
+      .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }).then(d => {
+        paint(d);
+        redrawB(d.three_b);
+        if (d.spec_html_b !== undefined) document.getElementById("spec-b").innerHTML = d.spec_html_b;
+      }).catch(() => { if (window.gvToast) gvToast("Nie udało się przeliczyć metryk — popraw wymiary lub spróbuj ponownie.", {type: "danger"}); });
+  }, 400);
+}));
+</script>
+{% endblock %}

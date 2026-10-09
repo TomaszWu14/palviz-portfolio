@@ -1,0 +1,140 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Zunifikuj kartony — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block subnav %}{% include "ui/planner/_tabs.html" %}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_cartons' %}">Kartony</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Zunifikuj duplikaty</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Zunifikuj kartony</div>
+    <div class="page-header__sub">
+      Pogrupuj kartony o zbliżonych wymiarach i scal duplikaty.
+      {% if singleton_count %}
+        {{ singleton_count }} karton{{ singleton_count|pluralize:",y,ów" }} z unikalnymi wymiarami nie wymaga scalania.
+      {% endif %}
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:planner_cartons' %}" class="btn btn-secondary">← Wróć do kartonów</a>
+  </div>
+</div>
+
+{% if messages %}
+  {% for msg in messages %}
+  <div class="alert alert--{{ msg.tags }}" style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:{% if 'success' in msg.tags %}var(--green-light){% elif 'error' in msg.tags %}var(--red-light){% else %}var(--yellow-light){% endif %};color:{% if 'success' in msg.tags %}var(--green){% elif 'error' in msg.tags %}var(--red){% else %}var(--yellow-dark){% endif %};">
+    {{ msg }}
+  </div>
+  {% endfor %}
+{% endif %}
+
+{# Tolerance selector (GET form) #}
+<div class="card" style="margin-bottom:20px;padding:16px 20px;">
+  <form method="get" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <label for="tol-input" style="font-weight:600;font-size:14px;">Tolerancja zaokrąglenia:</label>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <input id="tol-input" type="number" name="tol" value="{{ tol }}" min="1" max="10" step="1"
+             style="width:70px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px;">
+      <span style="font-size:14px;color:var(--text-muted)">cm</span>
+    </div>
+    <button type="submit" class="btn btn-secondary">Zastosuj</button>
+    {% if tol != 1 %}
+      <a href="{% url 'ui:planner_carton_unify' %}" class="btn btn-ghost">Reset (1 cm)</a>
+    {% endif %}
+    <span style="font-size:13px;color:var(--text-muted);margin-left:4px;">
+      Kartony zaokrąglane do najbliższego {{ tol }} cm i grupowane po identycznych zaokrąglonych wymiarach.
+    </span>
+  </form>
+</div>
+
+{% if not groups %}
+<div class="card" style="padding:48px 24px;text-align:center;">
+  <div style="font-size:40px;margin-bottom:12px;">{% icon "check" cls="icon--em" %}</div>
+  <div style="font-size:18px;font-weight:600;color:var(--green);margin-bottom:8px;">Brak duplikatów — wszystkie kartony mają unikalne wymiary</div>
+  <div style="color:var(--text-muted);font-size:14px;">
+    Przy tolerancji {{ tol }} cm nie znaleziono grup kartonów do scalenia.
+    Spróbuj zwiększyć tolerancję powyżej.
+  </div>
+</div>
+
+{% else %}
+
+<form method="post">
+  {% csrf_token %}
+
+  {% for group in groups %}
+  <div class="card" style="margin-bottom:20px;">
+    <div style="padding:14px 20px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+      <span style="font-weight:700;font-size:15px;">{{ group.key|cut:"x" }}</span>
+      <span style="font-family:monospace;font-size:15px;color:var(--blue-mid);font-weight:600;">{{ group.key }} cm</span>
+      <span class="badge badge-gray" style="margin-left:4px;">{{ group.cartons|length }} kartonów</span>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="width:36px;">Kanoniczny</th>
+            <th>Nazwa kartonu</th>
+            <th>Wymiary dokładne (L×W×H)</th>
+            <th>Waga jedn. [kg]</th>
+            <th>Szt/karton</th>
+            <th>Tara [kg]</th>
+            <th>Instrukcje</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in group.cartons %}
+          <tr {% if item.selected %}style="background:var(--blue-light);"{% endif %}>
+            <td style="text-align:center;">
+              <input type="radio" aria-label="Kanoniczny: {{ item.obj.name }}"
+                     name="canonical_{{ group.key }}"
+                     value="{{ item.obj.pk }}"
+                     {% if item.selected %}checked{% endif %}>
+            </td>
+            <td>
+              <div style="font-weight:{% if item.selected %}600{% else %}400{% endif %}">{{ item.obj.name }}</div>
+              {% if item.obj.ean %}<div style="font-size:11px;color:var(--text-muted)">EAN: {{ item.obj.ean }}</div>{% endif %}
+            </td>
+            <td style="font-family:monospace;">{{ item.obj.length_cm }}×{{ item.obj.width_cm }}×{{ item.obj.height_cm }}</td>
+            <td>{{ item.obj.unit_weight_kg }}</td>
+            <td>{{ item.obj.pieces_per_carton }}</td>
+            <td>{{ item.obj.tare_kg }}</td>
+            <td>
+              {% if item.instr_count %}
+                <span class="badge badge-blue">{{ item.instr_count }}</span>
+              {% else %}
+                <span style="color:var(--text-muted);font-size:13px;">0</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:10px 20px;font-size:12px;color:var(--text-muted);">
+      Zaznacz karton, który chcesz zachować jako kanoniczny. Pozostałe zostaną usunięte,
+      a ich instrukcje zostaną przepisane na wybrany karton.
+    </div>
+  </div>
+  {% endfor %}
+
+  <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px;margin-bottom:32px;">
+    <a href="{% url 'ui:planner_cartons' %}" class="btn btn-secondary">Anuluj</a>
+    <button type="submit" class="btn btn-primary"
+            onclick="return confirm('Scal zaznaczone grupy kartonów? Operacja jest nieodwracalna.')">
+      Scal i usuń duplikaty
+    </button>
+  </div>
+</form>
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "ui/scanner/base.html" %}{% load palviz_extras %}
+{% block bar %}Zgłoszenia jakościowe{% endblock %}
+{% block back %}<a href="{% url 'ui:hu_control_menu' %}">‹</a>{% endblock %}
+{% block content %}
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <a href="?status=open" class="btn {% if status == 'open' %}btn--primary{% else %}btn--ghost{% endif %}" style="flex:1;margin:0">Otwarte</a>
+    <a href="?status=closed" class="btn {% if status == 'closed' %}btn--primary{% else %}btn--ghost{% endif %}" style="flex:1;margin:0">Zamknięte</a>
+  </div>
+
+  {% for iss in issues %}
+  <div class="pcard">
+    <div style="display:flex;justify-content:space-between;gap:8px">
+      <div>
+        <div style="font-weight:800;font-size:14px">{% icon "triangle-alert" %} {{ iss.get_issue_type_display }}</div>
+        <div style="font-size:12px;color:#64748b">HU {{ iss.hu.ref }} · {{ iss.hu.shipment.name }}
+          {% if iss.item %} · poz. {{ iss.item.ref_code }}{% endif %}
+          {% if iss.ref_code %} · {{ iss.ref_code }}{% if iss.qty %} ({{ iss.qty|floatformat:'-2' }}){% endif %}{% endif %}</div>
+        <div style="font-size:11px;color:#64748b">{{ iss.raised_at|date:"d.m.Y H:i" }} · {{ iss.raised_by.username|default:"—" }}</div>
+      </div>
+      <span class="pill pill--{% if iss.status == 'open' %}to_recheck{% else %}ok{% endif %}">{{ iss.get_status_display }}</span>
+    </div>
+    {% if iss.photo %}<a href="{{ iss.photo.url }}" target="_blank" rel="noopener"><img src="{{ iss.photo.url }}" alt="zdjęcie" style="max-width:120px;border-radius:8px;margin-top:8px"></a>
+    {% elif iss.status == 'open' %}
+    <form method="post" action="{% url 'ui:hu_quality_attach' iss.pk %}" enctype="multipart/form-data" style="margin-top:8px">
+      {% csrf_token %}<input type="hidden" name="next" value="?status=open">
+      <input type="file" name="photo" accept="image/*" capture="environment" onchange="pvUpload(this)" style="font-size:12px">
+    </form>
+    {% endif %}
+    {% if iss.status == 'open' %}
+    <form method="post" action="{% url 'ui:hu_quality_close' iss.pk %}" style="margin-top:8px;display:flex;gap:8px">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="?status=open">
+      <input type="text" name="resolution_note" required placeholder="Notatka rozwiązania (wymagane)"
+             style="flex:1;padding:10px;border:1px solid #cbd5e1;border-radius:10px">
+      <button type="submit" class="btn btn--ok" style="margin:0">Zamknij</button>
+    </form>
+    {% elif iss.resolution_note %}
+    <div style="font-size:12px;color:#475569;margin-top:6px">{% icon "check" %} {{ iss.resolution_note }} — {{ iss.closed_by.username|default:"" }}</div>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="pcard" style="text-align:center;color:#475569">Brak zgłoszeń.</div>
+  {% endfor %}
+{% endblock %}

@@ -1,0 +1,11 @@
+{% comment %}
+Pole formularza z etykietą (etap 3 audytu UX). Użycie:
+  {% include "ui/components/_field.html" with field=form.name %}
+  {% include "ui/components/_field.html" with field=form.q hide_label=1 %}   ← etykieta tylko dla czytnika
+Django 5.2 sam dokłada aria-describedby (help_text) i aria-invalid (błędy) na input.
+{% endcomment %}<div class="gv-field{% if field.errors %} has-error{% endif %}">
+  <label class="gv-field__label{% if hide_label %} sr-only{% endif %}" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="req" aria-hidden="true">*</span>{% endif %}</label>
+  {{ field }}
+  {% if field.help_text %}<div class="help-text" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</div>{% endif %}
+  {% for e in field.errors %}<div class="gv-field__error" role="alert">{{ e }}</div>{% endfor %}
+</div>

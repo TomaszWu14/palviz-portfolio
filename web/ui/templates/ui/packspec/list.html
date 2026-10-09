@@ -1,0 +1,65 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Packspec przyjęć — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><span>Przyjęcia</span> › <span>Packspec</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#0e7490;--pcbg:#ecfeff">
+    <div class="panel-head__chip">{% icon "inbox" cls="icon--em" %}</div>
+    <div>
+      <div class="page-header__title">Packspec dla przyjęć</div>
+      <div class="page-header__sub">
+        {% if batch %}Partia „{{ batch.name }}" z {{ batch.uploaded_at|date:"Y-m-d H:i" }} · {{ batch.row_count }} pozycji
+        {% if n_mismatch %} · <strong style="color:#b91c1c">{{ n_mismatch }} rozbieżności z MARM</strong>{% endif %}
+        {% else %}Brak wgranego packspec.{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <form method="post" action="{% url 'ui:packspec_upload' %}" enctype="multipart/form-data"
+          style="display:flex;gap:8px;align-items:center;margin:0">
+      {% csrf_token %}
+      <input type="file" name="file" accept=".xlsx" required>
+      <button type="submit" class="btn btn-primary">Wgraj packspec</button>
+    </form>
+  </div>
+</div>
+
+{% if rows %}
+<div class="card" style="padding:0">
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>REF</th><th class="text-right">Szt/karton</th>
+      <th class="text-right">Kart/paleta</th><th class="text-right">Szt/paleta</th>
+      <th>Walidacja z MARM</th><th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+    <tr {% if r.diffs %}style="background:#fef2f2"{% endif %}>
+      <td style="font-family:monospace;font-weight:700">{{ r.spec.ref_code }}
+        {% if not r.spec.product %}<span class="badge badge-gray" title="REF nieznany w master dacie">brak w MD</span>{% endif %}</td>
+      <td class="text-right">{{ r.spec.pcs_per_carton|default:"—" }}</td>
+      <td class="text-right">{{ r.spec.cartons_per_pallet|default:"—" }}</td>
+      <td class="text-right">{{ r.spec.pcs_per_pallet|default:"—" }}</td>
+      <td style="font-size:12px">
+        {% if r.diffs %}<span class="badge badge-red">rozbieżność</span>
+          {% for d in r.diffs %}<div style="color:#b91c1c">{{ d }}</div>{% endfor %}
+        {% else %}<span class="badge badge-green">zgodne</span>{% endif %}
+      </td>
+      <td class="text-right">
+        {% if r.diffs %}
+          {% if r.issue_open %}<span class="badge badge-gray">zgłoszone</span>
+          {% else %}
+          <form method="post" action="{% url 'ui:packspec_report_mismatch' r.spec.pk %}" style="margin:0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary btn-sm">Utwórz zgłoszenie</button>
+          </form>
+          {% endif %}
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endif %}
+{% endblock %}

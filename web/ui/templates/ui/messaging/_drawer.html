@@ -1,0 +1,30 @@
+{% load palviz_extras %}
+{% comment %}Fragment: lista wątków do drawera (fetch z _messages_bell.html).{% endcomment %}
+{% if rows %}
+  {% for r in rows %}
+  <a href="{% url 'ui:message_thread' r.t.pk %}?fragment=1"
+     data-thread-url="{% url 'ui:message_thread' r.t.pk %}?fragment=1"
+     style="display:block;padding:10px 10px;border-bottom:1px solid var(--gray-100);text-decoration:none;color:inherit;border-radius:8px{% if r.unread %};background:#f0fdfa{% endif %}">
+    <div style="display:flex;align-items:center;gap:6px">
+      {% if r.unread %}<span style="width:8px;height:8px;border-radius:50%;background:#14b8a6;flex:none"></span>{% endif %}
+      <strong style="font-size:13px;{% if not r.unread %}font-weight:600;color:var(--gray-600){% endif %}">
+        {{ r.t.subject|default:"(bez tematu)"|truncatechars:48 }}</strong>
+    </div>
+    {% with last=r.t.messages.last %}
+    {% if last %}<div style="color:var(--gray-500);font-size:12px;margin-top:2px">
+      {% if last.sender %}{{ last.sender.get_full_name|default:last.sender.username }}{% else %}system{% endif %}: {{ last.body|truncatechars:60 }}</div>{% endif %}
+    {% endwith %}
+    <div style="color:var(--gray-400);font-size:11px;margin-top:2px">{{ r.t.updated_at|date:"Y-m-d H:i" }}</div>
+  </a>
+  {% endfor %}
+  <div style="padding:10px;text-align:center;display:flex;gap:14px;justify-content:center">
+    <a href="{% url 'ui:message_compose' %}?to={{ leader_to|urlencode }}" style="font-size:12px;color:#0c5c58;font-weight:700">{% icon "mail" %} Napisz do lidera</a>
+    <a href="{% url 'ui:messages_inbox' %}" style="font-size:12px;color:#0c5c58;font-weight:700">Pełna skrzynka →</a>
+  </div>
+{% else %}
+  <div style="color:var(--gray-400);padding:20px;text-align:center">Brak wiadomości.
+    <div style="margin-top:8px"><a href="{% url 'ui:message_compose' %}"
+      style="color:#0c5c58;font-weight:700">Napisz pierwszą →</a></div>
+    <div style="margin-top:6px"><a href="{% url 'ui:message_compose' %}?to={{ leader_to|urlencode }}"
+      style="color:#0c5c58;font-weight:700">{% icon "mail" %} Napisz do lidera</a></div></div>
+{% endif %}

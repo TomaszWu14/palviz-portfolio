@@ -1,0 +1,149 @@
+{% extends "ui/base.html" %}
+{% block title %}{{ batch.name }} — zadania EWM — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .wt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .wt-h { font-size: 13px; font-weight: 700; color: var(--gray-700); margin-bottom: 8px; }
+  .codes { font-family: var(--font-mono, monospace); font-size: 12px; line-height: 1.7; color: var(--gray-700); }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_map' %}">Magazyn 3D</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:ewm_tasks_list' %}">Zadania magazynowe EWM</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{{ batch.name }}</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{{ batch.name }}
+      <span class="badge {% if batch.status == 'done' %}badge-green{% elif batch.status == 'error' %}badge-red{% else %}badge-yellow{% endif %}" style="vertical-align:middle">{{ batch.get_status_display }}</span></div>
+    <div class="page-header__sub">{{ batch.file_name }} · wgrano {{ batch.uploaded_at|date:"d.m.Y H:i" }}{% if batch.uploaded_by %} ({{ batch.uploaded_by.get_username }}){% endif %} · czas w pliku: {{ batch.get_tz_display }}</div>
+  </div>
+  <div class="page-header__actions">
+    {% if batch.status == 'done' %}<a href="{% url 'ui:ewm_tasks_profile' batch.pk %}" class="btn btn-secondary">Dzień projektowy</a>{% endif %}
+    {% if report %}<a href="{% url 'ui:warehouse_model_view' report.model.pk %}?wt={{ batch.pk }}#flow-player" class="btn btn-primary">Animacja w modelu</a>{% endif %}
+    <form method="post" action="{% url 'ui:ewm_tasks_delete' batch.pk %}" onsubmit="return confirm('Usunąć import i wszystkie jego zadania?')">
+      {% csrf_token %}<button type="submit" class="btn btn-danger">Usuń</button></form>
+  </div>
+</div>
+
+{% if pending %}
+{# UX-004 / WCAG 2.2.1: bez meta-refresh — fetch statusu co 5 s, komunikat w aria-live, jedno przeładowanie po końcu #}
+<div class="alert alert-info" id="wt-progress" data-status-url="{% url 'ui:ewm_tasks_status' batch.pk %}"
+     style="margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+  <div style="flex:1 1 320px">
+    <div id="wt-progress-live" role="status" aria-live="polite">Import trwa w tle — status sprawdzamy co 5 s bez przeładowania strony.
+      Duży plik (kilkaset MB) może się importować kilkanaście minut.</div>
+    <div id="wt-progress-meta" class="text-muted text-sm"></div>
+  </div>
+  <button type="button" id="wt-progress-toggle" class="btn btn-secondary">Wstrzymaj odświeżanie</button>
+</div>
+{% elif stale %}
+<div class="alert alert-error" style="margin-bottom:16px">Import nie skończył się (serwer został zrestartowany w trakcie). Usuń ten import i wgraj plik ponownie.</div>
+{% elif batch.message %}
+<div class="alert {% if batch.status == 'error' %}alert-error{% else %}alert-success{% endif %}" style="margin-bottom:16px">{{ batch.message }}</div>
+{% endif %}
+
+{% if stats %}
+<div class="stats-grid">
+  <div class="stat-card"><div><div class="stat-value">{{ batch.row_count }}</div><div class="stat-label">zadań w bazie (z {{ stats.rows }} wierszy)</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ stats.errors }}</div><div class="stat-label">błędnych wierszy (pominięte)</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ stats.unconfirmed }}</div><div class="stat-label">bez potwierdzenia · {{ stats.cancelled }} anulowanych</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ stats.resources }}</div><div class="stat-label">zasobów / użytkowników</div></div></div>
+  <div class="stat-card"><div><div class="stat-value" style="font-size:15px">{% if batch.first_confirmed %}{{ batch.first_confirmed|date:"d.m.Y H:i" }}<br>{{ batch.last_confirmed|date:"d.m.Y H:i" }}{% else %}—{% endif %}</div><div class="stat-label">potwierdzone od – do</div></div></div>
+</div>
+
+<div class="wt-grid">
+  <div class="card"><div class="card-body">
+    <div class="wt-h">Rodzaje ruchu</div>
+    <table class="table"><tbody>
+      {% for k in stats.kinds %}<tr><td>{{ k.label }}</td><td class="text-right font-semibold">{{ k.count }}</td></tr>{% endfor %}
+    </tbody></table>
+  </div></div>
+  <div class="card"><div class="card-body">
+    <div class="wt-h">Procesy → rodzaj ruchu</div>
+    <table class="table"><tbody>
+      {% for p in stats.processes %}<tr><td class="font-semibold">{{ p.process }}</td><td>{{ p.label }}</td><td class="text-right">{{ p.count }}</td></tr>{% endfor %}
+    </tbody></table>
+    {% if overrides %}<div class="text-muted text-sm" style="margin-top:8px">Nadpisania: {% for code, kind in overrides %}{{ code }} = {{ kind }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+  </div></div>
+</div>
+{% endif %}
+
+{% if report %}
+<div class="card" style="margin-bottom:16px"><div class="card-body">
+  <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+    <div class="wt-h" style="margin:0">Lokalizacje z zadań vs model</div>
+    <form method="get" style="margin-left:auto"><select name="model" class="form-control" onchange="this.form.submit()" aria-label="Model magazynu">
+      {% for m in models %}<option value="{{ m.pk }}" {% if m.pk == report.model.pk %}selected{% endif %}>{{ m.name }}</option>{% endfor %}
+    </select></form>
+  </div>
+  <p style="margin:0 0 8px">{{ report.locations }} lokalizacji w zadaniach: <b>{{ report.mapped }}</b> w regałach modelu, <b>{{ report.unmapped }}</b> spoza modelu
+    <span class="text-muted">(doki, bufory, inne strefy). W animacji przyjęcie z takiej lokalizacji startuje z najbliższego doku,
+    a wydanie i kompletacja kończą się na doku / stanowisku; przesunięcia i uzupełnienia z lokalizacją spoza modelu są pomijane.</span></p>
+  {% if report.examples %}<div class="codes">{{ report.examples|join:" · " }}{% if report.unmapped > report.examples|length %} …{% endif %}</div>{% endif %}
+</div></div>
+{% endif %}
+
+{% if stats.error_list %}
+<div class="card"><div class="card-body">
+  <div class="wt-h">Błędne wiersze (pierwsze {{ stats.error_list|length }} z {{ stats.errors }})</div>
+  <table class="table"><tbody>{% for e in stats.error_list %}<tr><td class="text-muted" style="width:90px">wiersz {{ e.line }}</td><td>{{ e.error }}</td></tr>{% endfor %}</tbody></table>
+</div></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if pending %}
+<script>
+(function () {
+  var box = document.getElementById('wt-progress'); if (!box || !window.fetch) return;
+  var URL = box.getAttribute('data-status-url'), EVERY_MS = 5000, MAX_FAILS = 5;
+  var live = document.getElementById('wt-progress-live'), meta = document.getElementById('wt-progress-meta');
+  var btn = document.getElementById('wt-progress-toggle');
+  var timer = null, paused = false, busy = false, fails = 0, finished = false;
+
+  function schedule() { clearTimeout(timer); if (!paused && !finished) timer = setTimeout(poll, EVERY_MS); }
+  function stop(msg) { finished = true; clearTimeout(timer); btn.hidden = true; if (msg) live.textContent = msg; }
+
+  function poll() {
+    if (paused || finished || busy) return;
+    if (document.hidden) { schedule(); return; }          // karta w tle — nie odpytuj serwera
+    busy = true;
+    fetch(URL, {credentials: 'same-origin', cache: 'no-store', headers: {'Accept': 'application/json'}})
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) {
+        fails = 0;
+        meta.textContent = 'Status: ' + d.status_display + ' · sprawdzono ' + new Date().toLocaleTimeString('pl-PL');
+        if (d.pending) return;
+        // koniec (albo import wisi) — jedno przeładowanie, żeby pokazać statystyki i raport
+        stop(d.status === 'done' ? 'Import zakończony — wczytuję wyniki…'
+          : d.stale ? 'Import nie skończył się — wczytuję szczegóły…'
+          : 'Import zakończył się błędem — wczytuję szczegóły…');
+        setTimeout(function () { location.reload(); }, 1500);
+      })
+      .catch(function () {
+        if (++fails >= MAX_FAILS) stop('Nie udało się sprawdzić statusu importu — odśwież stronę ręcznie.');
+        else meta.textContent = 'Nie udało się sprawdzić statusu — ponowię za 5 s.';
+      })
+      .then(function () { busy = false; schedule(); });
+  }
+
+  btn.addEventListener('click', function () {
+    paused = !paused;
+    btn.textContent = paused ? 'Wznów odświeżanie' : 'Wstrzymaj odświeżanie';
+    live.textContent = paused ? 'Odświeżanie statusu wstrzymane.' : 'Odświeżanie statusu wznowione.';
+    if (paused) clearTimeout(timer); else poll();
+  });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) poll(); });
+  schedule();
+})();
+</script>
+{% endif %}
+{% endblock %}

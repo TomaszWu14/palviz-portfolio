@@ -1,0 +1,23 @@
+{% load palviz_extras %}
+{% comment %}Fragment wątku do drawera: historia + inline-odpowiedź (bez utraty ekranu).{% endcomment %}
+<a href="#" data-drawer-back style="font-size:13px;color:#0c5c58;font-weight:700;text-decoration:none">‹ Wszystkie wiadomości</a>
+<h2 style="font-size:16px;font-weight:800;margin:8px 0">{{ thread.subject|default:"Wątek" }}</h2>
+{% if thread.url %}<a href="{{ thread.url }}" style="display:block;font-size:12px;margin-bottom:8px;color:#0c5c58">{% icon "link" %} Otwórz kontekst</a>{% endif %}
+<div style="font-size:11px;color:var(--gray-400);margin-bottom:10px">
+  {% for p in thread.participants.all %}{{ p.get_full_name|default:p.username }}{% if not forloop.last %}, {% endif %}{% endfor %}
+</div>
+{% for m in msgs %}
+<div style="border:1px solid var(--gray-200);border-radius:10px;padding:8px 10px;margin-bottom:6px">
+  <div style="font-size:11px;color:var(--gray-500);font-weight:700">
+    {% if m.sender %}{{ m.sender.get_full_name|default:m.sender.username }}{% else %}system{% endif %} · {{ m.created_at|date:"d.m H:i" }}</div>
+  <div style="white-space:pre-wrap;margin-top:2px;font-size:13px">{{ m.body }}</div>
+</div>
+{% endfor %}
+<form method="post" action="{% url 'ui:message_thread' thread.pk %}" data-drawer-reply
+      style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+  {% csrf_token %}
+  <input type="hidden" name="fragment" value="1">
+  <textarea name="body" required rows="3" maxlength="500" placeholder="Odpowiedz…"
+            style="width:100%;padding:10px;font-size:15px;border:1px solid var(--gray-300);border-radius:8px;box-sizing:border-box"></textarea>
+  <button type="submit" style="background:#0c5c58;color:#fff;border:0;border-radius:10px;padding:11px;font-size:14px;font-weight:800;cursor:pointer">Wyślij odpowiedź</button>
+</form>

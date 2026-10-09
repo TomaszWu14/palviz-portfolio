@@ -1,0 +1,89 @@
+{% extends "ui/base.html" %}{% load palviz_extras %}
+{% block title %}Opakowania zbiorcze — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block subnav %}{% include "ui/planner/_tabs.html" %}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_cartons' %}">Kartony</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Opakowania zbiorcze</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-header__title">Opakowania zbiorcze</h1>
+    <div class="page-header__sub">Definiuj opakowania zbiorcze (inner packs) wewnątrz kartonów</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:planner_cartons' %}" class="btn btn-ghost">{% icon "arrow-left" %}Kartony</a>
+    {% if can_write_products %}<a href="{% url 'ui:planner_inner_pack_new' %}" class="btn btn-primary">
+      {% icon "plus" %}Nowe opakowanie
+    </a>{% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Lista opakowań zbiorczych">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nazwa</th>
+          <th class="num">L [cm]</th>
+          <th class="num">W [cm]</th>
+          <th class="num">H [cm]</th>
+          <th class="num">Szt / opak.</th>
+          <th class="num">Tara [kg]</th>
+          <th class="num">Obj. [m³]</th>
+          <th>Status</th>
+          <th>Kartony</th>
+          <th><span class="sr-only">Akcje</span></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for pack in packs %}
+      <tr>
+        <td>
+          <div class="font-semibold">{{ pack.name }}</div>
+          {% if pack.notes %}<div class="text-sm text-muted">{{ pack.notes|truncatechars:40 }}</div>{% endif %}
+        </td>
+        <td class="num">{{ pack.length_cm }}</td>
+        <td class="num">{{ pack.width_cm }}</td>
+        <td class="num">{{ pack.height_cm }}</td>
+        <td class="num"><strong>{{ pack.units_per_pack }}</strong></td>
+        <td class="num">{{ pack.tare_kg }}</td>
+        <td class="num">{{ pack.volume_m3 }}</td>
+        <td>
+          {% if pack.is_active %}<span class="badge badge-green">Aktywne</span>
+          {% else %}<span class="badge badge-gray">Nieaktywne</span>{% endif %}
+        </td>
+        <td>
+          <span class="text-muted" style="font-size:12px">{{ pack.cartons_cnt }} karton(ów)</span>
+        </td>
+        <td>
+          <div class="actions">
+            {% if can_write_products %}{% url 'ui:planner_inner_pack_edit' pack.pk as edit_url %}{% icon_button "pencil" label="Edytuj" href=edit_url size="sm" %}{% endif %}
+            {% if can_write_products %}<form method="post" action="{% url 'ui:planner_inner_pack_delete' pack.pk %}">
+              {% csrf_token %}
+              {% icon_button "trash-2" label="Usuń" type="submit" variant="btn-ghost text-danger" size="sm" confirm="Usunąć opakowanie „"|add:pack.name|add:"”?" %}
+            </form>{% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="10">
+          <div class="empty-state">
+            <div class="empty-state__icon">{% icon "package" 24 %}</div>
+            <div class="empty-state__title">Brak opakowań zbiorczych</div>
+            <div class="empty-state__desc">{% if can_write_products %}<a href="{% url 'ui:planner_inner_pack_new' %}">Dodaj pierwsze opakowanie zbiorcze</a>{% endif %}</div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

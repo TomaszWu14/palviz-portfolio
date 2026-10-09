@@ -1,0 +1,226 @@
+{% extends "ui/base.html" %}{% load palviz_extras %}
+{% block title %}Przesyłki — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <span>Wysyłki</span>
+</nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#7c3aed;--pcbg:#f5f3ff">
+    <div class="panel-head__chip">{% icon "truck" 24 %}</div>
+    <div>
+      <h1 class="page-header__title">Kalkulator przesyłek</h1>
+      <div class="page-header__sub">Oblicz objętość, liczbę palet i koszt transportu</div>
+    </div>
+  </div>
+  <div class="page-header__actions toolbar__end">
+    <details class="menu" data-testid="shipments-more">
+      <summary class="btn btn-secondary">{% icon "ellipsis" %}Więcej</summary>
+      <div class="menu__panel">
+        <a class="menu__item" href="{% url 'ui:planner_carriers' %}">{% icon "truck" %}Przewoźnicy i cenniki</a>
+        <a class="menu__item" href="{% url 'ui:planner_quote_recipients' %}">{% icon "mail" %}Lista adresowa wycen</a>
+        <a class="menu__item" href="{% url 'ui:planner_customers' %}">{% icon "users" %}Baza klientów</a>
+        <a class="menu__item" href="{% url 'ui:planner_quote_history' %}">{% icon "history" %}Historia wycen</a>
+        <a class="menu__item" href="{% url 'ui:planner_pickup_schedule' %}">{% icon "calendar" %}Harmonogram odbiorów</a>
+        <a class="menu__item" href="{% url 'ui:planner_transport_kpi' %}">{% icon "trending-up" %}KPI transportu</a>
+      </div>
+    </details>
+    <details class="menu" data-testid="shipments-import">
+      <summary class="btn btn-secondary">{% icon "file-up" %}Importuj dostawy</summary>
+      <div class="menu__panel" style="min-width:300px">
+    <form method="post" action="{% url 'ui:planner_shipments_import' %}" enctype="multipart/form-data"
+          style="display:flex;flex-direction:column;gap:10px;padding:8px"
+          title="Pliki z kolumnami: Dokument, Produkt, Ilość, JS, odbiorca, Wymagania klienta. Można wybrać wiele plików; zaznacz konsolidację, aby połączyć dokumenty tego samego odbiorcy w jedną przesyłkę.">
+      {% csrf_token %}
+      <label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--gray-700);cursor:pointer">
+        <input type="checkbox" name="consolidate" value="1"> Konsoliduj po odbiorcy
+      </label>
+      <div class="mode-dd" style="position:relative">
+        <button type="button" class="mode-dd-btn"
+                title="Typ(y) wysyłki — czym to puszczamy (można wybrać kilka)"
+                style="box-sizing:border-box;width:100%;font-size:13px;min-height:36px;text-align:left;border:1px solid var(--gray-300);border-radius:6px;padding:5px 28px 5px 10px;color:var(--gray-900);background:var(--surface);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          <span class="mode-dd-label">Wybierz typ…</span>
+          <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--gray-500)">{% icon "chevron-down" %}</span>
+        </button>
+        <div class="mode-dd-menu" style="display:none;position:absolute;z-index:50;top:calc(100% + 4px);left:0;min-width:248px;max-height:264px;overflow:auto;background:var(--surface);border:1px solid var(--gray-300);border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.15);padding:6px">
+          <div style="font-size:12px;font-weight:700;color:var(--gray-500);padding:4px 6px">Transport drogowy</div>
+          {% for v in vehicles %}{% if not v.key|slice:":4" == "cont" %}<label style="display:flex;align-items:center;gap:7px;padding:6px;font-size:13px;border-radius:5px;cursor:pointer"><input type="checkbox" name="modes" value="{{ v.key }}" {% if v.key == 'naczepa' %}checked{% endif %}> {{ v.name }}</label>{% endif %}{% endfor %}
+          <div style="font-size:12px;font-weight:700;color:var(--gray-500);padding:4px 6px;margin-top:2px">Kontenery morskie</div>
+          {% for v in vehicles %}{% if v.key|slice:":4" == "cont" %}<label style="display:flex;align-items:center;gap:7px;padding:6px;font-size:13px;border-radius:5px;cursor:pointer"><input type="checkbox" name="modes" value="{{ v.key }}"> {{ v.name }}</label>{% endif %}{% endfor %}
+        </div>
+      </div>
+      <select name="load_mode" title="Tryb załadunku — domyślnie na paletach" aria-label="Tryb załadunku">
+        <option value="pallets">Na paletach</option>
+        <option value="loose">Bez palet (luzem)</option>
+      </select>
+      <label class="btn btn-primary menu__upload" style="cursor:pointer">{% icon "file-up" %}Wybierz pliki dostaw (1+)…
+        <input type="file" name="file" accept=".csv,.xlsx,.xls" multiple onchange="gvUpload(this)"></label>
+    </form>
+      </div>
+    </details>
+    <a href="{% url 'ui:planner_shipment_new' %}" class="btn btn-primary" data-testid="shipment-new">{% icon "plus" %}Nowa przesyłka</a>
+  </div>
+</div>
+
+<form method="get" class="filterbar" role="search" data-testid="shipments-filter">
+  <label class="filterbar__search"><span class="sr-only">Szukaj przesyłki</span>{% icon "search" %}
+    <input type="text" name="q" value="{{ q|default:'' }}" placeholder="Szukaj: nazwa, odbiorca, miasto…"></label>
+  <select name="hu" aria-label="Filtr HU">
+    <option value="">Wszystkie HU</option>
+    <option value="recheck" {% if hu_filter == 'recheck' %}selected{% endif %}>Z błędami HU (do rekontroli)</option>
+  </select>
+  <button type="submit" class="btn btn-secondary">{% icon "filter" %}Filtruj</button>
+  {% if q or hu_filter %}<a href="{% url 'ui:planner_shipments' %}" class="btn btn-ghost">{% icon "x" %}Wyczyść</a>{% endif %}
+  <span class="toolbar__count" style="margin-left:auto;white-space:nowrap">
+    {% if eur_rate %}Kurs NBP: <strong>1 EUR = {{ eur_rate|floatformat:4 }} PLN</strong>{% else %}Kurs NBP niedostępny (offline){% endif %}
+  </span>
+</form>
+
+<div class="card card--accent" style="--pc:#7c3aed">
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Lista przesyłek">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nazwa</th>
+          <th>Cel</th>
+          <th>Wymagania klienta</th>
+          <th>Pojazd</th>
+          <th class="num">Palety</th>
+          <th class="num">Objętość</th>
+          <th class="num">Wycena PLN</th>
+          <th class="num">Wycena EUR</th>
+          <th>Status (spedycja · magazyn)</th>
+          <th>Data</th>
+          <th><span class="sr-only">Akcje</span></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in page_obj %}
+      <tr>
+        <td>
+          <a href="{% url 'ui:planner_shipment_detail' s.pk %}" class="font-semibold" style="color:var(--blue-mid)">{{ s.name }}</a>
+          {% if s.notes %}<div class="text-sm text-muted">{{ s.notes|truncatechars:50 }}</div>{% endif %}
+        </td>
+        <td>
+          {% if s.destination_country %}<span class="badge badge-gray" style="font-size:12px;font-weight:700">{{ s.destination_country }}</span>{% endif %}
+          {% if s.destination_city %}<span class="text-sm">{{ s.destination_city }}</span>{% endif %}
+          {% if not s.destination_country and not s.destination_city %}<span class="text-muted">—</span>{% endif %}
+        </td>
+        <td>
+          {% if s.client_requirements %}<span class="text-sm" style="color:var(--yellow-dark)" title="{{ s.client_requirements }}">{% icon "triangle-alert" %} {{ s.client_requirements|truncatechars:40 }}</span>
+          {% else %}<span class="text-muted">—</span>{% endif %}
+        </td>
+        <td>
+          {% if s.vehicle_label %}<span class="text-sm" style="font-weight:600;color:var(--gray-700);white-space:nowrap">{% icon "truck" %} {{ s.vehicle_label }}</span>
+          {% else %}<span class="text-muted">—</span>{% endif %}
+        </td>
+        <td class="num"><strong>{{ s.n_pallets }}</strong> pal.</td>
+        <td class="num"><strong>{{ s.volume_m3|floatformat:2 }}</strong> m³</td>
+        <td class="num">
+          {% if s.quote_pln is not None %}
+            <div style="font-weight:700;color:var(--violet-fg);line-height:1.1">{{ s.quote_pln|floatformat:0 }} PLN
+              <span class="text-sm" style="font-weight:600;color:var(--gray-500)">{% if s.quote_is_selected %}wybrana{% else %}najlepsza{% endif %}</span></div>
+            <div class="text-sm text-muted">{{ s.quote_count }} wycen{% if s.quote_avg_pln is not None %} · śr. {{ s.quote_avg_pln|floatformat:0 }} PLN{% endif %}</div>
+          {% elif s.quote_count %}
+            <div class="text-sm text-muted">{{ s.quote_count }} wysłanych · brak kwot</div>
+          {% else %}<span class="text-muted">—</span>{% endif %}
+        </td>
+        <td class="num">
+          {% if s.quote_eur is not None %}
+            <div style="font-weight:700;color:var(--info-fg);line-height:1.1">{{ s.quote_eur|floatformat:0 }} EUR</div>
+            {% if s.quote_avg_eur is not None %}<div class="text-sm text-muted">śr. {{ s.quote_avg_eur|floatformat:0 }} EUR</div>{% endif %}
+          {% else %}<span class="text-muted">—</span>{% endif %}
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          {% if s.status == 'cancelled' %}
+            <span class="badge" style="background:var(--red-light);color:var(--red)">Anulowane</span>
+          {% else %}
+            {% with wf=s.workflow_primary %}
+            <span class="badge" style="background:{{ wf.1 }}1a;color:color-mix(in srgb, {{ wf.1 }} 55%, var(--gray-900))">{% if wf.2 %}{% icon "triangle-alert" %}{% endif %}{{ wf.0 }}</span>
+            {% endwith %}
+            {% if s.wh_ready %}
+            <span class="badge" style="background:var(--green-light);color:var(--green)" title="Magazyn: towar przygotowany / HU sprawdzone">{% icon "warehouse" %}Gotowe do wysyłki</span>
+            {% else %}
+            <span class="badge" style="background:var(--yellow-light);color:var(--yellow-dark)" title="Magazyn: w trakcie przygotowania">{% icon "warehouse" %}W przygotowaniu</span>
+            {% endif %}
+            {% with pr=s.pallet_readiness %}{% if pr.1 %}<span class="badge badge-blue" title="Palety skontrolowane OK / wszystkie">{% icon "package" %}{{ pr.0 }}/{{ pr.1 }} gotowych</span>{% endif %}{% endwith %}
+          {% endif %}
+          </div>
+        </td>
+        <td class="text-sm text-muted num" style="white-space:nowrap">{{ s.created_at|date:"d.m.Y" }}</td>
+        <td>
+          <div class="actions">
+            <a href="{% url 'ui:planner_shipment_detail' s.pk %}" class="btn btn-secondary btn-sm">Wyniki</a>
+            {% url 'ui:planner_shipment_edit' s.pk as edit_url %}{% icon_button "pencil" label="Edytuj" href=edit_url size="sm" %}
+            <form method="post" action="{% url 'ui:planner_shipment_delete' s.pk %}">
+              {% csrf_token %}
+              {% icon_button "trash-2" label="Usuń" type="submit" variant="btn-ghost text-danger" size="sm" confirm="Usunąć przesyłkę „"|add:s.name|add:"”?" %}
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="11">
+          <div class="empty-state">
+            <div class="empty-state__icon">{% icon "truck" 24 %}</div>
+            <div class="empty-state__title">Brak przesyłek</div>
+            <div class="empty-state__desc"><a href="{% url 'ui:planner_shipment_new' %}">Utwórz pierwszą przesyłkę</a></div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+  <nav class="pagination" aria-label="Strony listy przesyłek">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if hu_filter %}&hu={{ hu_filter }}{% endif %}">‹</a>
+    {% else %}<span class="disabled">‹</span>{% endif %}
+    {% for num in page_obj.paginator.page_range %}
+    {% if page_obj.number == num %}<span class="current">{{ num }}</span>
+    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+    <a href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if hu_filter %}&hu={{ hu_filter }}{% endif %}">{{ num }}</a>
+    {% endif %}{% endfor %}
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if hu_filter %}&hu={{ hu_filter }}{% endif %}">›</a>
+    {% else %}<span class="disabled">›</span>{% endif %}
+  </nav>
+  {% endif %}
+</div>
+
+<script>
+/* Transport-type picker: a real collapsed dropdown of checkboxes (keeps multi-select;
+   the checkboxes still POST as name="modes", so the import backend is unchanged). */
+(function () {
+  function syncLabel(dd) {
+    var checked = dd.querySelectorAll('input[name="modes"]:checked');
+    var lbl = dd.querySelector('.mode-dd-label');
+    if (!checked.length) lbl.textContent = 'Wybierz typ…';
+    else if (checked.length === 1) lbl.textContent = checked[0].parentElement.textContent.trim();
+    else lbl.textContent = checked.length + ' typy wybrane';
+  }
+  document.querySelectorAll('.mode-dd').forEach(function (dd) {
+    var btn = dd.querySelector('.mode-dd-btn');
+    var menu = dd.querySelector('.mode-dd-menu');
+    syncLabel(dd);
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var open = menu.style.display !== 'none';
+      document.querySelectorAll('.mode-dd-menu').forEach(function (m) { m.style.display = 'none'; });
+      menu.style.display = open ? 'none' : 'block';
+    });
+    menu.addEventListener('click', function (e) { e.stopPropagation(); });
+    dd.addEventListener('change', function () { syncLabel(dd); });
+  });
+  document.addEventListener('click', function () {
+    document.querySelectorAll('.mode-dd-menu').forEach(function (m) { m.style.display = 'none'; });
+  });
+})();
+</script>
+{% endblock %}

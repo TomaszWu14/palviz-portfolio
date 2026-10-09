@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <title>CMR — {{ shipment.name }}</title>
+  <style>
+    @page { size: A4; margin: 14mm; }
+    body { font-family: Arial, Helvetica, sans-serif; color:#111; font-size:11px; margin:0; }
+    h1 { font-size:18px; margin:0 0 2px; }
+    .sub { color:#555; font-size:11px; margin-bottom:10px; }
+    table { width:100%; border-collapse:collapse; }
+    .grid td { border:1px solid #333; vertical-align:top; padding:6px 8px; }
+    .lbl { font-size:8.5px; font-weight:700; color:#444; text-transform:uppercase; letter-spacing:.3px; display:block; margin-bottom:2px; }
+    .val { font-size:12px; }
+    .goods { margin-top:8px; }
+    .goods th, .goods td { border:1px solid #333; padding:5px 7px; text-align:left; font-size:10.5px; }
+    .goods th { background:#f0f0f0; }
+    .num { text-align:right; }
+    .foot { margin-top:10px; display:flex; gap:10px; }
+    .foot div { flex:1; border:1px solid #333; padding:8px; min-height:54px; }
+    .req { margin-top:8px; border:1px solid #b45309; background:#fffbeb; padding:6px 8px; color:#92400e; font-size:10.5px; }
+  </style>
+</head>
+<body>
+  <h1>LIST PRZEWOZOWY CMR</h1>
+  <div class="sub">International consignment note · Dostawa: <strong>{{ shipment.name }}</strong></div>
+
+  <table class="grid">
+    <tr>
+      <td style="width:50%">
+        <span class="lbl">1. Nadawca / Sender</span>
+        <span class="val">{{ sender_name }}</span><br>{{ sender_addr }}
+      </td>
+      <td>
+        <span class="lbl">16. Przewoźnik / Carrier</span>
+        <span class="val">{{ carrier|default:"—" }}</span><br>
+        <span class="lbl" style="margin-top:6px">Środek transportu</span>{{ vehicle|default:"—" }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <span class="lbl">2. Odbiorca / Consignee</span>
+        <span class="val">{{ consignee_name|default:"—" }}</span><br>
+        {% if consignee %}{{ consignee.street }}{% if consignee.street %}<br>{% endif %}{{ consignee.postal }} {{ consignee.city }}{% if consignee.country %}, {{ consignee.country }}{% endif %}{% else %}{{ dest_addr }}{% endif %}
+      </td>
+      <td>
+        <span class="lbl">3. Miejsce dostawy / Place of delivery</span>{{ dest_addr|default:"—" }}<br>
+        <span class="lbl" style="margin-top:6px">4. Miejsce i data załadunku</span>{{ sender_addr }}{% if pickup_date %} · {{ pickup_date|date:"d.m.Y" }}{% endif %}
+      </td>
+    </tr>
+  </table>
+
+  <table class="goods">
+    <thead><tr>
+      <th>Indeks / SKU</th><th>Nazwa towaru</th>
+      <th class="num">Ilość</th><th>Jm</th><th class="num">Waga [kg]</th>
+    </tr></thead>
+    <tbody>
+      {% for l in lines %}
+      <tr>
+        <td>{{ l.product.code }}</td><td>{{ l.product.name }}</td>
+        <td class="num">{{ l.n_cartons }}</td><td>kar</td>
+        <td class="num">{{ l.weight_kg|floatformat:1 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot><tr>
+      <th colspan="2">RAZEM · {{ n_pallets }} palet · {{ total_vol_m3|floatformat:2 }} m³</th>
+      <th class="num"></th><th></th><th class="num">{{ total_weight_kg|floatformat:1 }}</th>
+    </tr></tfoot>
+  </table>
+
+  {% if requirements %}<div class="req">⚠ Wymagania klienta: {{ requirements }}</div>{% endif %}
+
+  <div class="foot">
+    <div><span class="lbl">22. Podpis nadawcy</span></div>
+    <div><span class="lbl">23. Podpis przewoźnika</span></div>
+    <div><span class="lbl">24. Przesyłkę otrzymano</span></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}ZARIA — raport zużycia — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<script src="/static/ui/vendor/htmx.min.js"></script>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_zaria_panel' %}">ZARIA</a><span class="breadcrumb__sep">›</span><span>Raport zużycia</span></nav>
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Raport zużycia ZARIA</div>
+    <div class="page-header__sub">{{ total_messages }} odpowiedzi · łącznie {{ total_spend }} PLN</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:admin_zaria_usage_export_csv' %}?{{ request.GET.urlencode }}" class="btn btn-secondary">{% icon "download" %} CSV (user/dział/model)</a>
+    <a href="{% url 'ui:admin_zaria_usage_export_xlsx' %}?{{ request.GET.urlencode }}" class="btn btn-secondary">{% icon "download" %} XLSX</a>
+    <a href="{% url 'ui:admin_zaria_audit' %}" class="btn btn-ghost">Audyt</a>
+  </div>
+</div>
+
+{% if global_cap %}
+<div class="card" style="padding:14px 16px;margin-bottom:16px;{% if org_pct >= 80 %}border-color:var(--yellow){% endif %}">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+    <div><b>Wydatek organizacji (ten miesiąc):</b> {{ org_month_spend }} / {{ global_cap }} PLN{% if org_pct is not None %} · {{ org_pct }}%{% endif %}</div>
+    {% if org_pct >= block_pct %}<span class="badge badge-red">Próg blokady ({{ block_pct }}%) osiągnięty — wysyłka zablokowana</span>
+    {% elif org_pct >= 80 %}<span class="badge badge-yellow">Zbliża się do globalnego budżetu (80%)</span>
+    {% else %}<span class="badge badge-green">W budżecie</span>{% endif %}
+  </div>
+</div>
+{% endif %}
+
+<div class="card" style="padding:16px;margin-bottom:16px">
+  <form hx-get="{% url 'ui:admin_zaria_usage' %}" hx-target="#za-usage-table" hx-swap="outerHTML"
+        hx-push-url="true" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+    {% for field in filter.form %}
+      <div>
+        <label for="{{ field.id_for_label }}" style="display:block;font-size:12px;font-weight:600;color:var(--gray-700)">{{ field.label }}</label>
+        {{ field }}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Filtruj</button>
+  </form>
+</div>
+
+{% include "ui/admin/_zaria_usage_table.html" %}
+{% endblock %}

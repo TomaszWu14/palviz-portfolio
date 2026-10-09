@@ -1,0 +1,10 @@
+# Fałszywe alarmy: hasło testowe fabryk, ID modelu Claude, atrapa klucza w teście wycieku
+tests/e2e/flow.spec.ts:generic-api-key:9
+web/testkit/factories.py:generic-api-key:29
+web/testkit/factories.py:generic-api-key:274
+web/transport/tests/test_maps_key_leak.py:generic-api-key:21
+web/ui/tests/test_integrations_contract.py:generic-api-key:159
+web/ui/tests/test_seed_zaria_models.py:generic-api-key:17
+web/ui/tests/test_seed_zaria_models.py:generic-api-key:20
+web/ui/tests/test_seed_zaria_models.py:generic-api-key:34
+web/ui/tests/test_seed_zaria_models.py:generic-api-key:37

@@ -1,0 +1,57 @@
+{% extends "ui/base.html" %}
+{% block title %}Zgłoś błąd — {{ instr.product.code }}{% endblock %}
+{% block nav_warehouse %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_search' %}">Magazyn</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:warehouse_instruction' instr.product.code %}">{{ instr.product.code }}</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Zgłoszenie błędu</span>
+</nav>
+
+<div style="max-width:560px;margin:0 auto">
+  <div class="page-header">
+    <div>
+      <div class="page-header__title">Zgłoś błąd w instrukcji</div>
+      <div class="page-header__sub">{{ instr.product.code }} — {{ instr.product.name }} (v{{ instr.version }})</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="flex-col gap-3" style="display:flex;flex-direction:column;gap:16px">
+          <div class="form-group">
+            <label for="{{ form.reporter_name.id_for_label }}">{{ form.reporter_name.label }}</label>
+            {{ form.reporter_name }}
+            {% if form.reporter_name.errors %}
+            <ul class="error-list">{% for e in form.reporter_name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.reporter_location.id_for_label }}">{{ form.reporter_location.label }}</label>
+            {{ form.reporter_location }}
+            {% if form.reporter_location.errors %}
+            <ul class="error-list">{% for e in form.reporter_location.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+            <ul class="error-list">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+            {% endif %}
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:20px">
+          <button type="submit" class="btn btn-primary">Wyślij zgłoszenie</button>
+          <a href="{% url 'ui:warehouse_instruction' instr.product.code %}" class="btn btn-secondary">Anuluj</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

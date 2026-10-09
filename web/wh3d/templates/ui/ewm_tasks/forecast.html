@@ -1,0 +1,77 @@
+{% extends "ui/base.html" %}
+{% block title %}Prognoza wzrostu — {{ batch.name }} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .fc-form { display: flex; gap: 12px; align-items: flex-end; }
+  .fc-form .form-group { margin: 0; }
+  .fc-table td.num, .fc-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .fc-big { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .fc-note { font-size: 13px; color: var(--gray-500); line-height: 1.55; }
+  .fc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:ewm_tasks_list' %}">Zadania magazynowe EWM</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:ewm_tasks_profile' batch.pk %}">Dzień projektowy</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Prognoza wzrostu</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Prognoza wzrostu wolumenów</div>
+    <div class="page-header__sub">{{ batch.name }} · trend z tygodniowych sum ruchów → mnożnik do symulacji nowej hali</div>
+  </div>
+</div>
+
+<div class="card"><div class="card-body">
+  <form method="get" class="fc-form">
+    <div class="form-group">
+      <label for="fc-years">Horyzont [lata]</label>
+      <input id="fc-years" type="number" name="years" value="{{ years }}" min="1" max="20">
+    </div>
+    <button type="submit" class="btn btn-primary">Przelicz</button>
+  </form>
+</div></div>
+
+{% if not rows %}
+<div class="alert alert-warning" style="margin-top:16px">Za mało historii — potrzeba co najmniej kilku pełnych tygodni potwierdzonych zadań.</div>
+{% else %}
+{% if total and not total.reliable %}
+<div class="alert alert-warning" style="margin-top:16px">Tylko {{ total.weeks }} pełnych tygodni — trend z tak krótkiej historii jest mało wiarygodny (zalecane ≥ {{ min_weeks }}, a do sezonowości rocznej ≥ 104). Traktuj mnożnik jako orientacyjny.</div>
+{% endif %}
+{% if total %}
+<div class="card" style="margin-top:16px"><div class="card-body">
+  <div class="section-title">Mnożnik — horyzont {{ years }} l. (wszystkie ruchy)</div>
+  <div style="display:flex;gap:32px;flex-wrap:wrap">
+    <div><div class="fc-big">×{{ total.mult_p50 }}</div><div class="fc-note">P50 (bazowy) · {{ total.growth_p50_pct }} % rocznie</div></div>
+    <div><div class="fc-big">×{{ total.mult_p90 }}</div><div class="fc-note">P90 (ostrożny, do wymiarowania) · {{ total.growth_p90_pct }} % rocznie</div></div>
+    <div><div class="fc-big">{% if total.mape_pct is None %}—{% else %}{{ total.mape_pct }} %{% endif %}</div><div class="fc-note">Błąd testu wstecznego (MAPE, ostatnie {{ backtest_weeks }} tyg.)</div></div>
+  </div>
+  <div class="fc-actions">
+    <a class="btn btn-primary" href="{% url 'ui:ewm_tasks_simulate' batch.pk %}{{ links.p90 }}">Symuluj nową halę z ×{{ total.mult_p90 }} (P90) →</a>
+    <a class="btn btn-secondary" href="{% url 'ui:ewm_tasks_simulate' batch.pk %}{{ links.p50 }}">Symuluj z ×{{ total.mult_p50 }} (P50)</a>
+    <a class="btn btn-secondary" href="{% url 'ui:ewm_tasks_compare' batch.pk %}{{ links.p90 }}">Porównaj warianty z P90 →</a>
+  </div>
+</div></div>
+{% endif %}
+
+<div class="card" style="margin-top:16px"><div class="card-body">
+  <div class="section-title">Według strumienia</div>
+  <div class="table-wrap"><table class="table fc-table">
+    <thead><tr><th>Strumień</th><th class="num">Tygodni</th><th class="num">Wzrost P50 / rok</th><th class="num">Wzrost P90 / rok</th>
+      <th class="num">Mnożnik P50</th><th class="num">Mnożnik P90</th><th class="num">MAPE testu</th></tr></thead>
+    <tbody>{% for r in rows %}<tr><td>{{ r.label }}</td><td class="num">{{ r.weeks }}</td>
+      <td class="num">{{ r.growth_p50_pct }} %</td><td class="num">{{ r.growth_p90_pct }} %</td>
+      <td class="num">×{{ r.mult_p50 }}</td><td class="num">×{{ r.mult_p90 }}</td>
+      <td class="num">{% if r.mape_pct is None %}—{% else %}{{ r.mape_pct }} %{% endif %}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  <p class="fc-note">Trend wykładniczy (regresja na logarytmie tygodniowych sum, tylko pełne tygodnie i dni robocze). P90 = trend + 1,28 × błąd nachylenia. Bez sezonowości rocznej — szczyt sezonu niesie dzień projektowy P95. Symulacja mnoży całą pracę dnia tym samym mnożnikiem.</p>
+</div></div>
+{% endif %}
+{% endblock %}

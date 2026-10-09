@@ -1,0 +1,69 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}{{ app_name }} — Trasa kompletacji{% endblock %}
+{% block nav_warehouse %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+.pr-grid { display:grid; grid-template-columns: 320px 1fr; gap:20px; align-items:start; }
+.pr-table { width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--gray-200); border-radius:10px; overflow:hidden; }
+.pr-table th { background:var(--gray-50); font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--gray-400); text-align:left; padding:10px 14px; border-bottom:1px solid var(--gray-200); }
+.pr-table td { padding:10px 14px; border-bottom:1px solid var(--gray-100); font-size:13px; }
+.pr-table tr:last-child td { border-bottom:none; }
+.pr-step { display:inline-flex; width:26px; height:26px; align-items:center; justify-content:center; background:var(--emerald); color:#fff; border-radius:50%; font-weight:700; font-size:12px; }
+.pr-loc { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--gray-900); }
+textarea.pr-in { width:100%; min-height:240px; border:2px solid var(--gray-200); border-radius:10px; padding:12px; font-family:'JetBrains Mono',monospace; font-size:13px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{% icon "compass" %} Trasa kompletacji</div>
+    <div class="page-header__sub">Wklej listę lokalizacji — ułożymy je w kolejności wężowej (snake) po alejach, aby skrócić drogę</div>
+  </div>
+</div>
+
+<div class="pr-grid">
+  <form method="post">
+    {% csrf_token %}
+    <label class="text-sm text-muted" style="display:block;margin-bottom:6px">Lokalizacje (po jednej w wierszu)</label>
+    <textarea aria-label="Lokalizacje (po jednej w wierszu)" class="pr-in" name="locations" placeholder="B0-01-100A&#10;B0-03-120B&#10;B0-02-110A">{{ raw }}</textarea>
+    <button type="submit" class="btn btn-primary" style="margin-top:10px;width:100%">Ułóż trasę →</button>
+  </form>
+
+  <div>
+    {% if route %}
+    <div class="card" style="margin-bottom:12px;padding:12px 16px;display:flex;gap:24px">
+      <div><span style="font-size:20px;font-weight:800;color:var(--emerald)">{{ route|length }}</span> <span class="text-sm text-muted">pozycji w trasie</span></div>
+      {% if unknown %}<div><span style="font-size:20px;font-weight:800;color:var(--red)">{{ unknown|length }}</span> <span class="text-sm text-muted">poza migawką</span></div>{% endif %}
+    </div>
+    <table class="pr-table">
+      <thead><tr><th>#</th><th>Lokalizacja</th><th>Aleja</th><th>Stos</th><th>Poziom</th></tr></thead>
+      <tbody>
+        {% for s in route %}
+        <tr>
+          <td><span class="pr-step">{{ s.n }}</span></td>
+          <td class="pr-loc">{{ s.code }}</td>
+          <td>{{ s.aisle }}</td>
+          <td>{{ s.stack }}</td>
+          <td>{{ s.level }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if unknown %}
+    <div class="card" style="margin-top:12px;padding:12px 16px;border-left:4px solid var(--red-solid)">
+      <div style="font-weight:700;margin-bottom:6px">Lokalizacje spoza migawki ({{ unknown|length }})</div>
+      <div class="text-sm text-muted">Nie udało się ich umiejscowić — dołożone na końcu trasy: {{ unknown|join:", " }}</div>
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="card"><div class="empty-state" style="padding:40px">
+      <div class="empty-state__title">Brak trasy</div>
+      <div class="empty-state__desc">Wklej listę lokalizacji i kliknij „Ułóż trasę".</div>
+    </div></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

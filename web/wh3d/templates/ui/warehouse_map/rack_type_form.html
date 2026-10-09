@@ -1,0 +1,232 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% block title %}{% if obj %}Edytuj typ{% else %}Nowy typ{% endif %} — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+.rt-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; max-width:860px; }
+/* Telefon: dwie kolumny ściskały pole wysokości poziomu do ~22 px. */
+@media (max-width: 720px) { .rt-grid { grid-template-columns:1fr; } }
+.rt-section { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:10px; padding:20px; }
+.rt-section__title { font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:14px; }
+.field-block { display:flex;flex-direction:column;gap:4px;margin-bottom:10px; }
+.field-block label { font-size:11px;font-weight:700;color:var(--gray-700);text-transform:uppercase;letter-spacing:.3px; }
+.field-block input,.field-block select { padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px; }
+.level-row { display:grid;grid-template-columns:36px 1fr 34px 90px 34px;gap:8px;align-items:center;margin-bottom:8px; }
+.lv-badge { width:28px;height:28px;border-radius:6px;background:#f59e0b;color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_map' %}">Mapa magazynu</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:warehouse_rack_type_list' %}">Typy regałów</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if obj %}{{ obj.code }}{% else %}Nowy typ{% endif %}</span>
+</nav>
+
+<div class="page-header" style="margin-bottom:20px">
+  <div>
+    <div class="page-header__title">{% if obj %}Edytuj typ {{ obj.code }}{% else %}Nowy typ lokalizacji{% endif %}</div>
+    <div class="page-header__sub">Szablon wymiarów fizycznych — przypisywany automatycznie przez kod wh_type</div>
+  </div>
+</div>
+
+<form method="post" action="{% if obj %}{% url 'ui:warehouse_rack_type_edit' obj.pk %}{% else %}{% url 'ui:warehouse_rack_type_new' %}{% endif %}">
+  {% csrf_token %}
+  <div class="rt-grid">
+
+    <!-- Left: identity + dimensions -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <div class="rt-section">
+        <div class="rt-section__title">Identyfikacja</div>
+        <div class="field-block">
+          <label>Kod typu <span style="color:var(--red)">*</span></label>
+          <input aria-label="Kod typu" type="text" name="code" value="{{ obj.code|default:'' }}" maxlength="20"
+                 placeholder="np. K01" style="text-transform:uppercase;font-family:monospace;font-weight:700;font-size:15px" required>
+          <span style="font-size:11px;color:var(--gray-400)">Ten kod wpisuje się w pole Typ magazynu lokalizacji</span>
+        </div>
+        <div class="field-block">
+          <label>Nazwa <span style="color:var(--red)">*</span></label>
+          <input aria-label="Nazwa" type="text" name="name" value="{{ obj.name|default:'' }}" placeholder="np. Standard europaleta" required>
+        </div>
+        <div class="field-block">
+          <label>Rodzaj</label>
+          <select aria-label="Rodzaj" name="kind">
+            <option value="rack" {% if not obj or obj.kind == 'rack' %}selected{% endif %}>Regał — fizyczna konstrukcja z wymiarami do 3D</option>
+            <option value="zone" {% if obj.kind == 'zone' %}selected{% endif %}>Strefa — obszar podłogowy/techniczny (bez geometrii)</option>
+          </select>
+        </div>
+        <div class="field-block">
+          <label>Opis (znaczenie kodu)</label>
+          <input aria-label="Opis (znaczenie kodu)" type="text" name="description" value="{{ obj.description|default:'' }}" maxlength="200"
+                 placeholder="np. Regał wydawczy — picking / Strefa wysyłki GLS">
+        </div>
+        <div class="field-block">
+          <label>Kolor w widoku 3D</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input aria-label="Kolor w widoku 3D" type="color" name="color_hex" value="{{ obj.color_hex|default:'#f59e0b' }}" id="color-pick" style="width:48px;height:36px;padding:2px;border:1px solid #d1d5db;border-radius:6px;cursor:pointer">
+            <input aria-label="Kolor w widoku 3D — kod HEX" type="text" id="color-text" value="{{ obj.color_hex|default:'#f59e0b' }}" maxlength="7" style="width:90px;font-family:monospace">
+            <div id="color-preview" style="width:36px;height:36px;border-radius:6px;border:1px solid var(--gray-200);background:{{ obj.color_hex|default:'#f59e0b' }}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rt-section">
+        <div class="rt-section__title">Wymiary miejsca paletowego</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field-block">
+            <label>Szer. fizyczna [mm]</label>
+            <input aria-label="Szer. fizyczna [mm]" type="number" name="width_mm" value="{{ obj.width_mm|default:800 }}" min="100" max="5000" step="10">
+          </div>
+          <div class="field-block">
+            <label>Szer. z manipulacją [mm]</label>
+            <input aria-label="Szer. z manipulacją [mm]" type="number" name="manip_mm" value="{{ obj.manip_mm|default:900 }}" min="100" max="5000" step="10"
+                   id="f-manip">
+          </div>
+          <div class="field-block">
+            <label>Głębokość [mm]</label>
+            <input aria-label="Głębokość [mm]" type="number" name="depth_mm" value="{{ obj.depth_mm|default:1100 }}" min="100" max="5000" step="10">
+          </div>
+          <div class="field-block">
+            <label>Max waga [kg]</label>
+            <input aria-label="Max waga [kg]" type="number" name="max_weight_kg" value="{{ obj.max_weight_kg|default:1200 }}" min="0" step="50">
+          </div>
+          <div class="field-block">
+            <label>Max objętość [m³]</label>
+            <input aria-label="Max objętość [m³]" type="number" name="max_volume_m3" value="{{ obj.max_volume_m3|default:2.5 }}" min="0" step="0.1">
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--gray-500);margin-top:6px;padding:8px;background:var(--blue-light);border-radius:6px;border:1px solid #bfdbfe">
+          Szerokość z manipulacją = skok w 3D między kolumnami A→B→C.<br>
+          Np. 800mm fiz. + 100mm luz = <b id="manip-label">900mm</b> na kolumnę → 3 kolumny w regale 2700mm.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right: level heights + level cols -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="rt-section">
+      <div class="rt-section__title" style="display:flex;align-items:center;gap:8px">
+        Wysokości poziomów
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+          <label style="font-size:11px;font-weight:600;color:var(--gray-700)">Poziomów:</label>
+          <select aria-label="Poziomów" id="num-levels" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+            {% for n in "12345678" %}<option value="{{ n }}"{% if obj and obj.level_heights|length == forloop.counter %} selected{% endif %}>{{ n }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--gray-400);margin-bottom:12px">
+        Prześwit (mm) i nośność (kg) na każdym poziomie — jak na rysunku typu (np. 2400 mm / 1000 kg).
+        Nośność jest opcjonalna; pojawia się jako etykieta kg w widoku 3D.
+      </div>
+      <div id="levels-container"></div>
+      <div id="rack-preview" style="margin-top:14px;border:2px solid var(--gray-700);border-radius:8px;background:#1e293b;padding:8px 16px;min-height:140px;display:flex;flex-direction:column-reverse;gap:2px"></div>
+    </div>
+
+    <!-- Level columns per level -->
+    <div class="rt-section">
+      <div class="rt-section__title">Kolumny per poziom</div>
+      <div style="font-size:11px;color:var(--gray-400);margin-bottom:10px">
+        Opcjonalnie: ile slotów (kolumn) mieści się na każdym poziomie regału.<br>
+        Np. <code>{"1":1,"2":2,"3":1}</code> = parter 1 slot, poziom 2 podzielony na 2, poziom 3 jeden slot.<br>
+        Nowe kody: poziom 2 → X (kol0), J (kol1), K (kol2); poziom 3 → Y/L/M; poziom 4 → Z/N/O.<br>
+        Puste = wszędzie 1 kolumna (zachowanie dotychczasowe).
+      </div>
+      <div class="field-block">
+        <label>JSON kolumn per poziom</label>
+        <textarea aria-label="JSON kolumn per poziom" name="level_cols_json" id="level-cols-json"
+                  rows="3" style="font-family:monospace;font-size:12px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;resize:vertical">{{ level_cols_json }}</textarea>
+        <span style="font-size:11px;color:var(--gray-400)">Przykład: {"1":1,"2":2,"3":1,"4":1}</span>
+      </div>
+    </div>
+
+    </div><!-- /right column wrapper -->
+
+  </div>
+
+  <div style="margin-top:24px;max-width:860px;display:flex;gap:12px">
+    <button type="submit" class="btn btn-primary">
+      {% if obj %}Zapisz zmiany{% else %}Utwórz typ{% endif %}
+    </button>
+    <a href="{% url 'ui:warehouse_rack_type_list' %}" class="btn btn-ghost">Anuluj</a>
+  </div>
+</form>
+
+<script>
+// Existing level heights + weights from server
+const EXISTING = {{ level_heights_json|safe }};
+const EXISTING_W = {{ level_weights_json|safe }};
+
+function rebuildLevels() {
+  const n = parseInt(document.getElementById('num-levels').value) || 4;
+  const c = document.getElementById('levels-container');
+  c.innerHTML = '';
+  for (let i = 1; i <= n; i++) {
+    const existing = EXISTING[i] || EXISTING[String(i)];
+    const defaults = [2494, 2500, 2500, 2000, 2000, 2000, 2000, 2000];
+    const val = existing || defaults[i-1] || 2500;
+    const w = EXISTING_W[i] || EXISTING_W[String(i)] || '';
+    const row = document.createElement('div');
+    row.className = 'level-row';
+    row.innerHTML = `
+      <div><div class="lv-badge">${i}</div></div>
+      <div><input type="number" aria-label="Poziom ${i} — wysokość [mm]" name="level_${i}_height" value="${val}" min="100" max="9999" step="1"
+            class="lv-h" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"></div>
+      <div style="font-size:11px;color:var(--gray-400)">mm</div>
+      <div><input type="number" aria-label="Poziom ${i} — nośność [kg]" name="level_${i}_weight" value="${w}" min="0" max="99999" step="10" placeholder="—"
+            class="lv-w" style="width:100%;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"></div>
+      <div style="font-size:11px;color:var(--gray-400)">kg</div>
+    `;
+    c.appendChild(row);
+  }
+  rebuildPreview();
+}
+
+function rebuildPreview() {
+  const hInputs = Array.from(document.querySelectorAll('.lv-h'));
+  const wInputs = Array.from(document.querySelectorAll('.lv-w'));
+  const heights = hInputs.map(i => parseInt(i.value) || 2500);
+  const weights = wInputs.map(i => parseInt(i.value) || 0);
+  const total = heights.reduce((a,b) => a+b, 0);
+  const prev = document.getElementById('rack-preview');
+  prev.innerHTML = '<div style="height:6px;background:var(--gray-500);border-radius:3px;margin-top:4px"></div>';
+  const MAXH = 180;
+  heights.forEach((h, i) => {
+    const pxH = Math.max(24, Math.round(h / total * MAXH));
+    const beam = document.createElement('div');
+    // Belka pomarańczowa jak na rysunku technicznym.
+    beam.style.cssText = 'height:5px;background:#e07020;border-radius:2px;margin:1px 0';
+    const lv = document.createElement('div');
+    lv.style.cssText = `min-height:${pxH}px;background:#f59e0b15;border:1px solid #f59e0b33;border-radius:3px;display:flex;align-items:center;justify-content:center;color:#f59e0b;font-size:11px;font-weight:700;transition:min-height .15s`;
+    const kg = weights[i] ? ` · ${weights[i].toLocaleString('pl')} kg` : '';
+    lv.textContent = `Poz. ${i+1} — ${h.toLocaleString('pl')} mm${kg}`;
+    prev.insertBefore(lv, prev.firstChild);
+    if (i < heights.length - 1) prev.insertBefore(beam, prev.firstChild);
+  });
+}
+
+// Color sync
+const pick = document.getElementById('color-pick');
+const txt  = document.getElementById('color-text');
+const prv  = document.getElementById('color-preview');
+pick.addEventListener('input', () => { txt.value = pick.value; prv.style.background = pick.value; });
+txt.addEventListener('input', () => { if (/^#[0-9a-f]{6}$/i.test(txt.value)) { pick.value = txt.value; prv.style.background = txt.value; } });
+
+// Manip label
+document.getElementById('f-manip').addEventListener('input', e => {
+  document.getElementById('manip-label').textContent = (parseInt(e.target.value) || 0).toLocaleString('pl') + 'mm';
+});
+
+document.getElementById('num-levels').addEventListener('change', rebuildLevels);
+document.getElementById('levels-container').addEventListener('input', e => {
+  if (e.target.classList.contains('lv-h') || e.target.classList.contains('lv-w')) rebuildPreview();
+});
+
+rebuildLevels();
+</script>
+{% endblock %}

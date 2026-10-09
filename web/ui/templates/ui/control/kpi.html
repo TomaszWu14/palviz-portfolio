@@ -1,0 +1,84 @@
+{% extends "ui/base.html" %}
+{% block title %}KPI kontrolerów — Kontrola HU — {{ app_name }}{% endblock %}
+{% block nav_control %}topnav__link--active{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:hu_control_hub' %}">Kontrola HU</a> <span>›</span> <span>KPI kontrolerów</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#7c3aed;--pcbg:#f5f3ff">
+    <div class="panel-head__chip">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+    </div>
+    <div>
+      <div class="page-header__title">KPI kontrolerów</div>
+      <div class="page-header__sub">Wyniki kontroli — panel kierownika. Od {{ start|date:"d.m.Y H:i" }}.</div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <a href="?period={{ period }}&amp;by={{ by }}&amp;export=csv" class="btn btn-secondary">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+      Eksport CSV
+    </a>
+    <a href="{% url 'ui:hu_control_leader' %}" class="btn btn-ghost">Panel lidera</a>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:16px;padding:12px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+  <span class="text-sm text-muted">Okres:</span>
+  <a href="?period=today&amp;by={{ by }}" class="btn btn-sm {% if period == 'today' %}btn-primary{% else %}btn-ghost{% endif %}">Dziś</a>
+  <a href="?period=shift&amp;by={{ by }}" class="btn btn-sm {% if period == 'shift' %}btn-primary{% else %}btn-ghost{% endif %}">Zmiana</a>
+  <a href="?period=month&amp;by={{ by }}" class="btn btn-sm {% if period == 'month' %}btn-primary{% else %}btn-ghost{% endif %}">Miesiąc</a>
+  <span class="text-sm text-muted" style="margin-left:14px">Przekrój:</span>
+  <a href="?period={{ period }}&amp;by=controller" class="btn btn-sm {% if by == 'controller' %}btn-primary{% else %}btn-ghost{% endif %}">Per kontroler</a>
+  <a href="?period={{ period }}&amp;by=zone" class="btn btn-sm {% if by == 'zone' %}btn-primary{% else %}btn-ghost{% endif %}">Per strefa</a>
+  <div style="flex:1"></div>
+  <span class="text-sm text-muted">
+    Czas netto = czas pracy (przerwy / długie odstępy wykluczone).{% if target_pph %} Cel: <strong>{{ target_pph }} poz./h</strong>.{% endif %}
+  </span>
+</div>
+
+{% if rows %}
+<div class="kpi-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px">
+  <div class="card" style="padding:14px 16px"><div style="font-size:26px;font-weight:800;color:#7c3aed">{{ totals.positions }}</div><div class="text-sm text-muted">pozycji</div></div>
+  <div class="card" style="padding:14px 16px"><div style="font-size:26px;font-weight:800">{{ totals.hus }}</div><div class="text-sm text-muted">HU</div></div>
+  <div class="card" style="padding:14px 16px"><div style="font-size:26px;font-weight:800;color:var(--red)">{{ totals.errors }}</div><div class="text-sm text-muted">wykrytych błędów</div></div>
+  <div class="card" style="padding:14px 16px"><div style="font-size:26px;font-weight:800">{{ totals.controllers }}</div><div class="text-sm text-muted">kontrolerów</div></div>
+</div>
+{% if totals.units %}
+<div class="card" style="padding:10px 16px;margin-bottom:16px"><strong>Σ skontrolowano:</strong> {{ totals.units }}</div>
+{% endif %}
+{% endif %}
+
+<div class="card">
+  <div class="card-header"><span class="card-header__title">Wydajność wg kontrolera</span></div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr>
+        <th>#</th><th>{% if by == 'zone' %}Strefa (typ magazynu){% else %}Kontroler{% endif %}</th><th>Poz./h</th><th>Pozycje (unik.)</th><th>Próby</th>
+        <th>HU</th><th>Czas netto</th><th>Śr./poz.</th><th>Wykryte błędy</th><th>Jednostki</th>
+      </tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr{% if r.below_target %} style="background:var(--red-light)"{% endif %}>
+          <td class="text-muted">{{ forloop.counter }}</td>
+          <td><strong>{{ r.controller }}</strong></td>
+          <td><strong style="color:{% if r.below_target %}var(--red){% else %}var(--green){% endif %}">{% if r.pos_per_h is not None %}{{ r.pos_per_h }}{% else %}—{% endif %}</strong></td>
+          <td>{{ r.distinct_positions }}</td>
+          <td class="text-muted">{{ r.positions }}{% if r.offline %} <span class="badge badge-gray" title="Wpisy zsynchronizowane z trybu offline skanera (te same bramki co online)">{{ r.offline }} offline</span>{% endif %}</td>
+          <td>{{ r.hus }}</td>
+          <td>{{ r.net_min }} min</td>
+          <td>{% if r.avg_sec is not None %}{{ r.avg_sec }} s{% else %}—{% endif %}</td>
+          <td><strong style="color:var(--red)">{{ r.errors }}</strong> <span class="text-sm text-muted">({{ r.error_rate }}%)</span></td>
+          <td class="text-sm">{{ r.units|default:"—" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="10"><div class="empty-state" style="padding:24px"><div class="empty-state__desc">Brak danych w tym okresie.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if target_pph %}
+  <div class="card-footer text-sm text-muted">Wiersze na czerwono: poniżej celu {{ target_pph }} poz./h. „Wykryte błędy" to sygnał jakości pickingu (pożądany), nie błędy kontrolera.</div>
+  {% endif %}
+</div>
+{% endblock %}

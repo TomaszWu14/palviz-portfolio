@@ -1,0 +1,102 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Raport błędów HU — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><span>Raport błędów kontroli HU</span></nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Raport błędów kontroli HU</div>
+    <div class="page-header__sub">{{ total }} błędnych pozycji</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="?{% if f_ship %}shipment={{ f_ship }}&{% endif %}{% if f_client %}client={{ f_client }}&{% endif %}{% if f_picker %}picker={{ f_picker }}&{% endif %}{% if f_from %}from={{ f_from }}&{% endif %}{% if f_to %}to={{ f_to }}&{% endif %}export=csv" class="btn btn-secondary">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Eksport CSV
+    </a>
+  </div>
+</div>
+
+<form method="get" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:end">
+  <div><label style="font-size:11px;color:var(--gray-500);font-weight:700">Dostawa</label><br><input aria-label="Dostawa" type="text" name="shipment" value="{{ f_ship }}" placeholder="nazwa…" style="height:34px;border:1px solid var(--gray-300);border-radius:6px;padding:0 8px"></div>
+  <div><label style="font-size:11px;color:var(--gray-500);font-weight:700">Klient</label><br><input aria-label="Klient" type="text" name="client" value="{{ f_client }}" placeholder="nazwa / nr klienta…" style="height:34px;border:1px solid var(--gray-300);border-radius:6px;padding:0 8px"></div>
+  <div><label style="font-size:11px;color:var(--gray-500);font-weight:700">Picker</label><br><input aria-label="Picker" type="text" name="picker" value="{{ f_picker }}" placeholder="autor…" style="height:34px;border:1px solid var(--gray-300);border-radius:6px;padding:0 8px"></div>
+  <div><label style="font-size:11px;color:var(--gray-500);font-weight:700">Od</label><br><input aria-label="Od" type="date" name="from" value="{{ f_from }}" style="height:34px;border:1px solid var(--gray-300);border-radius:6px;padding:0 8px"></div>
+  <div><label style="font-size:11px;color:var(--gray-500);font-weight:700">Do</label><br><input aria-label="Do" type="date" name="to" value="{{ f_to }}" style="height:34px;border:1px solid var(--gray-300);border-radius:6px;padding:0 8px"></div>
+  <button type="submit" class="btn btn-secondary">Filtruj</button>
+  {% if f_ship or f_client or f_picker or f_from or f_to %}<a href="{% url 'ui:hu_error_report' %}" class="btn btn-ghost">{% icon "x" %} Wyczyść</a>{% endif %}
+</form>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+  <div class="card">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:600;font-size:14px">Wg typu błędu</div>
+    <div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px">
+      {% for label, c in flag_counts %}
+      <span class="badge" style="background:var(--red-light);color:var(--red)">{{ label }}: {{ c }}</span>
+      {% empty %}<span class="text-muted">Brak.</span>{% endfor %}
+    </div>
+  </div>
+  <div class="card">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:600;font-size:14px">Wg pickera (autor dostawy)</div>
+    <div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px">
+      {% for picker, c in by_picker %}
+      <span class="badge badge-gray">{{ picker }}: {{ c }}</span>
+      {% empty %}<span class="text-muted">Brak.</span>{% endfor %}
+    </div>
+  </div>
+  <div class="card">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:600;font-size:14px">Wg indeksu (top 15 najczęściej błędnych)</div>
+    <div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px">
+      {% for ref, c, name in by_ref %}
+      <span class="badge" style="background:var(--red-light);color:var(--red)" title="{{ name }}">{{ ref }}: {{ c }}</span>
+      {% empty %}<span class="text-muted">Brak.</span>{% endfor %}
+    </div>
+  </div>
+  <div class="card">
+    <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:600;font-size:14px">Trend dzienny (błędy / dzień)</div>
+    <div style="padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px">
+      {% for day, c in by_day %}
+      <span class="badge badge-gray">{{ day }}: {{ c }}</span>
+      {% empty %}<span class="text-muted">Brak.</span>{% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Data kontroli</th><th>HU</th><th>Dostawa</th><th>Klient</th><th>REF</th><th>Zliczono / oczekiwano</th><th>Błędy</th><th>Picker / Kontroler</th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+      <tr>
+        <td class="text-sm text-muted">{{ r.it.controlled_at|date:"d.m.Y H:i"|default:"—" }}</td>
+        <td><strong>{{ r.it.hu.ref }}</strong></td>
+        <td class="text-sm">{{ r.it.hu.shipment.name }}</td>
+        <td class="text-sm">{% if r.client_no or r.client_name %}{% if r.client_no %}<span class="text-muted">{{ r.client_no }}</span> {% endif %}{{ r.client_name }}{% else %}—{% endif %}</td>
+        <td class="text-sm"><strong>{{ r.it.ref_code }}</strong></td>
+        <td class="text-sm">{{ r.it.counted_qty|default:"—" }} {{ r.it.counted_unit }} / {{ r.it.base_qty|floatformat:"-2" }} {{ r.it.base_unit }}</td>
+        <td class="text-sm" style="color:var(--red)">{% for f in r.flags %}{{ f }}{% if not forloop.last %}, {% endif %}{% empty %}rozbieżność ilości{% endfor %}</td>
+        <td class="text-sm text-muted">{{ r.it.hu.shipment.author|default:"—" }} / {{ r.it.hu.controlled_by.username|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8"><div class="empty-state"><div class="empty-state__title">Brak błędów {% icon "party-popper" %}</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.paginator.num_pages > 1 %}
+  {% spaceless %}
+  <div style="display:flex;justify-content:center;align-items:center;gap:10px;padding:12px">
+    {% if page_obj.has_previous %}
+    <a class="btn btn-ghost btn-sm" href="?{% if f_ship %}shipment={{ f_ship|urlencode }}&{% endif %}{% if f_picker %}picker={{ f_picker|urlencode }}&{% endif %}{% if f_from %}from={{ f_from|date:'Y-m-d' }}&{% endif %}{% if f_to %}to={{ f_to|date:'Y-m-d' }}&{% endif %}page={{ page_obj.previous_page_number }}">‹ Poprzednie</a>
+    {% endif %}
+    <span class="text-sm text-muted">Strona {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} pozycji</span>
+    {% if page_obj.has_next %}
+    <a class="btn btn-ghost btn-sm" href="?{% if f_ship %}shipment={{ f_ship|urlencode }}&{% endif %}{% if f_picker %}picker={{ f_picker|urlencode }}&{% endif %}{% if f_from %}from={{ f_from|date:'Y-m-d' }}&{% endif %}{% if f_to %}to={{ f_to|date:'Y-m-d' }}&{% endif %}page={{ page_obj.next_page_number }}">Następne ›</a>
+    {% endif %}
+  </div>
+  {% endspaceless %}
+  {% endif %}
+</div>
+{% endblock %}

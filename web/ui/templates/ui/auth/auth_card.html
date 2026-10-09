@@ -1,0 +1,60 @@
+{% load static %}<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ app_name }}{% endblock %}</title>
+  {% include "ui/_pwa_head.html" %}
+  <link rel="stylesheet" href="{% static 'ui/css/fonts.css' %}">
+  <style>
+    /* Ta sama samodzielna paleta co registration/login.html (jasna karta, ciemna scena). */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --accent: #1a56db; --accent-dark: #1342a0; --ink: #111827; --muted: #6b7280;
+      --line: #e5e7eb; --field-bg: #f9fafb; --red: #dc2626; --red-light: #fee2e2;
+      --red-line: #fca5a5; --radius: 12px;
+    }
+    body {
+      font-family: 'Inter', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 480px at 72% -10%, rgba(26,86,219,.35), transparent 60%),
+        radial-gradient(700px 420px at 8% 110%, rgba(124,58,237,.18), transparent 55%),
+        linear-gradient(165deg, #0b1220 0%, #101b33 60%, #0f172a 100%);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .login-card { width: 100%; max-width: 400px; background: #fff; border-top: 3px solid var(--accent);
+      border-radius: var(--radius); box-shadow: 0 24px 64px rgba(2,6,23,.55), 0 0 0 1px rgba(255,255,255,.06); }
+    .login-head { padding: 30px 32px 18px; text-align: center; }
+    .login-brand { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+    .login-sub { margin-top: 5px; font-size: 13px; color: var(--muted); }
+    .login-body { padding: 4px 32px 28px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .field input { width: 100%; padding: 10px 13px; font-size: 14px; font-family: inherit;
+      border: 1px solid var(--line); border-radius: 8px; background: var(--field-bg); color: var(--ink); }
+    .field input:focus { outline: none; border-color: var(--accent); background: #fff;
+      box-shadow: 0 0 0 3px rgba(26,86,219,.12); }
+    .btn-login { width: 100%; padding: 11px; font-size: 14px; font-weight: 600; font-family: inherit;
+      color: #fff; background: var(--accent); border: none; border-radius: 8px; cursor: pointer; }
+    .btn-login:hover { background: var(--accent-dark); }
+    .alert { background: var(--red-light); color: #991b1b; border: 1px solid var(--red-line);
+      border-radius: 8px; padding: 10px 13px; font-size: 13px; margin-bottom: 16px; }
+    .alert ul { margin: 0; padding-left: 16px; }
+    .muted { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .backlink { display: block; text-align: center; margin-top: 16px; font-size: 13px; color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-head">
+      <div class="login-brand">{{ app_name }}</div>
+      <div class="login-sub">{% block subtitle %}{% endblock %}</div>
+    </div>
+    <div class="login-body">
+      {% block body %}{% endblock %}
+      <a class="backlink" href="{% url 'ui:login' %}">← Wróć do logowania</a>
+    </div>
+  </div>
+</body>
+</html>

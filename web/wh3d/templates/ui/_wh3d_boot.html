@@ -1,0 +1,54 @@
+{% comment %}
+Wspólny "boot" dla widoków 3D magazynu (mapa wypełnienia + model 3D).
+Wcześniej każda cicha awaria (brak WebGL, 404 vendora three.js, 500 na fetchu
+lokalizacji) kończyła się CZARNYM ekranem bez słowa — moduł ES rzucał wyjątek
+i nikt tego nie łapał. Ten partial daje: spinner "Ładowanie…", sondę WebGL
+(window.__wh3dNoWebGL) oraz globalny handler błędów zamieniający awarię na
+ludzki komunikat.
+
+Użycie: {% include "ui/_wh3d_boot.html" with status_id="xxx-status" %}
+umieść WEWNĄTRZ elementu z position:relative (wrap canvasu). Moduł 3D:
+  - na starcie: if (window.__wh3dNoWebGL) { window.wh3dFail('…'); throw … }
+  - po pierwszej klatce: window.wh3dReady();
+{% endcomment %}
+<div class="wh3d-status" id="{{ status_id }}">
+  <div class="wh3d-status__spin"></div>
+  <div class="wh3d-status__msg">Ładowanie widoku 3D…</div>
+</div>
+<style>
+.wh3d-status{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:14px;background:#0f172a;color:#cbd5e1;font-size:14px;z-index:20;
+  text-align:center;padding:24px}
+.wh3d-status__spin{width:38px;height:38px;border:4px solid #334155;border-top-color:#60a5fa;
+  border-radius:50%;animation:wh3dspin .8s linear infinite}
+.wh3d-status__msg{max-width:440px;line-height:1.5}
+@keyframes wh3dspin{to{transform:rotate(360deg)}}
+</style>
+<script>
+(function(){
+  var box = document.getElementById('{{ status_id }}');
+  // Sonda WebGL — moduł sprawdza to zanim spróbuje utworzyć WebGLRenderer.
+  window.__wh3dNoWebGL = (function(){
+    try { var c = document.createElement('canvas');
+      return !(window.WebGLRenderingContext &&
+               (c.getContext('webgl') || c.getContext('experimental-webgl'))); }
+    catch(e){ return true; }
+  })();
+  window.wh3dFail = function(text){
+    if (box){ box.innerHTML = '<div class="wh3d-status__msg">⚠️ ' + text + '</div>';
+              box.style.display = 'flex'; }
+  };
+  window.wh3dReady = function(){ if (box) box.style.display = 'none'; };
+  function loadErr(){
+    // tylko dopóki spinner widoczny (scena jeszcze nie wstała) — nie zasłaniaj gotowej sceny
+    if (box && box.style.display !== 'none')
+      window.wh3dFail('Nie udało się załadować widoku 3D. Odśwież stronę (Ctrl+F5); ' +
+                      'jeśli problem wraca — sprawdź połączenie lub zgłoś administratorowi.');
+  }
+  // capture:true łapie też błędy ładowania zasobów (404 three.js) — te nie bąbelkują.
+  window.addEventListener('error', function(e){
+    if ((e.target && e.target.tagName === 'SCRIPT') || e.message) loadErr();
+  }, true);
+  window.addEventListener('unhandledrejection', loadErr);
+})();
+</script>

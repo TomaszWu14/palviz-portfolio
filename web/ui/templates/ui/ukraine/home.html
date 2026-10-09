@@ -1,0 +1,99 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Wysyłka UKRAINA — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><span>Wysyłka UKRAINA</span></nav>
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{{ "🇺🇦"|pv_icon:26 }} Wysyłka UKRAINA</div>
+    <div class="page-header__sub">Monitoring wskazanych partii — ile gotowe w ACME vs DLT, ile brakuje</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <a href="{% url 'ui:ukraine_line_new' %}" class="btn btn-primary">+ Nowa linia</a>
+  </div>
+</div>
+
+{% if not warehouses_configured %}
+<div class="alert alert-info" style="margin-bottom:14px">
+  {% icon "settings" %} Kody magazynów ACME/DLT nie są ustawione (<code>UKRAINE_WAREHOUSE_ACME</code> /
+  <code>UKRAINE_WAREHOUSE_DLT</code>) — cały stan trafia do kolumny „inne". Ustaw kody, by
+  rozdzielić ACME i DLT.
+</div>
+{% elif has_other %}
+<div class="alert alert-warning" style="margin-bottom:14px">
+  {% icon "triangle-alert" %} Część stanu ma <code>typ magazynu</code> spoza kodów ACME/DLT — widnieje w kolumnie „inne".
+  Sprawdź, czy kody magazynów są komplet.
+</div>
+{% endif %}
+
+<div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+  <div class="card" style="padding:12px 18px"><strong style="font-size:20px">{{ n_lines }}</strong> linii zleceń</div>
+  <div class="card" style="padding:12px 18px;{% if n_short %}border-left:4px solid var(--red-solid){% endif %}">
+    <strong style="font-size:20px;color:{% if n_short %}var(--red){% else %}var(--green){% endif %}">{{ n_short }}</strong> z brakiem</div>
+</div>
+
+<form method="post" action="{% url 'ui:ukraine_import' %}" enctype="multipart/form-data"
+      class="card" style="padding:14px 18px;margin-bottom:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+  {% csrf_token %}
+  <span style="font-weight:700;font-size:13px">Import zleceń:</span>
+  <input aria-label="Plik zleceń (CSV / Excel)" type="file" name="file" accept=".csv,.xlsx,.xls" required>
+  <button type="submit" class="btn btn-secondary btn-sm">Wgraj</button>
+  <span class="help-text">Kolumny: klient, zlecenie, indeks, partia, ilość, jm. Upsert po (klient+zlecenie+indeks+partia).</span>
+</form>
+
+<form method="get" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+  <input type="search" name="customer" value="{{ f_customer }}" placeholder="Klient" class="input" style="font-size:13px">
+  <input type="search" name="order" value="{{ f_order }}" placeholder="Nr zlecenia" class="input" style="font-size:13px">
+  <select aria-label="Status" name="status" class="input" style="font-size:13px">
+    <option value="">— status —</option>
+    <option value="open" {% if f_status == 'open' %}selected{% endif %}>Otwarte</option>
+    <option value="closed" {% if f_status == 'closed' %}selected{% endif %}>Zamknięte</option>
+  </select>
+  <label style="display:flex;align-items:center;gap:6px;font-size:13px">
+    <input type="checkbox" name="short" value="1" {% if f_short %}checked{% endif %}> tylko z brakiem</label>
+  <button type="submit" class="btn btn-ghost btn-sm">Filtruj</button>
+  {% if f_customer or f_order or f_status or f_short %}<a href="{% url 'ui:ukraine_home' %}" class="btn btn-ghost btn-sm">{% icon "x" label="Wyczyść filtry" cls="icon--em" %}</a>{% endif %}
+</form>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr>
+        <th>Klient</th><th>Zlecenie</th><th>Indeks</th><th>Partia</th>
+        <th style="text-align:right">Żądane</th>
+        <th style="text-align:right">ACME</th><th style="text-align:right">DLT</th>
+        {% if has_other %}<th style="text-align:right">Inne</th>{% endif %}
+        <th style="text-align:right">Razem</th><th style="text-align:right">Brakuje</th>
+        <th></th>
+      </tr></thead>
+      <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.line.customer }}</td>
+        <td class="text-muted">{{ r.line.order_ref|default:"—" }}</td>
+        <td style="font-weight:600">{{ r.line.index_code }}</td>
+        <td><span class="chip chip--lot" style="font-weight:700">{{ r.line.lot }}</span></td>
+        <td style="text-align:right;font-weight:700">{{ r.line.requested_qty|floatformat:"-2" }} {{ r.line.unit }}</td>
+        <td style="text-align:right">{{ r.acme|floatformat:"-2" }}</td>
+        <td style="text-align:right">{{ r.dlt|floatformat:"-2" }}</td>
+        {% if has_other %}<td style="text-align:right;color:var(--yellow)">{{ r.other|floatformat:"-2" }}</td>{% endif %}
+        <td style="text-align:right;font-weight:700">{{ r.ready|floatformat:"-2" }}</td>
+        <td style="text-align:right;font-weight:800;color:{% if r.shortfall > 0 %}var(--red){% else %}var(--green){% endif %}">
+          {% if r.shortfall > 0 %}−{{ r.shortfall|floatformat:"-2" }}{% else %}{% icon "check" %}{% endif %}
+        </td>
+        <td style="white-space:nowrap">
+          <a href="{% url 'ui:ukraine_line_edit' r.line.pk %}" class="btn btn-ghost btn-sm">Edytuj</a>
+          <form method="post" action="{% url 'ui:ukraine_line_delete' r.line.pk %}" style="display:inline"
+                onsubmit="return confirm('Usunąć linię?')">
+            {% csrf_token %}<button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red)">Usuń</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="11" class="text-muted" style="text-align:center;padding:30px">Brak linii zleceń.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

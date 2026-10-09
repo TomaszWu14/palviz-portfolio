@@ -1,0 +1,94 @@
+{% extends "ui/base.html" %}
+{% block title %}Podgląd importu zadań EWM — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .wt-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .wt-h { font-size: 13px; font-weight: 700; color: var(--gray-700); margin-bottom: 8px; }
+  .wt-sample td, .wt-sample th { white-space: nowrap; font-size: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_map' %}">Magazyn 3D</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:ewm_tasks_list' %}">Zadania magazynowe EWM</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Podgląd</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Podgląd: {{ file_name }}</div>
+    <div class="page-header__sub">{{ size|filesizeformat }} · {% if partial %}pierwsze {{ preview_rows }} wierszy{% else %}cały plik{% endif %} · czas w pliku: {{ tz }}</div>
+  </div>
+  <div class="page-header__actions"><a href="{% url 'ui:ewm_tasks_list' %}" class="btn btn-ghost">Wgraj inny plik</a></div>
+</div>
+
+{% if missing %}
+<div class="alert alert-error" style="margin-bottom:16px">Nie rozpoznano wymaganych kolumn: <b>{{ missing|join:", " }}</b>.
+  Zmień nagłówek w pliku na nazwę z SAP (np. „Źródłowe miejsce składowania”, „Data potwierdzenia”) i wgraj ponownie.</div>
+{% endif %}
+{% for e in override_errors %}<div class="alert alert-warning" style="margin-bottom:8px">Pominięto nadpisanie {{ e }}</div>{% endfor %}
+
+<div class="stats-grid">
+  <div class="stat-card"><div><div class="stat-value">{{ stats.imported }}</div><div class="stat-label">poprawnych zadań w podglądzie</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ stats.errors }}</div><div class="stat-label">błędnych wierszy</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ stats.unconfirmed }}</div><div class="stat-label">bez potwierdzenia (poza animacją)</div></div></div>
+  <div class="stat-card"><div><div class="stat-value">{{ stats.resources }}</div><div class="stat-label">zasobów / użytkowników</div></div></div>
+  <div class="stat-card"><div><div class="stat-value" style="font-size:15px">{% if first %}{{ first|date:"d.m.Y H:i" }}<br>{{ last|date:"d.m.Y H:i" }}{% else %}—{% endif %}</div><div class="stat-label">potwierdzone od – do</div></div></div>
+</div>
+
+<div class="wt-grid">
+  <div class="card"><div class="card-body">
+    <div class="wt-h">Rozpoznane kolumny</div>
+    <table class="table"><tbody>
+      {% for label, header in stats.columns %}<tr><td class="text-muted">{{ label }}</td><td class="font-semibold">{{ header }}</td></tr>{% endfor %}
+    </tbody></table>
+    {% if stats.unmapped_headers %}<div class="text-muted text-sm" style="margin-top:8px">Pominięte kolumny: {{ stats.unmapped_headers|join:", " }}</div>{% endif %}
+  </div></div>
+  <div class="card"><div class="card-body">
+    <div class="wt-h">Mapowanie procesów → rodzaj ruchu</div>
+    <table class="table"><thead><tr><th>Proces</th><th>Rodzaj ruchu</th><th class="text-right">Zadań</th></tr></thead><tbody>
+      {% for p in stats.processes %}<tr><td class="font-semibold">{{ p.process }}</td><td>{{ p.label }}</td><td class="text-right">{{ p.count }}</td></tr>
+      {% empty %}<tr><td colspan="3" class="text-muted">—</td></tr>{% endfor %}
+    </tbody></table>
+  </div></div>
+</div>
+
+{% if sample %}
+<div class="card" style="margin-bottom:16px"><div class="card-body">
+  <div class="wt-h">Próbka ({{ sample|length }} pierwszych zadań)</div>
+  <div class="table-wrap"><table class="table wt-sample">
+    <thead><tr><th>Nr WT</th><th>Proces</th><th>Rodzaj</th><th>Z</th><th>Do</th><th>Materiał</th><th>Ilość</th><th>Potwierdzono</th><th>Zasób</th><th>Użytkownik</th><th>Kolejka</th></tr></thead>
+    <tbody>{% for r in sample %}<tr>
+      <td>{{ r.task_no }}</td><td>{{ r.process_type }}</td><td>{{ r.kind_label }}</td><td>{{ r.src_location }}</td><td>{{ r.dst_location }}</td>
+      <td>{{ r.material }}</td><td>{{ r.qty|default_if_none:"" }} {{ r.unit }}</td><td>{{ r.confirmed_at|date:"d.m.Y H:i:s" }}</td>
+      <td>{{ r.resource }}</td><td>{{ r.user }}</td><td>{{ r.queue }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div></div>
+{% endif %}
+
+{% if stats.error_list %}
+<div class="card" style="margin-bottom:16px"><div class="card-body">
+  <div class="wt-h">Błędne wiersze (pierwsze {{ stats.error_list|length }})</div>
+  <table class="table"><tbody>{% for e in stats.error_list %}<tr><td class="text-muted" style="width:90px">wiersz {{ e.line }}</td><td>{{ e.error }}</td></tr>{% endfor %}</tbody></table>
+</div></div>
+{% endif %}
+
+{% if not missing %}
+<form method="post" action="{% url 'ui:ewm_tasks_import' %}" class="card"><div class="card-body" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+  {% csrf_token %}
+  <input type="hidden" name="token" value="{{ token }}">
+  <input type="hidden" name="file_name" value="{{ file_name }}">
+  <input type="hidden" name="tz" value="{{ tz }}">
+  <input type="hidden" name="kind_map" value="{{ kind_map_text }}">
+  <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--gray-500);flex:1 1 260px">Nazwa importu
+    <input type="text" name="name" class="form-control" value="{{ name }}" maxlength="200"></label>
+  <button type="submit" class="btn btn-primary">Importuj cały plik</button>
+  <span class="text-muted text-sm">{% if background %}Duży plik — import w tle; raport odświeża się sam.{% else %}Import od razu.{% endif %} Błędne wiersze zostaną pominięte.</span>
+</div></form>
+{% endif %}
+{% endblock %}

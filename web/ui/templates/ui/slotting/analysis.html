@@ -1,0 +1,101 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% load static %}
+{% block title %}Slotting & symulacja — {{ app_name }}{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'ui/js/echarts.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Slotting & symulacja (digital twin)</div>
+    <div class="page-header__sub">Klasyfikacja ABC popytu i symulacja oszczędności drogi kompletacji</div>
+  </div>
+</div>
+
+<!-- ABC summary -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
+  {% for k, c in class_summary.items %}
+  <div class="card" style="text-align:center;padding:16px;border-top:3px solid {% if k == 'A' %}#16a34a{% elif k == 'B' %}#f59e0b{% else %}var(--gray-400){% endif %}">
+    <div style="font-size:24px;font-weight:800">Klasa {{ k }}</div>
+    <div style="font-size:13px;color:var(--gray-500)">{{ c.n }} produktów · popyt {{ c.demand|floatformat:0 }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- What-if simulation (digital twin) -->
+<div class="card" style="padding:16px;margin-bottom:16px">
+  <div style="font-size:14px;font-weight:700;margin-bottom:10px">
+    Symulacja „co jeśli": potencjał slottingu sterowanego popytem (najlepsze vs najgorsze ułożenie)
+  </div>
+  {% if has_layout %}
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+    <div class="stat-box"><div class="stat-box__val">{{ sim.worst|floatformat:0 }}</div><div class="stat-box__lbl">droga — najgorsze ułożenie (jedn.)</div></div>
+    <div class="stat-box"><div class="stat-box__val">{{ sim.optimized|floatformat:0 }}</div><div class="stat-box__lbl">droga — optymalne ułożenie</div></div>
+    <div class="stat-box" style="border-top:3px solid #16a34a"><div class="stat-box__val">{{ sim.savings_pct }}%</div><div class="stat-box__lbl">potencjał oszczędności</div></div>
+    <div class="stat-box"><div class="stat-box__val">{{ sim.n_matched }}</div><div class="stat-box__lbl">SKU dopasowanych / {{ slots }} miejsc</div></div>
+  </div>
+  <div style="font-size:11px;color:var(--gray-400);margin-top:6px">Górna granica potencjału (nierówność rearanżacji) — bez realnej mapy SKU→slot nie liczymy drogi obecnej.</div>
+  <div style="font-size:12px;color:var(--gray-500);margin-top:8px">
+    Model: najszybciej rotujące SKU przypisane do miejsc najbliżej doku (nierówność
+    przestawień = minimum drogi). Pokazuje potencjał re-slottingu sterowanego popytem.
+  </div>
+  {% else %}
+  <div style="color:var(--yellow);font-size:13px">{% icon "triangle-alert" %} Brak aktywnego układu magazynu — wczytaj layout, aby uruchomić symulację drogi.</div>
+  {% endif %}
+</div>
+
+<!-- Pareto chart -->
+<div class="card" style="padding:16px;margin-bottom:16px">
+  <div style="font-size:14px;font-weight:700;margin-bottom:10px">Pareto popytu (TOP 40)</div>
+  <div id="pareto" style="height:340px"></div>
+</div>
+
+<!-- ABC table -->
+<div class="card">
+  <div style="padding:12px 16px;font-weight:700;border-bottom:1px solid var(--gray-100)">
+    Produkty wg klasy ABC ({{ total_products }})
+  </div>
+  <table class="table">
+    <thead><tr><th>Kod</th><th>Nazwa</th><th>Klasa</th><th>Popyt</th><th>Udział</th><th>Skum.</th><th>Linie</th></tr></thead>
+    <tbody>
+      {% for r in abc %}
+      <tr>
+        <td><b>{{ r.key }}</b></td>
+        <td>{{ r.name }}</td>
+        <td><span style="font-weight:700;color:{% if r.klass == 'A' %}#16a34a{% elif r.klass == 'B' %}#f59e0b{% else %}var(--gray-400){% endif %}">{{ r.klass }}</span></td>
+        <td>{{ r.demand|floatformat:0 }}</td>
+        <td>{{ r.share|floatformat:3 }}</td>
+        <td>{{ r.cum_share|floatformat:3 }}</td>
+        <td>{{ r.freq }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{{ pareto|json_script:"pareto-data" }}
+<script>
+(function () {
+  var d = JSON.parse(document.getElementById('pareto-data').textContent);
+  if (!d.codes.length) return;
+  var chart = echarts.init(document.getElementById('pareto'));
+  chart.setOption({
+    tooltip: { trigger: 'axis' },
+    grid: { left: 50, right: 50, top: 20, bottom: 60 },
+    xAxis: { type: 'category', data: d.codes, axisLabel: { rotate: 60, fontSize: 9 } },
+    yAxis: [
+      { type: 'value', name: 'Popyt' },
+      { type: 'value', name: '% skum.', max: 100, axisLabel: { formatter: '{value}%' } }
+    ],
+    series: [
+      { type: 'bar', data: d.demand, itemStyle: { color: '#2563eb' } },
+      { type: 'line', yAxisIndex: 1, data: d.cum, itemStyle: { color: '#16a34a' }, smooth: true }
+    ]
+  });
+  window.addEventListener('resize', function () { chart.resize(); });
+})();
+</script>
+{% endblock %}

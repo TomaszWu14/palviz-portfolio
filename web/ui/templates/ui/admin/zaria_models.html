@@ -1,0 +1,85 @@
+{% extends "ui/base.html" %}
+{% block title %}ZARIA — katalog modeli — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .zm-form input, .zm-form select, .zm-form textarea { width:100%; box-sizing:border-box;
+    padding:8px 10px; margin-top:4px; border:1px solid var(--gray-300); border-radius:9px;
+    background:var(--surface); color:var(--gray-900); font-size:13px; font-family:inherit; }
+  .zm-form input:focus, .zm-form select:focus, .zm-form textarea:focus { outline:none;
+    border-color:var(--green); box-shadow:0 0 0 3px var(--green-light); }
+  .zm-form label { color:var(--gray-600); }
+  .zm-prov { font-size:11px; font-weight:700; padding:2px 9px; border-radius:999px; background:var(--gray-100); color:var(--gray-600); }
+  .zm-on { font-size:11px; font-weight:700; padding:2px 9px; border-radius:999px; background:var(--green-light); color:var(--green); }
+  .zm-off { font-size:11px; font-weight:700; padding:2px 9px; border-radius:999px; background:var(--gray-100); color:var(--gray-500); }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_zaria_panel' %}">ZARIA</a><span class="breadcrumb__sep">›</span><span>Katalog modeli</span></nav>
+<div class="page-header"><div><div class="page-header__title">Katalog modeli ZARIA</div>
+  <div class="page-header__sub">Modele LLM dostępne w pickerze, cennik i prompt systemowy per model</div></div></div>
+
+{% if errors %}
+<div class="card" style="padding:12px 16px;margin-bottom:16px;border-left:5px solid var(--red)">
+  {% for e in errors %}<div style="color:var(--red);font-size:13px">{{ e }}</div>{% endfor %}
+</div>
+{% endif %}
+
+<div class="card" style="padding:16px;margin-bottom:16px">
+  <div style="font-weight:700;margin-bottom:10px">{% if obj %}Edytuj model{% else %}Nowy model{% endif %}</div>
+  <form method="post" action="{% if obj %}{% url 'ui:admin_zaria_model_edit' obj.pk %}{% else %}{% url 'ui:admin_zaria_models' %}{% endif %}"
+        class="zm-form" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+    {% csrf_token %}
+    <div><label style="display:block;font-size:12px;font-weight:600">Identyfikator (u dostawcy)</label>
+      <input aria-label="Identyfikator (u dostawcy)" name="key" value="{{ obj.key|default:'' }}" required></div>
+    <div><label style="display:block;font-size:12px;font-weight:600">Nazwa wyświetlana</label>
+      <input aria-label="Nazwa wyświetlana" name="display_name" value="{{ obj.display_name|default:'' }}" required></div>
+    <div><label style="display:block;font-size:12px;font-weight:600">Dostawca</label>
+      <select aria-label="Dostawca" name="provider">
+        {% for v, l in providers %}<option value="{{ v }}" {% if obj.provider == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select></div>
+    <div><label style="display:block;font-size:12px;font-weight:600">Cena wejście / 1k (PLN)</label>
+      <input aria-label="Cena wejście / 1k (PLN)" name="price_input_per_1k" type="number" step="0.000001" value="{{ obj.price_input_per_1k|default:'0' }}"></div>
+    <div><label style="display:block;font-size:12px;font-weight:600">Cena wyjście / 1k (PLN)</label>
+      <input aria-label="Cena wyjście / 1k (PLN)" name="price_output_per_1k" type="number" step="0.000001" value="{{ obj.price_output_per_1k|default:'0' }}"></div>
+    <div><label style="display:block;font-size:12px;font-weight:600">Kolejność</label>
+      <input aria-label="Kolejność" name="sort_order" type="number" value="{{ obj.sort_order|default:'0' }}"></div>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:18px">
+      <input type="checkbox" name="is_active" value="1" id="is_active" {% if obj.is_active|default:True %}checked{% endif %}>
+      <label for="is_active" style="font-size:13px">Aktywny</label></div>
+    <div style="grid-column:1/-1"><label style="display:block;font-size:12px;font-weight:600">Prompt systemowy (opcjonalny, nadpisuje globalny)</label>
+      <textarea aria-label="Prompt systemowy (opcjonalny, nadpisuje globalny)" name="system_prompt" rows="3">{{ obj.system_prompt|default:'' }}</textarea></div>
+    <div style="grid-column:1/-1;display:flex;gap:8px">
+      <button type="submit" class="btn btn-primary">Zapisz</button>
+      {% if obj %}<a class="btn btn-secondary" href="{% url 'ui:admin_zaria_models' %}">Anuluj</a>{% endif %}
+    </div>
+  </form>
+</div>
+
+<div class="card" style="padding:0">
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Model</th><th>Dostawca</th><th>Cena wej./1k</th><th>Cena wyj./1k</th><th>Aktywny</th><th></th></tr></thead>
+      <tbody>
+      {% for m in models %}
+        <tr>
+          <td><strong>{{ m.display_name }}</strong><div class="text-sm text-muted">{{ m.key }}</div></td>
+          <td><span class="zm-prov">{{ m.get_provider_display }}</span></td>
+          <td style="font-variant-numeric:tabular-nums">{{ m.price_input_per_1k }}</td>
+          <td style="font-variant-numeric:tabular-nums">{{ m.price_output_per_1k }}</td>
+          <td>{% if m.is_active %}<span class="zm-on">Aktywny</span>{% else %}<span class="zm-off">Nieaktywny</span>{% endif %}</td>
+          <td style="white-space:nowrap">
+            <a class="btn btn-ghost btn-sm" href="{% url 'ui:admin_zaria_model_edit' m.pk %}">Edytuj</a>
+            <form method="post" action="{% url 'ui:admin_zaria_model_delete' m.pk %}" style="display:inline"
+                  onsubmit="return confirm('Usunąć model {{ m.display_name }}?')">
+              {% csrf_token %}<button type="submit" class="btn btn-ghost btn-sm">Usuń</button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6"><div class="empty-state" style="padding:24px"><div class="empty-state__desc">Brak modeli — dodaj pierwszy powyżej.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

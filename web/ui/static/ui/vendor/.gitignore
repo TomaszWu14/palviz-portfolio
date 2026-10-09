@@ -1,0 +1,4 @@
+# Vendored 3D libraries are fetched at build time (web/scripts/fetch_vendor.sh).
+# Keep the directory, ignore the downloaded files.
+*
+!.gitignore

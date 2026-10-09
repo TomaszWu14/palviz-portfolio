@@ -1,0 +1,334 @@
+{% load palviz_extras %}
+{% comment %}Generyczny edytor grafik opakowania: 2D edytor ścianek (nadruk + etykiety) z
+podglądem teksturowanej bryły 3D (Three.js). Reużywany dla karton / sztuka / OPZ — różni
+się tylko kontekstem: art_title, art_l/w/h (wymiary cm), art_url_list/upload/update0/delete0.
+Wymaga three.r128 + OrbitControls w extra_head strony. Tryb edycji (potrzebny zapisany pk).{% endcomment %}
+<style>
+  .art-card { margin-top: 16px; }
+  .art-grid { display:grid; grid-template-columns: 1fr 1fr; gap:18px; align-items:start; }
+  @media (max-width:1000px){ .art-grid { grid-template-columns:1fr; } }
+  .face-tabs { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .face-tab { font-size:13px; padding:5px 14px; border:1px solid var(--gray-300); border-radius:999px;
+    background:var(--surface); cursor:pointer; color:var(--gray-700); }
+  .face-tab.active { background:var(--sage,#4f8067); color:#fff; border-color:var(--sage,#4f8067); }
+  .art-toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:10px; }
+  .art-btn { display:inline-flex; align-items:center; gap:6px; font-size:13px; padding:7px 12px;
+    border:1px solid var(--gray-300); border-radius:8px; background:var(--surface); cursor:pointer; color:var(--gray-700); }
+  .art-btn:hover { background:var(--gray-50); }
+  .art-btn.primary { background:var(--sage-soft,#eef5f0); border-color:var(--sage-line,#cfe2d6); color:var(--sage-d,#3d6b54); }
+  .art-stage-wrap { background:var(--gray-100); border:1px solid var(--gray-200); border-radius:12px; padding:18px;
+    display:flex; align-items:center; justify-content:center; min-height:300px; }
+  .face-stage { position:relative; background:#c9a06a; box-shadow:0 6px 18px rgba(0,0,0,.12);
+    max-width:100%; max-height:420px; overflow:hidden; user-select:none; touch-action:none; }
+  .face-stage .print-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none; }
+  .face-label { position:absolute; cursor:move; outline:1px dashed transparent; }
+  .face-label img { width:100%; height:100%; display:block; pointer-events:none; }
+  .face-label.sel { outline:2px solid var(--sage,#4f8067); }
+  .face-label .rsz { position:absolute; right:-6px; bottom:-6px; width:13px; height:13px; background:var(--surface);
+    border:2px solid var(--sage,#4f8067); border-radius:3px; cursor:nwse-resize; }
+  .art-hint { font-size:12px; color:var(--gray-400); margin-top:8px; }
+  #art-3d { width:100%; height:420px; background:linear-gradient(#fdfdfd,#eef1f4); border:1px solid var(--gray-200); border-radius:12px; overflow:hidden; }
+  #art-3d canvas { display:block; border-radius:11px; }
+  .art-empty-face { color:#4a3517; font-size:13px; }
+</style>
+
+<div class="card art-card">
+  <div class="card-header" style="padding:14px 18px">
+    <span class="card-header__title">{% icon "palette" %}{{ art_title|default:"Wygląd opakowania — nadruki i etykiety (3D)" }}</span>
+  </div>
+  <div class="card-body">
+    <div class="face-tabs" id="art-faces"></div>
+
+    <div class="art-grid">
+      <!-- 2D face editor -->
+      <div>
+        <div class="art-toolbar">
+          <label class="art-btn primary">{% icon "upload" %} Wgraj nadruk ściany
+            <input type="file" id="art-print" accept="image/png,image/jpeg" hidden>
+          </label>
+          <label class="art-btn">＋ Dodaj etykietę
+            <input type="file" id="art-label" accept="image/png,image/jpeg" hidden>
+          </label>
+          <button type="button" class="art-btn" id="art-rotate" disabled>{% icon "refresh-cw" %} Obróć etykietę</button>
+          <button type="button" class="art-btn" id="art-delete" disabled>{% icon "trash-2" %} Usuń</button>
+        </div>
+        <div class="art-stage-wrap">
+          <div class="face-stage" id="art-stage"></div>
+        </div>
+        <div class="art-hint">Przeciągnij etykietę, by zmienić położenie; ciągnij za narożnik, by skalować. Zmiany zapisują się automatycznie i nakładają na bryłę 3D obok.</div>
+      </div>
+
+      <!-- live textured 3D box -->
+      <div>
+        <div id="art-3d"></div>
+        <div class="art-hint">Obracaj bryłę myszą (przeciągnij), przybliżaj scrollem.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Three.js + OrbitControls ładowane raz na stronie (extra_head formularza).
+  const CARTON = {l:{{ art_l }}, w:{{ art_w }}, h:{{ art_h }}};
+  const URL_LIST   = "{{ art_url_list }}";
+  const URL_UPLOAD = "{{ art_url_upload }}";
+  const URL_UPD0   = "{{ art_url_update0 }}";
+  const URL_DEL0   = "{{ art_url_delete0 }}";
+  const CSRF = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+  const updUrl = id => URL_UPD0.replace('/0/', '/'+id+'/');
+  const delUrl = id => URL_DEL0.replace('/0/', '/'+id+'/');
+
+  const FACES = ['front','back','left','right','top','bottom'];
+  const FACE_LABEL = {front:'Front', back:'Tył', left:'Lewy bok', right:'Prawy bok', top:'Góra', bottom:'Dół'};
+  // face dimensions in cm: [width, height]
+  const FACE_DIMS = {
+    front:[CARTON.l,CARTON.h], back:[CARTON.l,CARTON.h],
+    left:[CARTON.w,CARTON.h],  right:[CARTON.w,CARTON.h],
+    top:[CARTON.l,CARTON.w],   bottom:[CARTON.l,CARTON.w],
+  };
+
+  // state: per face → {print: art|null, labels:[art,...]}
+  const ART = {}; FACES.forEach(f=>ART[f]={print:null, labels:[]});
+  let curFace = 'front', selLabel = null;
+  const imgCache = {};   // url → HTMLImageElement
+
+  function loadImg(url){
+    if(!url) return Promise.resolve(null);
+    if(imgCache[url]) return Promise.resolve(imgCache[url]);
+    return new Promise(res=>{
+      const im = new Image(); im.crossOrigin='anonymous';
+      im.onload=()=>{ imgCache[url]=im; res(im); };
+      im.onerror=()=>res(null);
+      im.src=url;
+    });
+  }
+
+  // ── data ────────────────────────────────────────────────────────────────────
+  function fetchArtworks(){
+    return fetch(URL_LIST).then(r=>r.json()).then(d=>{
+      FACES.forEach(f=>ART[f]={print:null, labels:[]});
+      (d.artworks||[]).forEach(a=>{
+        if(!ART[a.face]) return;
+        if(a.kind==='print') ART[a.face].print=a; else ART[a.face].labels.push(a);
+      });
+    });
+  }
+  function upload(file, kind){
+    const fd=new FormData();
+    fd.append('image',file); fd.append('face',curFace); fd.append('kind',kind);
+    return fetch(URL_UPLOAD,{method:'POST',headers:{'X-CSRFToken':CSRF},body:fd})
+      .then(r=>r.json());
+  }
+  function saveLabel(a){
+    return fetch(updUrl(a.id),{method:'POST',
+      headers:{'X-CSRFToken':CSRF,'Content-Type':'application/json'},
+      body:JSON.stringify({x:a.x,y:a.y,w:a.w,h:a.h,rot:a.rot})});
+  }
+  function deleteArt(a){
+    return fetch(delUrl(a.id),{method:'POST',headers:{'X-CSRFToken':CSRF}});
+  }
+
+  // ── face tabs ───────────────────────────────────────────────────────────────
+  function renderTabs(){
+    document.getElementById('art-faces').innerHTML = FACES.map(f=>{
+      const n=(ART[f].print?1:0)+ART[f].labels.length;
+      return `<span class="face-tab ${f===curFace?'active':''}" data-f="${f}">${FACE_LABEL[f]}${n?` · ${n}`:''}</span>`;
+    }).join('');
+    document.querySelectorAll('.face-tab').forEach(t=>t.addEventListener('click',()=>{
+      curFace=t.dataset.f; selLabel=null; renderTabs(); renderStage(); updateToolbar();
+    }));
+  }
+
+  // ── 2D editor stage ───────────────────────────────────────────────────────────
+  function renderStage(){
+    const stage = document.getElementById('art-stage');
+    const [fw,fh] = FACE_DIMS[curFace];
+    const maxSide=400, sc=maxSide/Math.max(fw,fh);
+    stage.style.width=(fw*sc)+'px'; stage.style.height=(fh*sc)+'px';
+    let html='';
+    const data=ART[curFace];
+    if(data.print) html+=`<img class="print-bg" src="${data.print.url}">`;
+    else html+=`<div class="print-bg" style="display:flex;align-items:center;justify-content:center"><span class="art-empty-face">goła ścianka (brak nadruku)</span></div>`;
+    data.labels.forEach(a=>{
+      html+=`<div class="face-label ${selLabel&&selLabel.id===a.id?'sel':''}" data-id="${a.id}"
+        style="left:${a.x}%;top:${a.y}%;width:${a.w}%;height:${a.h}%;transform:rotate(${a.rot||0}deg)">
+        <img src="${a.url}"><span class="rsz"></span></div>`;
+    });
+    stage.innerHTML=html;
+    stage.querySelectorAll('.face-label').forEach(el=>{
+      el.addEventListener('pointerdown', onLabelDown);
+      el.querySelector('.rsz')?.addEventListener('pointerdown', onResizeDown);
+    });
+  }
+
+  function findLabel(id){ return ART[curFace].labels.find(a=>String(a.id)===String(id)); }
+
+  let drag=null;
+  function onLabelDown(e){
+    if(e.target.classList.contains('rsz')) return;
+    const el=e.currentTarget, a=findLabel(el.dataset.id);
+    selLabel=a; renderStage(); updateToolbar();
+    const stage=document.getElementById('art-stage'), rect=stage.getBoundingClientRect();
+    drag={a, mode:'move', rect, sx:e.clientX, sy:e.clientY, ox:a.x, oy:a.y};
+    el.setPointerCapture?.(e.pointerId);
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    e.preventDefault();
+  }
+  function onResizeDown(e){
+    const el=e.currentTarget.closest('.face-label'), a=findLabel(el.dataset.id);
+    selLabel=a; updateToolbar();
+    const stage=document.getElementById('art-stage'), rect=stage.getBoundingClientRect();
+    drag={a, mode:'resize', rect, sx:e.clientX, sy:e.clientY, ow:a.w, oh:a.h};
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
+    e.stopPropagation(); e.preventDefault();
+  }
+  function onMove(e){
+    if(!drag) return;
+    const a=drag.a, dxp=(e.clientX-drag.sx)/drag.rect.width*100, dyp=(e.clientY-drag.sy)/drag.rect.height*100;
+    if(drag.mode==='move'){
+      a.x=Math.max(-20,Math.min(100,drag.ox+dxp));
+      a.y=Math.max(-20,Math.min(100,drag.oy+dyp));
+    } else {
+      a.w=Math.max(3,Math.min(150,drag.ow+dxp));
+      a.h=Math.max(3,Math.min(150,drag.oh+dyp));
+    }
+    const el=document.querySelector(`.face-label[data-id="${a.id}"]`);
+    if(el){ el.style.left=a.x+'%'; el.style.top=a.y+'%'; el.style.width=a.w+'%'; el.style.height=a.h+'%'; }
+    scheduleComposite(curFace);
+  }
+  function onUp(){
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    if(drag){ saveLabel(drag.a); drag=null; }
+  }
+
+  function updateToolbar(){
+    document.getElementById('art-rotate').disabled = !selLabel;
+    document.getElementById('art-delete').disabled = !selLabel;
+  }
+
+  // ── 3D textured box (Three.js) ────────────────────────────────────────────────
+  let renderer, scene, camera, controls, mesh;
+  const canvas={}, tex={};
+  const MAT_ORDER=['right','left','top','bottom','front','back'];
+
+  function initThree(){
+    const host=document.getElementById('art-3d');
+    if(!window.THREE){ host.innerHTML='<div class="art-hint" style="padding:20px">Nie udało się załadować podglądu 3D.</div>'; return false; }
+    renderer=new THREE.WebGLRenderer({antialias:true, alpha:true});
+    renderer.setSize(host.clientWidth, host.clientHeight); renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+    renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+    if('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding=THREE.sRGBEncoding;
+    if('ACESFilmicToneMapping' in THREE){ renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05; }
+    host.appendChild(renderer.domElement);
+    scene=new THREE.Scene();
+    camera=new THREE.PerspectiveCamera(38, host.clientWidth/host.clientHeight, 1, 5000);
+    const maxD=Math.max(CARTON.l,CARTON.w,CARTON.h);
+    camera.position.set(maxD*1.5, maxD*1.25, maxD*1.9);
+
+    const key=new THREE.DirectionalLight(0xfff2e0, 1.15);
+    key.position.set(maxD*1.2, maxD*2.2, maxD*1.4); key.castShadow=true;
+    key.shadow.mapSize.set(2048,2048); key.shadow.bias=-0.0006;
+    const ksc=key.shadow.camera, kr=maxD*1.6;
+    ksc.left=-kr; ksc.right=kr; ksc.top=kr; ksc.bottom=-kr; ksc.near=1; ksc.far=maxD*8; ksc.updateProjectionMatrix();
+    scene.add(key);
+    const fill=new THREE.DirectionalLight(0xcad8ff, 0.3); fill.position.set(-maxD, maxD, -maxD*1.4); scene.add(fill);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8c7e6a, 0.5));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+
+    controls=new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping=true; controls.dampingFactor=0.09; controls.target.set(0,0,0);
+    const mats=MAT_ORDER.map(face=>{
+      const [fw,fh]=FACE_DIMS[face];
+      const cv=document.createElement('canvas');
+      const base=512;
+      if(fw>=fh){ cv.width=base; cv.height=Math.round(base*fh/fw); } else { cv.height=base; cv.width=Math.round(base*fw/fh); }
+      canvas[face]=cv;
+      const t=new THREE.CanvasTexture(cv); t.anisotropy=8;
+      if('sRGBEncoding' in THREE) t.encoding=THREE.sRGBEncoding;
+      tex[face]=t;
+      return new THREE.MeshStandardMaterial({map:t, roughness:0.82, metalness:0.0});
+    });
+    const geo=new THREE.BoxGeometry(CARTON.l, CARTON.h, CARTON.w);
+    mesh=new THREE.Mesh(geo, mats); mesh.castShadow=true; mesh.receiveShadow=true; scene.add(mesh);
+    const groundMat = THREE.ShadowMaterial ? new THREE.ShadowMaterial({opacity:0.22})
+                                           : new THREE.MeshBasicMaterial({transparent:true, opacity:0});
+    const ground=new THREE.Mesh(new THREE.PlaneGeometry(maxD*12, maxD*12), groundMat);
+    ground.rotation.x=-Math.PI/2; ground.position.y=-CARTON.h/2; ground.receiveShadow=true; scene.add(ground);
+    (function loop(){ requestAnimationFrame(loop); controls.update(); renderer.render(scene,camera); })();
+    window.addEventListener('resize', ()=>{
+      renderer.setSize(host.clientWidth, host.clientHeight);
+      camera.aspect=host.clientWidth/host.clientHeight; camera.updateProjectionMatrix();
+    });
+    return true;
+  }
+
+  let compTimers={};
+  function scheduleComposite(face){ clearTimeout(compTimers[face]); compTimers[face]=setTimeout(()=>compositeFace(face),60); }
+
+  // Rysuje ściankę z tego, co JEST w cache — bez czekania na komplet plików.
+  function drawFace(face){
+    const cv=canvas[face]; if(!cv) return;
+    const ctx=cv.getContext('2d'); const W=cv.width, H=cv.height;
+    const data=ART[face];
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#c9a06a'; ctx.fillRect(0,0,W,H);
+    if(data.print){ const im=imgCache[data.print.url]; if(im) drawCover(ctx,im,0,0,W,H); }
+    data.labels.forEach(a=>{
+      const im=imgCache[a.url]; if(!im) return;
+      const lx=a.x/100*W, ly=a.y/100*H, lw=a.w/100*W, lh=a.h/100*H;
+      ctx.save(); ctx.translate(lx+lw/2, ly+lh/2); ctx.rotate((a.rot||0)*Math.PI/180);
+      ctx.drawImage(im, -lw/2, -lh/2, lw, lh); ctx.restore();
+    });
+    if(tex[face]) tex[face].needsUpdate=true;
+  }
+
+  function compositeFace(face){
+    if(!canvas[face]) return;
+    const data=ART[face];
+    const urls=[data.print?data.print.url:null].concat(data.labels.map(l=>l.url)).filter(Boolean);
+    const missing=urls.filter(u=>!imgCache[u]);
+    drawFace(face);                                  // natychmiast: kolor + to, co w cache
+    // Dawniej Promise.all na WSZYSTKICH plikach ściany — przy przeciąganiu etykiety
+    // (co 60 ms) każda klatka czekała na komplet, więc jeden wolny plik blokował podgląd.
+    if(missing.length) Promise.all(missing.map(loadImg)).then(()=>drawFace(face));
+  }
+  function drawCover(ctx,im,x,y,w,h){
+    const ir=im.width/im.height, r=w/h; let dw,dh;
+    if(ir>r){ dh=h; dw=h*ir; } else { dw=w; dh=w/ir; }
+    ctx.drawImage(im, x+(w-dw)/2, y+(h-dh)/2, dw, dh);
+  }
+  function compositeAll(){ FACES.forEach(compositeFace); }
+
+  // ── upload / toolbar actions ──────────────────────────────────────────────────
+  document.getElementById('art-print').addEventListener('change', function(){
+    const f=this.files[0]; if(!f) return;
+    upload(f,'print').then(d=>{ this.value=''; if(d.ok){ ART[curFace].print=d.artwork; renderTabs(); renderStage(); compositeFace(curFace); } else alert(d.error||'Błąd uploadu'); });
+  });
+  document.getElementById('art-label').addEventListener('change', function(){
+    const f=this.files[0]; if(!f) return;
+    upload(f,'label').then(d=>{ this.value=''; if(d.ok){ ART[curFace].labels.push(d.artwork); selLabel=d.artwork; renderTabs(); renderStage(); updateToolbar(); compositeFace(curFace); } else alert(d.error||'Błąd uploadu'); });
+  });
+  document.getElementById('art-rotate').addEventListener('click', ()=>{
+    if(!selLabel) return; selLabel.rot=((selLabel.rot||0)+15)%360;
+    renderStage(); compositeFace(curFace); saveLabel(selLabel);
+  });
+  document.getElementById('art-delete').addEventListener('click', ()=>{
+    if(!selLabel) return; const a=selLabel;
+    deleteArt(a).then(()=>{
+      if(a.kind==='print') ART[curFace].print=null;
+      else ART[curFace].labels=ART[curFace].labels.filter(x=>x.id!==a.id);
+      selLabel=null; renderTabs(); renderStage(); updateToolbar(); compositeFace(curFace);
+    });
+  });
+
+  // ── init ──────────────────────────────────────────────────────────────────────
+  fetchArtworks().then(()=>{
+    renderTabs(); renderStage(); updateToolbar();
+    if(initThree()) compositeAll();
+  });
+})();
+</script>

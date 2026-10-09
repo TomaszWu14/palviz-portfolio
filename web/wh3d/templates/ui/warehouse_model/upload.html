@@ -1,0 +1,164 @@
+{% extends "ui/base.html" %}
+{% block title %}Nowy model magazynu — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="breadcrumb">
+      <a href="{% url 'ui:warehouse_model_list' %}">Modele magazynu</a>
+      <span class="breadcrumb__sep">/</span>
+      <span>Nowy model</span>
+    </div>
+    <div class="page-header__title">Nowy model magazynu — wczytaj lokalizacje</div>
+    <div class="page-header__sub">Nadaj nazwę modelowi i wgraj plik z kodami lokalizacji</div>
+  </div>
+</div>
+
+<!-- Steps indicator -->
+<div style="display:flex;gap:0;margin-bottom:28px">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;background:var(--blue);color:#fff;border-radius:var(--radius) 0 0 var(--radius);font-weight:600;font-size:13px">
+    <span style="width:22px;height:22px;background:rgba(255,255,255,.3);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</span>
+    Nazwij model i wgraj lokalizacje
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 20px;background:var(--gray-200);color:var(--gray-500);border-radius:0 var(--radius) var(--radius) 0;font-size:13px">
+    <span style="width:22px;height:22px;background:var(--gray-300);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:var(--gray-600)">2</span>
+    Przypisz współrzędne regałów
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;align-items:start">
+
+  <!-- Form card -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-header__title">Dane modelu i plik lokalizacji</span>
+    </div>
+    <div class="card-body">
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-error" style="margin-bottom:16px">
+          {% for err in form.non_field_errors %}<div>{{ err }}</div>{% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="margin-bottom:20px">
+          <div class="section-title">Informacje o modelu</div>
+          <div class="form-grid-2" style="gap:16px">
+            <div class="form-group form-group--full">
+              <label for="id_name">Nazwa modelu *</label>
+              <input type="text" name="name" id="id_name"
+                     value="{{ form.name.value|default:'' }}"
+                     placeholder="np. Hala A — układ 2024"
+                     {% if form.name.errors %}style="border-color:var(--red)"{% endif %}>
+              {% if form.name.errors %}
+              <ul class="error-list">{% for e in form.name.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+              {% endif %}
+            </div>
+            <div class="form-group">
+              <label for="id_floor_width_m">Szerokość hali [m]</label>
+              <input type="number" name="floor_width_m" id="id_floor_width_m"
+                     value="{{ form.floor_width_m.value|default:'50' }}"
+                     step="0.5" min="1"
+                     {% if form.floor_width_m.errors %}style="border-color:var(--red)"{% endif %}>
+              {% if form.floor_width_m.errors %}
+              <ul class="error-list">{% for e in form.floor_width_m.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+              {% endif %}
+              <span class="help-text">Oś X — szerokość (X) planu hali</span>
+            </div>
+            <div class="form-group">
+              <label for="id_floor_depth_m">Głębokość hali [m]</label>
+              <input type="number" name="floor_depth_m" id="id_floor_depth_m"
+                     value="{{ form.floor_depth_m.value|default:'30' }}"
+                     step="0.5" min="1"
+                     {% if form.floor_depth_m.errors %}style="border-color:var(--red)"{% endif %}>
+              {% if form.floor_depth_m.errors %}
+              <ul class="error-list">{% for e in form.floor_depth_m.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+              {% endif %}
+              <span class="help-text">Oś Y — głębokość (Y) planu hali</span>
+            </div>
+            <div class="form-group form-group--full">
+              <label for="id_notes">Uwagi (opcjonalnie)</label>
+              <textarea name="notes" id="id_notes" rows="2"
+                        placeholder="Opis hali, dodatkowe informacje...">{{ form.notes.value|default:'' }}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px">
+          <div class="section-title">Plik z kodami lokalizacji</div>
+          <div class="form-group">
+            <label for="id_location_file">Plik CSV / TXT z lokalizacjami *</label>
+            <input type="file" name="location_file" id="id_location_file"
+                   accept=".csv,.txt"
+                   style="padding:6px 10px;border:1px solid var(--gray-300);border-radius:6px;font-size:13px;background:var(--surface);width:100%">
+            <span class="help-text">
+              Format: jedna lokalizacja per linia, np. <code style="font-family:monospace;background:var(--gray-100);padding:1px 5px;border-radius:3px">B0-01-300A</code>
+              (strefa-regał-boczek-poziom). System automatycznie wyodrębni regały.
+            </span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;padding-top:8px;border-top:1px solid var(--gray-100)">
+          <button type="submit" class="btn btn-primary">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Wczytaj i przejdź do współrzędnych
+          </button>
+          <a href="{% url 'ui:warehouse_model_list' %}" class="btn btn-secondary">Anuluj</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Help card -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-header__title">Format pliku</span>
+      </div>
+      <div class="card-body">
+        <p style="font-size:13px;color:var(--gray-700);margin-bottom:12px">
+          Plik CSV lub TXT z kodami lokalizacji — jedna lokalizacja per linia:
+        </p>
+        <pre style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;padding:12px;font-size:12px;font-family:monospace;line-height:1.8;overflow-x:auto">B0-01-300A
+B0-01-300B
+B0-01-300C
+B0-02-300A
+B0-02-300B
+C1-01-100A
+C1-01-100B</pre>
+        <p style="font-size:12px;color:var(--gray-500);margin-top:10px">
+          Format kodu: <strong>STREFA-REGAŁ-BOCZEK-POZIOM</strong><br>
+          Np. <code style="font-family:monospace">B0-01-300A</code>:<br>
+          • Strefa: <strong>B0</strong><br>
+          • Regał: <strong>01</strong><br>
+          • Boczek: <strong>300</strong><br>
+          • Poziom: <strong>A</strong>
+        </p>
+        <p style="font-size:12px;color:var(--gray-500);margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-100)">
+          <strong>Plik geometrii</strong> (np. odczytany z rysunku hali) — CSV z nagłówkiem
+          <code style="font-family:monospace">zone;rack_id;x_m;y_m;angle_deg;n_bays;bay_width_cm;depth_cm;n_levels</code>.
+          Regały powstaną od razu z pozycjami, a hala dopasuje się do ich obrysu.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-header__title">Co się stanie?</span>
+      </div>
+      <div class="card-body">
+        <ol style="font-size:13px;color:var(--gray-700);padding-left:18px;line-height:2">
+          <li>System wczyta plik i wyodrębni unikalne regały (strefa + nr regału)</li>
+          <li>Zostaniesz przekierowany do edytora współrzędnych</li>
+          <li>Ustaw pozycję X/Y każdego regału na planie hali</li>
+          <li>Gotowe — obejrzyj wizualizację 3D i plan 2D</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

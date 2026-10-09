@@ -1,0 +1,1172 @@
+{
+ "bucket_cap": {
+  "fixes": [],
+  "has_process": false,
+  "other_types": [
+   "0010"
+  ],
+  "processes": [],
+  "stock_categories": [
+   {
+    "key": "zapasowe",
+    "label": "Zapasowe"
+   }
+  ],
+  "stock_groups": [
+   {
+    "base_qty": 62,
+    "category": "zapasowe",
+    "code": "0010",
+    "count": 62,
+    "rows": [
+     {
+      "blocked": false,
+      "expiry": "2026-01-02",
+      "hu_code": "HU062",
+      "location": "C61",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-03",
+      "hu_code": "HU061",
+      "location": "C60",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-04",
+      "hu_code": "HU060",
+      "location": "C59",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-05",
+      "hu_code": "HU059",
+      "location": "C58",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-06",
+      "hu_code": "HU058",
+      "location": "C57",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-07",
+      "hu_code": "HU057",
+      "location": "C56",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-08",
+      "hu_code": "HU056",
+      "location": "C55",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-09",
+      "hu_code": "HU055",
+      "location": "C54",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-10",
+      "hu_code": "HU054",
+      "location": "C53",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-11",
+      "hu_code": "HU053",
+      "location": "C52",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-12",
+      "hu_code": "HU052",
+      "location": "C51",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-13",
+      "hu_code": "HU051",
+      "location": "C50",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-14",
+      "hu_code": "HU050",
+      "location": "C49",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-15",
+      "hu_code": "HU049",
+      "location": "C48",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-16",
+      "hu_code": "HU048",
+      "location": "C47",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-17",
+      "hu_code": "HU047",
+      "location": "C46",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-18",
+      "hu_code": "HU046",
+      "location": "C45",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-19",
+      "hu_code": "HU045",
+      "location": "C44",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-20",
+      "hu_code": "HU044",
+      "location": "C43",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-21",
+      "hu_code": "HU043",
+      "location": "C42",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-22",
+      "hu_code": "HU042",
+      "location": "C41",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-23",
+      "hu_code": "HU041",
+      "location": "C40",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-24",
+      "hu_code": "HU040",
+      "location": "C39",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-25",
+      "hu_code": "HU039",
+      "location": "C38",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-26",
+      "hu_code": "HU038",
+      "location": "C37",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-27",
+      "hu_code": "HU037",
+      "location": "C36",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-28",
+      "hu_code": "HU036",
+      "location": "C35",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-29",
+      "hu_code": "HU035",
+      "location": "C34",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-30",
+      "hu_code": "HU034",
+      "location": "C33",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-31",
+      "hu_code": "HU033",
+      "location": "C32",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-01",
+      "hu_code": "HU032",
+      "location": "C31",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-02",
+      "hu_code": "HU031",
+      "location": "C30",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-03",
+      "hu_code": "HU030",
+      "location": "C29",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-04",
+      "hu_code": "HU029",
+      "location": "C28",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-05",
+      "hu_code": "HU028",
+      "location": "C27",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-06",
+      "hu_code": "HU027",
+      "location": "C26",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-07",
+      "hu_code": "HU026",
+      "location": "C25",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-08",
+      "hu_code": "HU025",
+      "location": "C24",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-09",
+      "hu_code": "HU024",
+      "location": "C23",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-10",
+      "hu_code": "HU023",
+      "location": "C22",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-11",
+      "hu_code": "HU022",
+      "location": "C21",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-12",
+      "hu_code": "HU021",
+      "location": "C20",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-13",
+      "hu_code": "HU020",
+      "location": "C19",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-14",
+      "hu_code": "HU019",
+      "location": "C18",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-15",
+      "hu_code": "HU018",
+      "location": "C17",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-16",
+      "hu_code": "HU017",
+      "location": "C16",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-17",
+      "hu_code": "HU016",
+      "location": "C15",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-18",
+      "hu_code": "HU015",
+      "location": "C14",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-19",
+      "hu_code": "HU014",
+      "location": "C13",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-20",
+      "hu_code": "HU013",
+      "location": "C12",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-21",
+      "hu_code": "HU012",
+      "location": "C11",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-22",
+      "hu_code": "HU011",
+      "location": "C10",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-23",
+      "hu_code": "HU010",
+      "location": "C09",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-24",
+      "hu_code": "HU009",
+      "location": "C08",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-25",
+      "hu_code": "HU008",
+      "location": "C07",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-26",
+      "hu_code": "HU007",
+      "location": "C06",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-27",
+      "hu_code": "HU006",
+      "location": "C05",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-02-28",
+      "hu_code": "HU005",
+      "location": "C04",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-03-01",
+      "hu_code": "HU004",
+      "location": "C03",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-03-02",
+      "hu_code": "HU003",
+      "location": "C02",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     }
+    ],
+    "total_volume_m3": 62.0
+   }
+  ],
+  "stock_total": {
+   "base_qty": 62,
+   "blocked_qty": null,
+   "count": 62
+  }
+ },
+ "buckets": {
+  "fixes": [],
+  "has_process": false,
+  "other_types": [
+   "0051",
+   "0010",
+   "9010 (GR-Zone)",
+   "0011",
+   "9010 (DLT)",
+   "92EX",
+   "BROK"
+  ],
+  "processes": [],
+  "stock_categories": [
+   {
+    "key": "wydawcze",
+    "label": "Wydawcze"
+   },
+   {
+    "key": "zapasowe",
+    "label": "Zapasowe"
+   },
+   {
+    "key": "dlt",
+    "label": "DLT"
+   },
+   {
+    "key": "wysylka",
+    "label": "Wysyłka"
+   },
+   {
+    "key": "inne",
+    "label": "Inne"
+   }
+  ],
+  "stock_groups": [
+   {
+    "base_qty": 4,
+    "category": "wydawcze",
+    "code": "0051",
+    "count": 1,
+    "rows": [
+     {
+      "blocked": false,
+      "expiry": null,
+      "hu_code": "HU013",
+      "location": "P1",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": null
+     }
+    ],
+    "total_volume_m3": null
+   },
+   {
+    "base_qty": 42,
+    "category": "zapasowe",
+    "code": "0010",
+    "count": 5,
+    "rows": [
+     {
+      "blocked": false,
+      "expiry": "2026-01-01",
+      "hu_code": "HU003",
+      "location": "C1-03",
+      "lot": "L3",
+      "status": "c7",
+      "status_kind": "returns",
+      "volume_m3": 0.0
+     },
+     {
+      "blocked": false,
+      "expiry": "2026-01-01",
+      "hu_code": "—",
+      "location": "—",
+      "lot": "",
+      "status": "ZZ",
+      "status_kind": "free",
+      "volume_m3": null
+     },
+     {
+      "blocked": true,
+      "expiry": "2026-12-01",
+      "hu_code": "HU001",
+      "location": "C1-01",
+      "lot": "L2",
+      "status": "B6",
+      "status_kind": "blocked",
+      "volume_m3": 1.44
+     },
+     {
+      "blocked": true,
+      "expiry": null,
+      "hu_code": "HU002",
+      "location": "C1-02",
+      "lot": "",
+      "status": "Q4",
+      "status_kind": "quality",
+      "volume_m3": null
+     },
+     {
+      "blocked": true,
+      "expiry": null,
+      "hu_code": "HU005",
+      "location": "c1-04",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": null
+     }
+    ],
+    "total_volume_m3": 1.44
+   },
+   {
+    "base_qty": 21,
+    "category": "inne",
+    "code": "9010 (GR-Zone)",
+    "count": 2,
+    "rows": [
+     {
+      "blocked": false,
+      "expiry": null,
+      "hu_code": "HU008",
+      "location": "GR-02",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": null
+     },
+     {
+      "blocked": false,
+      "expiry": null,
+      "hu_code": "HU009",
+      "location": "SPLIT-3",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": null
+     }
+    ],
+    "total_volume_m3": null
+   },
+   {
+    "base_qty": 8,
+    "category": "zapasowe",
+    "code": "0011",
+    "count": 1,
+    "rows": [
+     {
+      "blocked": false,
+      "expiry": null,
+      "hu_code": "HU006",
+      "location": "C2-01",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": null
+     }
+    ],
+    "total_volume_m3": null
+   },
+   {
+    "base_qty": 30,
+    "category": "dlt",
+    "code": "9010 (DLT)",
+    "count": 1,
+    "rows": [
+     {
+      "blocked": false,
+      "expiry": null,
+      "hu_code": "HU007",
+      "location": "DLT-01",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": null
+     }
+    ],
+    "total_volume_m3": null
+   },
+   {
+    "base_qty": 50,
+    "category": "wysylka",
+    "code": "92EX",
+    "count": 1,
+    "rows": [
+     {
+      "blocked": false,
+      "expiry": null,
+      "hu_code": "HU010",
+      "location": "W1",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": 1.0
+     }
+    ],
+    "total_volume_m3": 1.0
+   },
+   {
+    "base_qty": 6,
+    "category": "inne",
+    "code": "BROK",
+    "count": 1,
+    "rows": [
+     {
+      "blocked": false,
+      "expiry": null,
+      "hu_code": "HU011",
+      "location": "X1",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": null
+     }
+    ],
+    "total_volume_m3": null
+   }
+  ],
+  "stock_total": {
+   "base_qty": 170,
+   "blocked_qty": 38,
+   "count": 13
+  }
+ },
+ "empty": {
+  "fixes": [],
+  "has_process": false,
+  "other_types": [],
+  "processes": [],
+  "stock_categories": [],
+  "stock_groups": [],
+  "stock_total": null
+ },
+ "fix_only": {
+  "fixes": [
+   {
+    "below_min": true,
+    "current": 0,
+    "location": "F1",
+    "max_qty": 0,
+    "min_qty": 1,
+    "uom": "szt",
+    "wh": "0050"
+   }
+  ],
+  "has_process": true,
+  "other_types": [],
+  "processes": [],
+  "stock_categories": [],
+  "stock_groups": [],
+  "stock_total": null
+ },
+ "fixes": {
+  "fixes": [
+   {
+    "below_min": true,
+    "current": 40,
+    "location": "B0-15",
+    "max_qty": 480,
+    "min_qty": 60,
+    "uom": "OP",
+    "wh": "0050"
+   },
+   {
+    "below_min": false,
+    "current": 0,
+    "location": "A0-01",
+    "max_qty": 0,
+    "min_qty": 0,
+    "uom": "szt",
+    "wh": "0050"
+   },
+   {
+    "below_min": false,
+    "current": 0,
+    "location": "A0-02",
+    "max_qty": 11,
+    "min_qty": 0,
+    "uom": "szt",
+    "wh": "0050"
+   },
+   {
+    "below_min": false,
+    "current": 11,
+    "location": "C9-01",
+    "max_qty": 0,
+    "min_qty": 11,
+    "uom": "szt",
+    "wh": "0010"
+   }
+  ],
+  "has_process": true,
+  "other_types": [
+   "0010"
+  ],
+  "processes": [
+   {
+    "code": "0050",
+    "desc": "Stała lokalizacja pickingowa",
+    "locations": [
+     {
+      "code": "B0-15",
+      "qty": 40
+     }
+    ],
+    "name": "Fix"
+   }
+  ],
+  "stock_categories": [
+   {
+    "key": "zapasowe",
+    "label": "Zapasowe"
+   }
+  ],
+  "stock_groups": [
+   {
+    "base_qty": 11,
+    "category": "zapasowe",
+    "code": "0010",
+    "count": 1,
+    "rows": [
+     {
+      "blocked": false,
+      "expiry": null,
+      "hu_code": "HU002",
+      "location": "C9-01",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": null
+     }
+    ],
+    "total_volume_m3": null
+   }
+  ],
+  "stock_total": {
+   "base_qty": 51,
+   "blocked_qty": null,
+   "count": 2
+  }
+ },
+ "matching": {
+  "fixes": [],
+  "has_process": true,
+  "other_types": [
+   "0010"
+  ],
+  "processes": [
+   {
+    "code": "0050",
+    "desc": "Stała lokalizacja pickingowa",
+    "locations": [
+     {
+      "code": "B1",
+      "qty": null
+     }
+    ],
+    "name": "Fix"
+   }
+  ],
+  "stock_categories": [
+   {
+    "key": "zapasowe",
+    "label": "Zapasowe"
+   }
+  ],
+  "stock_groups": [
+   {
+    "base_qty": 6,
+    "category": "zapasowe",
+    "code": "0010",
+    "count": 2,
+    "rows": [
+     {
+      "blocked": false,
+      "expiry": null,
+      "hu_code": "HU001",
+      "location": "M1",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": null
+     },
+     {
+      "blocked": false,
+      "expiry": null,
+      "hu_code": "HU002",
+      "location": "M2",
+      "lot": "",
+      "status": "",
+      "status_kind": "free",
+      "volume_m3": null
+     }
+    ],
+    "total_volume_m3": null
+   }
+  ],
+  "stock_total": {
+   "base_qty": 6,
+   "blocked_qty": null,
+   "count": 3
+  }
+ },
+ "processes": {
+  "fixes": [],
+  "has_process": true,
+  "other_types": [],
+  "processes": [
+   {
+    "code": "0050",
+    "desc": "Stała lokalizacja pickingowa",
+    "locations": [
+     {
+      "code": "B0-00",
+      "qty": 5
+     },
+     {
+      "code": "B0-01",
+      "qty": 6
+     },
+     {
+      "code": "B0-02",
+      "qty": 7
+     },
+     {
+      "code": "B0-03",
+      "qty": 8
+     },
+     {
+      "code": "B0-04",
+      "qty": 9
+     },
+     {
+      "code": "B0-05",
+      "qty": 10
+     },
+     {
+      "code": "B0-06",
+      "qty": 11
+     },
+     {
+      "code": "B0-07",
+      "qty": 12
+     },
+     {
+      "code": "B0-08",
+      "qty": 13
+     },
+     {
+      "code": "B0-09",
+      "qty": 14
+     },
+     {
+      "code": "B0-10",
+      "qty": 15
+     },
+     {
+      "code": "B0-11",
+      "qty": 16
+     }
+    ],
+    "name": "Fix"
+   },
+   {
+    "code": "0052",
+    "desc": "Zapas tuż przy lokalizacji pickingowej",
+    "locations": [
+     {
+      "code": "N1-01",
+      "qty": 10
+     },
+     {
+      "code": "—",
+      "qty": 4
+     }
+    ],
+    "name": "Near to bin"
+   },
+   {
+    "code": "0070",
+    "desc": "Picking z antresoli",
+    "locations": [
+     {
+      "code": "A1",
+      "qty": null
+     }
+    ],
+    "name": "Antresola"
+   }
+  ],
+  "stock_categories": [],
+  "stock_groups": [],
+  "stock_total": {
+   "base_qty": 175,
+   "blocked_qty": null,
+   "count": 18
+  }
+ },
+ "zero_qty": {
+  "fixes": [],
+  "has_process": false,
+  "other_types": [
+   "0010"
+  ],
+  "processes": [],
+  "stock_categories": [
+   {
+    "key": "zapasowe",
+    "label": "Zapasowe"
+   }
+  ],
+  "stock_groups": [
+   {
+    "base_qty": null,
+    "category": "zapasowe",
+    "code": "0010",
+    "count": 1,
+    "rows": [
+     {
+      "blocked": false,
+      "expiry": null,
+      "hu_code": "HU001",
+      "location": "C1",
+      "lot": "",
+      "status": "B6",
+      "status_kind": "blocked",
+      "volume_m3": null
+     }
+    ],
+    "total_volume_m3": null
+   }
+  ],
+  "stock_total": {
+   "base_qty": null,
+   "blocked_qty": null,
+   "count": 1
+  }
+ }
+}

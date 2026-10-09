@@ -1,0 +1,116 @@
+{% comment %}Animacja przepływów w widoku 3D modelu — sterowanie odtwarzaczem wh3d/js/flow-player.js.
+   Ta sama scena co „Eksport do Blendera"; trasy i osie czasu liczy GROOVE.{% endcomment %}
+<style>
+  .flow-card .card-body { padding: 14px 16px; }
+  .flow-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .flow-head__title { font-weight: 700; font-size: 15px; }
+  .flow-head__sub { color: var(--gray-500); font-size: 13px; }
+  .flow-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; }
+  .flow-form label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--gray-500); font-weight: 600; }
+  .flow-form select, .flow-form input[type=number] { min-width: 0; }
+  .flow-form input[type=number] { width: 78px; }
+  .flow-form [hidden] { display: none; }
+  .flow-head__link { margin-left: auto; font-size: 13px; font-weight: 600; }
+  .flow-status { font-size: 13px; color: var(--gray-500); margin-top: 8px; min-height: 1em; }
+  .flow-player { margin-top: 12px; border-top: 1px solid var(--gray-200); padding-top: 12px; }
+  .flow-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .flow-bar__play { width: 40px; height: 36px; border-radius: 8px; border: 0; background: var(--blue); color: #fff;
+                    font-size: 15px; font-weight: 700; cursor: pointer; flex: 0 0 auto; }
+  .flow-bar__play:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .flow-bar__seek { flex: 1 1 220px; min-width: 160px; accent-color: var(--blue); }
+  .flow-bar__time { font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 600; min-width: 108px; }
+  .flow-bar__toggles { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
+  .flow-bar__toggles label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+  .flow-info { font-size: 13px; line-height: 1.55; color: var(--gray-600, #4b5563); margin-top: 10px; }
+  .flow-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 8px; font-size: 12px; align-items: center; }
+  .flow-chip { display: inline-flex; align-items: center; gap: 5px; }
+  .flow-chip i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .flow-legend__sep { width: 1px; height: 14px; background: var(--gray-300); }
+  .flow-pallet-info { position: absolute; top: 12px; left: 12px; z-index: 5; width: 260px; max-width: calc(100% - 24px);
+                      background: rgba(15, 23, 42, .92); color: #e2e8f0; border-radius: 10px; padding: 12px 14px;
+                      font-size: 13px; box-shadow: 0 8px 24px rgba(2, 6, 23, .35); }
+  .flow-pallet-info__title { font-weight: 700; font-size: 14px; color: #fff; margin-bottom: 6px; padding-right: 20px; }
+  .flow-pallet-info__row { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; }
+  .flow-pallet-info__row span { color: #94a3b8; }
+  .flow-pallet-info__row b { text-align: right; overflow-wrap: anywhere; }
+  .flow-pallet-info__x { position: absolute; top: 6px; right: 8px; background: none; border: 0; color: #cbd5e1;
+                         font-size: 18px; cursor: pointer; line-height: 1; }
+  @media (max-width: 640px) { .flow-form label { flex: 1 1 42%; } .flow-form input[type=number] { width: 100%; } }
+</style>
+<div class="card flow-card" id="flow-player">
+  <div class="card-body">
+    <div class="flow-head">
+      <span class="flow-head__title">Animacja przepływów</span>
+      <span class="flow-head__sub">Wózki, kompletacja i palety na stanie w tym modelu — trasy omijają regały.</span>
+      {% if can_write_products %}<a class="flow-head__link" href="{% url 'ui:ewm_tasks_list' %}">Import zadań EWM →</a>{% endif %}
+    </div>
+    <div class="flow-form">
+      <label>Kompletacja
+        <select class="form-control" data-f="batch">
+          {% if flow_batches %}<option value="latest">Ostatni import aktywności</option>{% endif %}
+          {% for b in flow_batches %}<option value="{{ b.pk }}">{{ b.name }}{% if b.date_from %} · {{ b.date_from|date:"d.m.Y" }}{% if b.date_to and b.date_to != b.date_from %}–{{ b.date_to|date:"d.m.Y" }}{% endif %}{% endif %} · {{ b.row_count }} pobrań</option>{% endfor %}
+          <option value="demo">Symulacja demo</option>
+        </select>
+      </label>
+      <label>Pickerzy <input type="number" class="form-control" data-f="pickers" value="6" min="1" max="10"></label>
+      <label>Pobrań / picker <input type="number" class="form-control" data-f="picks" value="12" min="1" max="25"></label>
+      <label>Ruchy wózków
+        <select class="form-control" data-f="wt">
+          <option value="">Symulacja demo</option>
+          {% for b in flow_wt_batches %}<option value="{{ b.pk }}" data-start="{{ b.first_confirmed|date:"Y-m-d\TH:00" }}"{% if flow_wt_selected == b.pk|stringformat:"s" %} selected{% endif %}>Zadania EWM: {{ b.name }} · {{ b.first_confirmed|date:"d.m.Y" }}–{{ b.last_confirmed|date:"d.m.Y" }}</option>{% endfor %}
+        </select>
+      </label>
+      <label data-f="demo-only">Wózki <input type="number" class="form-control" data-f="forklifts" value="3" min="0" max="10"></label>
+      <label data-f="wt-only" hidden>Od <input type="datetime-local" class="form-control" data-f="wt-from" step="60"></label>
+      <label data-f="wt-only" hidden>Okno
+        <select class="form-control" data-f="wt-hours">
+          <option value="0.25">15 min</option><option value="0.5">30 min</option><option value="1" selected>1 h</option>
+          <option value="2">2 h</option><option value="4">4 h</option><option value="8">8 h (zmiana)</option>
+        </select>
+      </label>
+      <label data-f="wt-only" hidden>Czas między zadaniami
+        <select class="form-control" data-f="wt-scale">
+          <option value="1">rzeczywisty</option><option value="5">skrócony ×5</option>
+          <option value="20">skrócony ×20</option><option value="60">skrócony ×60</option>
+        </select>
+      </label>
+      <label>Stan lokalizacji
+        <select class="form-control" data-f="stock">
+          <option value="">Palety HU na stanie</option>
+          {% for s in flow_snapshots %}<option value="{{ s.pk }}">+ snapshot SAP: {{ s.name }} ({{ s.uploaded_at|date:"d.m.Y" }})</option>{% endfor %}
+          <option value="none">Bez palet (same przepływy)</option>
+        </select>
+      </label>
+      <button type="button" class="btn btn-primary" data-f="load">Załaduj animację</button>
+    </div>
+    <div class="flow-status" data-f="status" role="status" aria-live="polite"></div>
+
+    <div class="flow-player" data-f="player" hidden>
+      <div class="flow-bar">
+        <button type="button" class="flow-bar__play" data-f="play" aria-label="Odtwórz">▶</button>
+        <input type="range" class="flow-bar__seek" data-f="seek" min="0" max="1" step="0.1" value="0" aria-label="Oś czasu animacji">
+        <span class="flow-bar__time" data-f="time">0:00 / 0:00</span>
+        <select class="form-control" data-f="speed" aria-label="Prędkość odtwarzania" style="width:auto">
+          <option value="1">1×</option><option value="2">2×</option><option value="4" selected>4×</option>
+          <option value="8">8×</option><option value="16">16×</option><option value="32">32×</option>
+        </select>
+      </div>
+      <div class="flow-bar" style="margin-top:10px">
+        <div class="flow-bar__toggles">
+          <label><input type="checkbox" data-f="show-flows" checked> Trasy</label>
+          <label><input type="checkbox" data-f="show-pallets" checked> Palety na stanie</label>
+          <label><input type="checkbox" data-f="show-labels" checked> Podpisy</label>
+        </div>
+        <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;margin-left:auto">Kolor palet
+          <select class="form-control" data-f="color-by" style="width:auto">
+            <option value="state">Stan</option><option value="abc">Klasa ABC</option>
+            <option value="expiry">Termin ważności</option><option value="picks">Liczba pobrań</option>
+            <option value="sku">SKU</option>
+          </select>
+        </label>
+      </div>
+      <div class="flow-legend" data-f="legend"></div>
+      <div class="flow-info" data-f="info"></div>
+    </div>
+  </div>
+</div>

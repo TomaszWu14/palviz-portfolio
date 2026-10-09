@@ -1,0 +1,127 @@
+{% comment %}
+Alert nowej wiadomości/powiadomienia: dźwięk + popup (toast). Polling co ~18 s.
+Uniwersalne — vanilla JS, WebAudio beep, bez Push/WebSocket → działa na starym Chrome
+skanera, tablecie i telefonie. Ładowane tylko dla zalogowanych (patrz base).
+{% endcomment %}
+<div id="ntf-toast-wrap" style="position:fixed;right:12px;bottom:12px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:min(92vw,360px)"></div>
+<script>
+(function () {
+  var POLL_MS = 18000, URL = "{% url 'ui:notifications_poll' %}";
+  var last = null;                 // ostatnia znana liczba nieprzeczytanych (null = pierwszy odczyt)
+  var ac = null;
+
+  // Dźwięk przez WebAudio (bez pliku). AudioContext wymaga gestu — odblokowujemy przy 1. dotknięciu.
+  function unlock(){ try { ac = ac || new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended') ac.resume(); } catch(e){} }
+  document.addEventListener('touchstart', unlock, {once:true});
+  document.addEventListener('click', unlock, {once:true});
+  function beep(){
+    try {
+      if(!ac) return;
+      var o=ac.createOscillator(), g=ac.createGain();
+      o.type='sine'; o.frequency.value=880; o.connect(g); g.connect(ac.destination);
+      g.gain.setValueAtTime(0.001, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.25, ac.currentTime+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+0.4);
+      o.start(); o.stop(ac.currentTime+0.42);
+      if(navigator.vibrate) navigator.vibrate(120);
+    } catch(e){}
+  }
+  function toast(n){
+    var w=document.getElementById('ntf-toast-wrap'); if(!w) return;
+    var d=document.createElement('div');
+    d.style.cssText='background:#0f172a;color:#fff;border-left:5px solid #14b8a6;border-radius:10px;'
+      +'box-shadow:0 8px 24px rgba(0,0,0,.35);padding:12px 14px;font-size:14px;cursor:pointer;animation:ntfIn .2s ease';
+    d.innerHTML='<div style="font-weight:800;margin-bottom:2px">'+((n.title||'Nowa wiadomość').replace(/[<>&]/g,''))+'</div>'
+      +'<div style="opacity:.9">'+((n.body||'').replace(/[<>&]/g,''))+'</div>';
+    if(n.url){ d.onclick=function(){ location.href=n.url; }; }
+    else { d.onclick=function(){ d.remove(); }; }
+    w.appendChild(d);
+    setTimeout(function(){ if(d.parentNode) d.remove(); }, 9000);
+  }
+  // ── Pilny komunikat: modal BLOKUJĄCY, zamykany tylko „Potwierdzam odczytanie" ──
+  var ACK_URL = "{% url 'ui:notification_ack' 0 %}";   // /.../0/ack/ → podmieniamy id
+  var ackShown = null, ackTimer = null;
+  function getCookie(name){
+    var m = document.cookie.match('(?:^|; )'+name+'=([^;]*)'); return m ? decodeURIComponent(m[1]) : '';
+  }
+  function esc(s){ return (s||'').replace(/[<>&]/g,''); }
+  function showAck(n){
+    if(ackShown === n.id) return;                       // już pokazany ten komunikat
+    ackShown = n.id;
+    var ov=document.createElement('div'); ov.id='ntf-ack';
+    // top/left/right/bottom zamiast `inset` — stary Chrome skanerów (<87) nie zna skrótu.
+    ov.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:100000;background:rgba(2,20,20,.72);display:flex;'
+      +'align-items:center;justify-content:center;padding:18px';
+    ov.innerHTML='<div style="background:#fff;color:#0f172a;border-radius:16px;max-width:420px;width:100%;padding:20px;'
+      +'box-shadow:0 20px 60px rgba(0,0,0,.5)"><div style="font-size:12px;font-weight:900;letter-spacing:.06em;'
+      +'text-transform:uppercase;color:#b3402f;margin-bottom:8px">Pilny komunikat</div>'
+      +'<div style="font-weight:800;font-size:17px;margin-bottom:6px">'+esc(n.title)+'</div>'
+      +'<div style="font-size:14px;color:#334155;margin-bottom:16px;white-space:pre-wrap">'+esc(n.body)+'</div>'
+      +'<button id="ntf-ack-btn" style="width:100%;background:#0c5c58;color:#fff;border:0;border-radius:12px;'
+      +'padding:14px;font-size:15px;font-weight:800;cursor:pointer">Potwierdzam odczytanie</button>'
+      +(n.url ? '<button id="ntf-ack-open" style="width:100%;margin-top:8px;background:#fff;color:#0c5c58;'
+      +'border:2px solid #0c5c58;border-radius:12px;padding:12px;font-size:14px;font-weight:800;'
+      +'cursor:pointer">Otwórz i odpowiedz</button>' : '')
+      +'</div>';
+    document.body.appendChild(ov);
+    beep();
+    ackTimer = setInterval(beep, 30000);                // przypomnienie co 30 s aż potwierdzenia
+    document.getElementById('ntf-ack-btn').onclick=function(){
+      var btn=this;
+      fetch(ACK_URL.replace('/0/','/'+n.id+'/'), {method:'POST', credentials:'same-origin',
+            headers:{'X-CSRFToken':getCookie('csrftoken')}})
+        .then(function(r){
+          // fetch NIE odrzuca na 403/500 — bez tego modal znikał mimo nieudanego potwierdzenia
+          // i wracał z beepem w pętli. Porażka → modal zostaje, przycisk sygnalizuje błąd.
+          if(!r.ok){ btn.textContent='Błąd — spróbuj ponownie'; return; }
+          ov.remove(); clearInterval(ackTimer); ackShown=null; poll();
+        })
+        .catch(function(){ btn.textContent='Brak sieci — spróbuj ponownie'; });
+    };
+    var openBtn = document.getElementById('ntf-ack-open');
+    if(openBtn){
+      openBtn.onclick=function(){
+        // Potwierdź ODCZYT i od razu przejdź do wątku (odpowiedź w ≤2 kliknięcia).
+        fetch(ACK_URL.replace('/0/','/'+n.id+'/'), {method:'POST', credentials:'same-origin',
+              headers:{'X-CSRFToken':getCookie('csrftoken')}})
+          .then(function(){ location.href = n.url; })
+          .catch(function(){ location.href = n.url; });
+      };
+    }
+  }
+  // Żywe liczniki w nagłówku: [data-ntf-count] = powiadomienia, [data-msg-count] = wiadomości.
+  function setBadges(sel, val){
+    var els=document.querySelectorAll(sel);
+    for(var i=0;i<els.length;i++){
+      els[i].textContent = val>99 ? '99+' : String(val);
+      els[i].style.display = val>0 ? '' : 'none';
+    }
+  }
+  function poll(){
+    fetch(URL, {headers:{'X-Requested-With':'fetch'}, credentials:'same-origin'})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var c = d.count||0;
+        if(last!==null && c>last && d.latest && !d.ack){ beep(); toast(d.latest); }  // przyrost → alert
+        last = c;
+        setBadges('[data-ntf-count]', c);
+        setBadges('[data-msg-count]', d.msg_unread||0);
+        if(d.ack){ showAck(d.ack); }                     // pilny komunikat → modal blokujący
+        setStale(false);
+      })
+      .catch(function(){ setStale(true); });             // poll pada → przygaś liczniki (stan nieświeży)
+  }
+  function setStale(on){
+    var els = document.querySelectorAll('[data-ntf-count],[data-msg-count]');
+    for(var i=0;i<els.length;i++){
+      els[i].style.opacity = on ? '.45' : '';
+      els[i].title = on ? 'Brak połączenia — liczniki mogą być nieaktualne' : '';
+    }
+  }
+  var st=document.createElement('style');
+  st.textContent='@keyframes ntfIn{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}';
+  document.head.appendChild(st);
+  poll();                          // baseline (bez beepu)
+  setInterval(poll, POLL_MS);
+})();
+</script>

@@ -1,0 +1,183 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}System designu {{ app_name }} — /ui/{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><span>System designu</span></nav>
+<div class="page-header"><div>
+  <div class="page-header__title">System designu {{ app_name }}</div>
+  <div class="page-header__sub">Żywy podgląd komponentów (etap 3 audytu UX). Tokeny: <code>static/ui/css/tokens.css</code>, komponenty: <code>app.css</code>, tagi: <code>palviz_extras</code>.</div>
+</div></div>
+
+<style>
+  .sg-sec { margin:28px 0; }
+  .sg-sec h2 { font-size:15px; margin-bottom:4px; color:var(--gray-800); }
+  .sg-sec > p { color:var(--gray-500); font-size:13px; margin-bottom:12px; max-width:90ch; }
+  .sg-row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .sg-swatch { width:120px; height:56px; border-radius:8px; border:1px solid var(--gray-200); display:flex; align-items:flex-end; padding:6px; font-size:12px; }
+  .sg-ico { display:flex; flex-direction:column; align-items:center; gap:4px; width:84px; font-size:12px; color:var(--gray-500); }
+  .sg-ico .icon { color:var(--gray-800); }
+</style>
+
+<section class="sg-sec" data-testid="sg-colors">
+  <h2>Kolory semantyczne</h2>
+  <p>Tło miękkie + tekst na nim oraz pełne tło z białym tekstem — każda para ≥ 4,5:1 w obu motywach.</p>
+  <div class="sg-row">
+    <div class="sg-swatch" style="background:var(--ok-bg);color:var(--ok-fg)">ok</div>
+    <div class="sg-swatch" style="background:var(--primary-soft);color:var(--link)">w toku</div>
+    <div class="sg-swatch" style="background:var(--warn-bg);color:var(--warn-fg)">uwaga</div>
+    <div class="sg-swatch" style="background:var(--danger-bg);color:var(--danger-fg)">błąd</div>
+    <div class="sg-swatch" style="background:var(--info-bg);color:var(--info-fg)">info</div>
+    <div class="sg-swatch" style="background:var(--neutral-bg);color:var(--neutral-fg)">neutralny</div>
+  </div>
+  <div class="sg-row" style="margin-top:10px">
+    <div class="sg-swatch" style="background:var(--primary);color:#fff">--primary</div>
+    <div class="sg-swatch" style="background:var(--ok-solid);color:#fff">--ok-solid</div>
+    <div class="sg-swatch" style="background:var(--warn-solid);color:#fff">--warn-solid</div>
+    <div class="sg-swatch" style="background:var(--danger-solid);color:#fff">--danger-solid</div>
+    <div class="sg-swatch" style="background:var(--info-solid);color:#fff">--info-solid</div>
+  </div>
+</section>
+
+<section class="sg-sec" data-testid="sg-icons">
+  <h2>Ikony Lucide</h2>
+  <p><code>{% templatetag openblock %} icon "package" {% templatetag closeblock %}</code> — 16 px w tekście i przyciskach, 20 px w nawigacji, 24 px w pustych stanach. Ikona obok tekstu jest dekoracyjna (aria-hidden); ikona sama — przez <code>icon_button</code> z obowiązkową etykietą.</p>
+  <div class="sg-row">
+    {% for n in sg_icons %}
+      <div class="sg-ico">{% icon n 24 %}<span>{{ n }}</span></div>
+    {% endfor %}
+  </div>
+  <div class="sg-row" style="margin-top:10px">{% icon "package" 16 %}{% icon "package" 20 %}{% icon "package" 24 %}</div>
+</section>
+
+<section class="sg-sec" data-testid="sg-buttons">
+  <h2>Przyciski</h2>
+  <p>Jedna wysokość 36 px (28 px mały; 44 px na ekranie dotykowym). Główna akcja — jedna na widok. Nieaktywny = kolor, nie przezroczystość.</p>
+  <div class="sg-row">
+    <button type="button" class="btn btn-primary">{% icon "plus" %}Nowy produkt</button>
+    <button type="button" class="btn btn-secondary">{% icon "download" %}Eksport XLSX</button>
+    <button type="button" class="btn btn-ghost">Pokaż więcej</button>
+    <button type="button" class="btn btn-danger">{% icon "trash-2" %}Usuń</button>
+    <button type="button" class="btn btn-primary" disabled>Nieaktywny</button>
+    <button type="button" class="btn btn-secondary btn-sm">Mały</button>
+  </div>
+  <div class="sg-row" style="margin-top:10px">
+    {% icon_button "pencil" label="Edytuj produkt" %}
+    {% icon_button "copy" label="Duplikuj" %}
+    {% icon_button "trash-2" label="Usuń produkt" confirm="Usunąć produkt HV00000? Tej operacji nie można cofnąć." testid="sg-delete" %}
+    {% icon_button "external-link" label="Otwórz w nowej karcie" variant="btn-secondary" %}
+  </div>
+</section>
+
+<section class="sg-sec" data-testid="sg-toolbar">
+  <h2>Pasek narzędzi i filtrów</h2>
+  <p>Filtry w jednym rzędzie. Akcje po prawej: główna skrajnie po prawej, rzadkie w „Więcej”, destrukcyjne z potwierdzeniem.</p>
+  <div class="toolbar">
+    <div class="toolbar__start"><span class="toolbar__count">305 produktów</span></div>
+    <div class="toolbar__end">
+      <details class="menu">
+        <summary class="btn btn-secondary">{% icon "ellipsis" %}Więcej</summary>
+        <div class="menu__panel">
+          <a class="menu__item" href="#">{% icon "file-down" %}Pobierz wzór CSV</a>
+          <a class="menu__item" href="#">{% icon "file-up" %}Importuj CSV</a>
+          <a class="menu__item" href="#">{% icon "database" %}Baza referencyjna</a>
+          <div class="menu__sep"></div>
+          <button type="button" class="menu__item menu__item--danger" data-confirm="Usunąć wszystkie produkty bez hierarchii? Tej operacji nie można cofnąć.">{% icon "trash-2" %}Usuń dane…</button>
+        </div>
+      </details>
+      <a class="btn btn-secondary" href="#">{% icon "download" %}Eksport</a>
+      <a class="btn btn-primary" href="#">{% icon "plus" %}Nowy produkt</a>
+    </div>
+  </div>
+  <form class="filterbar" method="get" role="search" onsubmit="return false">
+    <label class="filterbar__search"><span class="sr-only">Szukaj</span>{% icon "search" %}<input type="search" name="sgq" placeholder="Szukaj kodu, nazwy lub EAN…"></label>
+    <label class="sr-only" for="sg-cat">Kategoria</label>
+    <select id="sg-cat"><option>Wszystkie kategorie</option><option>Kartony</option></select>
+    <label class="sr-only" for="sg-st">Status</label>
+    <select id="sg-st"><option>Każdy status</option><option>Aktywny</option></select>
+    <button type="submit" class="btn btn-secondary">{% icon "filter" %}Filtruj</button>
+    <a class="btn btn-ghost" href="#">Wyczyść</a>
+  </form>
+</section>
+
+<section class="sg-sec" data-testid="sg-table">
+  <h2>Tabela</h2>
+  <p>Nagłówek przyklejony w <code>.table-scroll</code>, liczby <code>.num</code> (do prawej, cyfry tabelaryczne), długi tekst <code>.cell-clip</code> z pełną treścią w <code>title</code>.</p>
+  <div class="card" style="padding:0"><div class="table-scroll" style="max-height:220px" tabindex="0" role="region" aria-label="Przykładowa tabela"><table class="table">
+    <thead><tr><th>Kod</th><th>Nazwa</th><th>Status HU</th><th class="num">Ilość</th><th class="num">Waga (kg)</th><th></th></tr></thead>
+    <tbody>
+      {% for r in sg_rows %}
+      <tr><td>HV0000{{ r }}</td>
+        <td class="cell-clip" title="Bardzo długa nazwa produktu ążśźęćńół — wariant {{ r }} z opisem, który nie mieści się w kolumnie">Bardzo długa nazwa produktu ążśźęćńół — wariant {{ r }} z opisem, który nie mieści się w kolumnie</td>
+        <td><span class="status-badge is-hu-{% cycle 'planned' 'in_control' 'ok' 'to_recheck' 'escaped' 'ok' %}">{% cycle 'Zaplanowany' 'W kontroli' 'Zgodny' 'Do rekontroli' 'Wyjechało bez kontroli' 'Zgodny' %}</span></td>
+        <td class="num">{% cycle '1 240' '98' '5' '12 400' '7' '310' %}</td><td class="num">{% cycle '3 419,00' '271,50' '12,00' '9 870,25' '18,40' '640,00' %}</td>
+        <td><div class="sg-row" style="gap:2px;justify-content:flex-end">{% icon_button "pencil" label="Edytuj" size="sm" %}{% icon_button "trash-2" label="Usuń" size="sm" confirm="Usunąć pozycję?" %}</div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table></div></div>
+</section>
+
+<section class="sg-sec" data-testid="sg-badges">
+  <h2>Badge statusu</h2>
+  <p>HU: <code>status-badge is-hu-{% templatetag openvariable %} hu.status {% templatetag closevariable %}</code>. Magazyn Wysyłki UKRAINA: <code>is-wh-acme / is-wh-dlt / is-wh-other</code>. Ogólne: <code>is-ok / is-progress / is-warn / is-danger / is-neutral</code>.</p>
+  <div class="sg-row">
+    <span class="status-badge is-hu-planned">Zaplanowany</span>
+    <span class="status-badge is-hu-in_control">W kontroli</span>
+    <span class="status-badge is-hu-ok">Zgodny</span>
+    <span class="status-badge is-hu-to_recheck">Do rekontroli</span>
+    <span class="status-badge is-hu-escaped">Wyjechało bez kontroli</span>
+  </div>
+  <div class="sg-row" style="margin-top:10px">
+    <span class="status-badge is-wh-acme">ACME</span>
+    <span class="status-badge is-wh-dlt">DLT</span>
+    <span class="status-badge is-wh-other">Inny magazyn</span>
+    <span class="badge badge-blue">badge-blue</span><span class="badge badge-green">badge-green</span>
+    <span class="badge badge-yellow">badge-yellow</span><span class="badge badge-red">badge-red</span><span class="badge badge-gray">badge-gray</span>
+  </div>
+</section>
+
+<section class="sg-sec" data-testid="sg-field">
+  <h2>Pole formularza</h2>
+  <p><code>{% templatetag openblock %} include "ui/components/_field.html" with field=form.x {% templatetag closeblock %}</code> — etykieta zawsze (widoczna albo <code>hide_label=1</code> → tylko dla czytnika), gwiazdka przy wymaganym, pomoc i błąd pod polem.</p>
+  <div style="max-width:380px">
+    {% include "ui/components/_field.html" with field=demo.name %}
+    {% include "ui/components/_field.html" with field=demo.ean %}
+    {% include "ui/components/_field.html" with field=demo.q hide_label=1 %}
+  </div>
+</section>
+
+<section class="sg-sec" data-testid="sg-feedback">
+  <h2>Toast · potwierdzenie · modal</h2>
+  <p><code>gvToast(tekst, {type})</code> — krótka informacja po akcji. <code>data-confirm="…"</code> na przycisku, linku lub formularzu — modal zamiast <code>confirm()</code>.</p>
+  <div class="sg-row">
+    <button type="button" class="btn btn-secondary" onclick="gvToast('Zapisano zmiany.', {type:'ok'})">Toast OK</button>
+    <button type="button" class="btn btn-secondary" onclick="gvToast('Błąd połączenia z serwerem.', {type:'danger', timeout:0})">Toast błąd (trwały)</button>
+    <button type="button" class="btn btn-danger" data-confirm="Usunąć karton „Karton A”? Tej operacji nie można cofnąć." data-testid="sg-confirm">{% icon "trash-2" %}Usuń karton</button>
+    <button type="button" class="btn btn-secondary" data-gv-open="#sg-modal">Otwórz modal</button>
+  </div>
+  <div class="gv-modal" id="sg-modal">
+    <div class="gv-modal__box" role="dialog" aria-modal="true" aria-labelledby="sg-modal-t">
+      <div class="gv-modal__title" id="sg-modal-t">Zmień lokalizację palety</div>
+      <div class="gv-modal__text">Modal na treść, której nie da się zmieścić w toaście — z jedną akcją główną.</div>
+      <div class="gv-modal__actions">
+        <button type="button" class="btn btn-secondary" data-gv-close>Anuluj</button>
+        <button type="button" class="btn btn-primary" data-gv-close>Zapisz</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sg-sec" data-testid="sg-states">
+  <h2>Ładowanie i pusty stan</h2>
+  <div class="sg-row" style="align-items:stretch">
+    <div class="card" style="padding:16px;width:min(420px,100%)">
+      <div class="gv-skeleton gv-skeleton--title"></div>
+      <div class="gv-skeleton gv-skeleton--line"></div>
+      <div class="gv-skeleton gv-skeleton--line" style="width:80%"></div>
+      <div class="gv-skeleton gv-skeleton--row"></div>
+    </div>
+    <div class="card" style="width:min(420px,100%)">
+      {% include "ui/components/_empty.html" with icon="package" title="Brak produktów w tej kategorii" desc="Zmień filtr albo dodaj pierwszy produkt." action_url="#" action_label="Nowy produkt" action_icon="plus" %}
+    </div>
+  </div>
+</section>
+{% endblock %}

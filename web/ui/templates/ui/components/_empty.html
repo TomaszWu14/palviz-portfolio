@@ -1,0 +1,9 @@
+{% comment %}
+Pusty stan (etap 3 audytu UX): ikona Lucide + zdanie + akcja. Użycie:
+  {% include "ui/components/_empty.html" with icon="package" title="Brak produktów" desc="Dodaj pierwszy produkt albo zaimportuj CSV." action_url=url action_label="Nowy produkt" %}
+{% endcomment %}{% load palviz_extras %}<div class="empty-state" data-testid="empty-state">
+  <div class="empty-state__icon">{% icon icon|default:"inbox" 24 %}</div>
+  <div class="empty-state__title">{{ title }}</div>
+  {% if desc %}<div class="empty-state__desc">{{ desc }}</div>{% endif %}
+  {% if action_url %}<a class="btn btn-primary" href="{{ action_url }}">{% if action_icon %}{% icon action_icon %}{% endif %}{{ action_label }}</a>{% endif %}
+</div>

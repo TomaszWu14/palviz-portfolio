@@ -1,0 +1,211 @@
+{% extends "ui/base.html" %}
+{% block title %}{% if obj %}Edytuj{% else %}Nowa{% endif %} instrukcja — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .carton-autocomplete {
+    background: var(--blue-light);
+    border: 1px solid var(--blue);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+  }
+  .carton-autocomplete label { color: var(--blue-mid); font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_instructions' %}">Instrukcje</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if obj %}Edytuj{% else %}Nowa{% endif %}</span>
+</nav>
+
+<div style="max-width:840px">
+  <div class="page-header">
+    <div class="page-header__title">{% if obj %}Edytuj instrukcję{% else %}Nowa instrukcja{% endif %}</div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Product & version -->
+        <div class="section-title">Produkt i wersja</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
+          <div class="form-group" style="grid-column:1/3">
+            <label for="{{ form.product.id_for_label }}">{{ form.product.label }}</label>
+            {{ form.product }}
+            {% if form.product.errors %}<ul class="error-list">{% for e in form.product.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.version.id_for_label }}">{{ form.version.label }}</label>
+            {{ form.version }}
+          </div>
+          <div class="form-group" style="grid-column:1/-1">
+            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+            {{ form.name }}
+          </div>
+        </div>
+
+        <!-- Pallet -->
+        <div class="section-title">Parametry palety</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px">
+          <div class="form-group">
+            <label for="{{ form.pallet_code.id_for_label }}">{{ form.pallet_code.label }}</label>
+            {{ form.pallet_code }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.max_height_total_cm.id_for_label }}">{{ form.max_height_total_cm.label }}</label>
+            {{ form.max_height_total_cm }}
+            {% if form.max_height_total_cm.errors %}<ul class="error-list">{% for e in form.max_height_total_cm.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.max_weight_kg.id_for_label }}">{{ form.max_weight_kg.label }}</label>
+            {{ form.max_weight_kg }}
+          </div>
+        </div>
+
+        <!-- Carton from DB -->
+        <div class="carton-autocomplete">
+          <div class="form-group">
+            <label for="{{ form.carton_from_db.id_for_label }}">{{ form.carton_from_db.label }}</label>
+            {{ form.carton_from_db }}
+            <span class="help-text">Wybranie kartonu z bazy automatycznie uzupełni wymiary poniżej</span>
+          </div>
+        </div>
+
+        <!-- Carton dimensions -->
+        <div class="section-title">Wymiary kartonu</div>
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px">
+          <div class="form-group">
+            <label for="{{ form.carton_l.id_for_label }}">{{ form.carton_l.label }}</label>
+            {{ form.carton_l }}
+            {% if form.carton_l.errors %}<ul class="error-list">{% for e in form.carton_l.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.carton_w.id_for_label }}">{{ form.carton_w.label }}</label>
+            {{ form.carton_w }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.carton_h.id_for_label }}">{{ form.carton_h.label }}</label>
+            {{ form.carton_h }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.unit_weight.id_for_label }}">{{ form.unit_weight.label }}</label>
+            {{ form.unit_weight }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.pcs_per_carton.id_for_label }}">{{ form.pcs_per_carton.label }}</label>
+            {{ form.pcs_per_carton }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.carton_tare.id_for_label }}">{{ form.carton_tare.label }}</label>
+            {{ form.carton_tare }}
+          </div>
+        </div>
+
+        <!-- Demand & layout -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div class="form-group">
+            <label for="{{ form.demand_pcs.id_for_label }}">{{ form.demand_pcs.label }}</label>
+            {{ form.demand_pcs }}
+          </div>
+          {% if form.selected_layout.field.choices|length > 1 %}
+          <div class="form-group">
+            <label for="{{ form.selected_layout.id_for_label }}">{{ form.selected_layout.label }}</label>
+            {{ form.selected_layout }}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Inner pack (opakowanie zbiorcze) -->
+        <div style="border-top:1px solid var(--gray-100);padding-top:14px;margin-bottom:16px">
+          <div style="font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">
+            Opakowanie zbiorcze (opcjonalne)
+          </div>
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px">
+            <div class="form-group" style="margin:0">
+              <label for="{{ form.inner_pack.id_for_label }}">{{ form.inner_pack.label }}</label>
+              {{ form.inner_pack }}
+              <span class="help-text">Wybierz z <a href="{% url 'ui:planner_inner_packs' %}" target="_blank" rel="noopener">bazy opakowań</a></span>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label for="{{ form.pcs_per_inner_pack.id_for_label }}">{{ form.pcs_per_inner_pack.label }}</label>
+              {{ form.pcs_per_inner_pack }}
+              <span class="help-text">Szt produktu / 1 opak. zbiorcze</span>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label for="{{ form.packs_per_carton.id_for_label }}">{{ form.packs_per_carton.label }}</label>
+              {{ form.packs_per_carton }}
+              <span class="help-text">Ile opakowań mieści się w kartonie</span>
+            </div>
+          </div>
+          {% if form.inner_pack.errors or form.pcs_per_inner_pack.errors or form.packs_per_carton.errors %}
+          <div class="alert alert-error" style="margin-top:6px;font-size:12px">
+            {{ form.inner_pack.errors }} {{ form.pcs_per_inner_pack.errors }} {{ form.packs_per_carton.errors }}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Notes & active -->
+        <div class="form-group" style="margin-bottom:12px">
+          <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+          {{ form.notes }}
+        </div>
+        <div class="form-check" style="margin-bottom:20px">
+          {{ form.is_active }}
+          <label for="{{ form.is_active.id_for_label }}">{{ form.is_active.label }}</label>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          {% if obj %}
+          <button type="submit" name="save_mode" value="overwrite" class="btn btn-primary">
+            Nadpisz wersję v{{ obj.version }}
+          </button>
+          <button type="submit" name="save_mode" value="new_version" class="btn btn-secondary">
+            Zapisz jako nową wersję
+          </button>
+          <span class="help-text" style="flex-basis:100%;margin-top:4px">
+            „Nadpisz" zmienia obecną wersję v{{ obj.version }}. „Nowa wersja" zachowa v{{ obj.version }}
+            i utworzy kolejną — przydatne po migracji, gdy chcesz mieć wariant do porównania.
+          </span>
+          {% else %}
+          <button type="submit" class="btn btn-primary">Utwórz i przelicz</button>
+          {% endif %}
+          <a href="{% url 'ui:planner_instructions' %}" class="btn btn-secondary">Anuluj</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Auto-fill carton dimensions when DB carton is selected
+const sel = document.getElementById('{{ form.carton_from_db.id_for_label }}');
+if (sel) {
+  sel.addEventListener('change', function() {
+    const pk = this.value;
+    if (!pk) return;
+    fetch('{% url "ui:carton_api" 0 %}'.replace('/0/', '/' + pk + '/'))
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(d => {
+        const set = (name, val) => { const el = document.querySelector('[name=' + name + ']'); if (el) el.value = val; };
+        set('carton_l', d.length_cm);
+        set('carton_w', d.width_cm);
+        set('carton_h', d.height_cm);
+        set('unit_weight', d.unit_weight_kg);
+        set('pcs_per_carton', d.pieces_per_carton);
+        set('carton_tare', d.tare_kg);
+      })
+      .catch(() => { /* silent — wymiary pozostają bez zmian */ });
+  });
+}
+</script>
+{% endblock %}

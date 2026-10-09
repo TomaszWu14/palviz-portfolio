@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gotowość magazynu — {{ shipment.name }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background:#f1f5f9; margin:0; color:#0f172a; }
+    .wrap { max-width:640px; margin:24px auto; background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 6px 24px rgba(2,6,23,.1); }
+    .head { background:#0369a1; color:#fff; padding:16px 20px; }
+    .body { padding:20px; }
+    .summary { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; font-size:14px; margin-bottom:16px; }
+    .askbox { background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px; margin-bottom:16px; text-align:center; }
+    .askbox b { font-size:30px; color:#1d4ed8; display:block; line-height:1; }
+    textarea, input[type=number], input[type=datetime-local] { width:100%; padding:11px; font-size:15px; border:2px solid #cbd5e1; border-radius:9px; box-sizing:border-box; margin-bottom:14px; }
+    label { font-size:13px; font-weight:700; color:#334155; display:block; margin-bottom:5px; }
+    .btns { display:flex; gap:10px; flex-wrap:wrap; }
+    button { flex:1; min-width:140px; padding:15px; border:0; border-radius:10px; font-size:16px; font-weight:700; color:#fff; cursor:pointer; }
+    .yes { background:#16a34a; } .no { background:#dc2626; } .sug { background:#d97706; }
+    .ok { background:#dcfce7; color:#166534; padding:14px; border-radius:10px; font-weight:600; }
+    .pallets { display:flex; gap:10px; flex-wrap:wrap; margin:10px 0 18px; }
+    .pal { width:84px; }
+    .pal__stack { height:120px; border:2px solid #cbd5e1; border-radius:6px 6px 3px 3px; background:#f8fafc;
+                  display:flex; flex-direction:column-reverse; overflow:hidden; }
+    .pal__seg { width:100%; }
+    .pal__base { height:8px; background:#a16207; border-radius:0 0 3px 3px; }
+    .pal__cap { text-align:center; font-size:11px; color:#64748b; margin-top:4px; }
+    .pal--empty .pal__stack { background:repeating-linear-gradient(45deg,#f8fafc,#f8fafc 6px,#eef2f7 6px,#eef2f7 12px); }
+    details { margin-top:6px; }
+    summary { cursor:pointer; font-size:13px; color:#0369a1; font-weight:600; }
+    .toggle-sug { display:none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div style="font-weight:800;font-size:18px">Potwierdzenie gotowości magazynu</div>
+      <div style="opacity:.9">{{ shipment.name }}</div>
+    </div>
+    <div class="body">
+      {% if saved %}
+        {% if wr.status == 'yes' %}
+          <div class="ok">
+            Dziękujemy — zapisano: <strong>GOTOWE / TAK</strong>.<br>
+            {% if wr.suggested_pallets %}Zaproponowana ilość palet: <strong>{{ wr.suggested_pallets }}</strong> (zamiast {{ wr.asked_pallets }}).<br>{% elif wr.confirmed_pallets %}Potwierdzono <strong>{{ wr.confirmed_pallets }}</strong> palet.<br>{% endif %}
+            {% if wr.ready_at %}Najszybszy termin gotowości: <strong>{{ wr.ready_at|date:"d.m.Y H:i" }}</strong>.{% endif %}
+          </div>
+        {% else %}
+          <div class="ok" style="background:#fee2e2;color:#991b1b">Zapisano odpowiedź: <strong>NIE</strong>. Dziękujemy.</div>
+        {% endif %}
+        <p style="font-size:14px;color:#475569">Możesz zamknąć tę stronę.</p>
+      {% else %}
+      <div class="summary">
+        Typ: <strong>{{ wr.get_kind_display }}</strong><br>
+        {% if wr.pickup_date %}Data odbioru: <strong>{{ wr.pickup_date|date:"d.m.Y" }}</strong><br>{% endif %}
+        Adres: <strong>{{ shipment.recipient_name }}{% if shipment.recipient_name %}, {% endif %}{{ shipment.destination_address|default:"—" }}</strong>
+        {% if shipment.client_requirements %}<div style="margin-top:6px;color:#b45309;font-weight:700">⚠ Wymagania klienta: {{ shipment.client_requirements }}</div>{% endif %}
+        {% if wr.kind == 'pre' %}<div style="margin-top:6px;color:#b45309;font-weight:700">⏱ Prosimy o odpowiedź do 15 minut.</div>{% endif %}
+      </div>
+
+      <div class="askbox">
+        Prosimy o przygotowanie
+        <b>{{ wr.asked_pallets|default:"—" }}</b>
+        palet{% if viz_height_cm %} · wys. {{ viz_height_cm }} cm{% endif %}
+      </div>
+
+      {% if viz_pallets %}
+      <div style="font-size:13px;font-weight:700;color:#334155;margin-bottom:4px">Wizualizacja palet (układ jak w wycenie)</div>
+      <div class="pallets">
+        {% for p in viz_pallets %}
+        <div class="pal {% if p.empty %}pal--empty{% endif %}">
+          <div class="pal__stack" title="{% for s in p.segments %}{{ s.label }}: {{ s.count }}&#10;{% endfor %}">
+            {% for s in p.segments %}<div class="pal__seg" style="height:{{ s.pct }}%;background:{{ s.color }}"></div>{% endfor %}
+          </div>
+          <div class="pal__base"></div>
+          <div class="pal__cap">{% if p.empty %}zapas{% else %}{{ p.height_cm|floatformat:0 }} cm · {{ p.n }} kart.{% endif %}</div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <label>Najszybszy termin gotowości</label>
+        <input aria-label="Najszybszy termin gotowości" type="datetime-local" name="ready_at" min="{% now 'Y-m-d\TH:i' %}">
+
+        <div class="toggle-sug" id="sugWrap">
+          <label>Proponowana inna ilość palet</label>
+          <input aria-label="Proponowana inna ilość palet" type="number" name="suggested_pallets" min="1" step="1" value="{{ wr.asked_pallets }}">
+        </div>
+
+        <textarea name="note" rows="2" placeholder="Uwagi (opcjonalnie)">{{ wr.note }}</textarea>
+        <div class="btns">
+          <button class="yes" name="answer" value="yes" type="submit">✓ Tak, przygotujemy {{ wr.asked_pallets|default:"" }}</button>
+          <button class="sug" type="button" onclick="document.getElementById('sugWrap').style.display='block';this.nextElementSibling.style.display='block';this.style.display='none'">↻ Inna ilość</button>
+          <button class="sug" name="answer" value="suggest" type="submit" style="display:none">↻ Wyślij propozycję</button>
+          <button class="no" name="answer" value="no" type="submit">✕ Nie</button>
+        </div>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

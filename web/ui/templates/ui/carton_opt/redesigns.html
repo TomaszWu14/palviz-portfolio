@@ -1,0 +1,68 @@
+{% extends "ui/base.html" %}
+{% block title %}Projekty A/B — Optymalizacja kartonów — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .co-nav { display:flex; gap:8px; margin-bottom:16px; }
+  .co-nav a { padding:8px 16px; border-radius:8px; text-decoration:none; font-weight:600;
+              font-size:13px; color:var(--gray-700); border:1px solid var(--gray-200); background:var(--surface); }
+  .co-nav a.active { background:var(--yellow-solid); border-color:var(--yellow-solid); color:#fff; }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:carton_opt_inbox' %}">Optymalizacja kartonów</a> › <span>Projekty A/B</span></nav>
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Projekty A/B opakowań</div>
+    <div class="page-header__sub">A = stan obecny (zamrożony) · B = wersja docelowa</div>
+  </div>
+</div>
+
+<div class="co-nav">
+  <a href="{% url 'ui:carton_opt_inbox' %}">Skrzynka zgłoszeń</a>
+  <a href="{% url 'ui:carton_opt_dashboard' %}">Pilność wypełnienia</a>
+  <a href="{% url 'ui:carton_opt_variants' %}">Warianty kartonów</a>
+  <a href="{% url 'ui:carton_opt_redesigns' %}" class="active">Projekty A/B</a>
+</div>
+{# Nowy projekt: indeks + zakres. #}
+<div class="card" style="margin-bottom:14px;padding:14px 18px">
+  <form method="post" action="{% url 'ui:carton_opt_redesign_new' %}"
+        style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    {% csrf_token %}
+    <input type="text" name="ref_code" required placeholder="Indeks (np. DMOM10001)"
+           data-ref-ac data-ref-url="{% url 'ui:phv_suggest' %}"
+           style="flex:1 1 200px;min-width:170px;font-family:monospace">
+    <select aria-label="Zakres" name="scope" style="width:auto">
+      <option value="oba">OP + karton</option>
+      <option value="op">Opakowanie (OP)</option>
+      <option value="karton">Karton</option>
+    </select>
+    <button type="submit" class="btn btn-primary">+ Nowy projekt</button>
+  </form>
+</div>
+<div class="card">
+  {% if truncated %}
+  <div class="badge badge-red" style="margin:8px">
+    Pokazano {{ limit }} z {{ total }} projektów — zawęź listę lub zarchiwizuj stare projekty.
+  </div>
+  {% endif %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Indeks</th><th>Zakres</th><th>Status</th>
+      <th class="text-right">Wypełnienie A → B</th><th>Data</th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td><a href="{% url 'ui:carton_opt_redesign_detail' r.rd.pk %}"
+               class="font-semibold" style="font-family:monospace">{{ r.rd.product.code }}</a></td>
+        <td>{{ r.rd.get_scope_display }}</td>
+        <td><span class="badge {% if r.rd.status == 'accepted' %}badge-green{% elif r.rd.status == 'rejected' %}badge-red{% else %}badge-gray{% endif %}">{{ r.rd.get_status_display }}</span></td>
+        <td class="text-right">{{ r.fill_a|default:"—" }}% → {{ r.fill_b|default:"—" }}%</td>
+        <td class="text-muted">{{ r.rd.created_at|date:"Y-m-d" }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5"><div class="empty-state" style="padding:24px">
+        <div class="empty-state__title">Brak projektów</div></div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

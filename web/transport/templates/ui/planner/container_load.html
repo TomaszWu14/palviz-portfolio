@@ -1,0 +1,212 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% load static %}
+{% block title %}Załadunek luzem — {{ shipment.name }} — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_shipments' %}">Przesyłki</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_shipment_detail' shipment.pk %}">{{ shipment.name }}</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Załadunek luzem (bez palet)</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Załadunek luzem — bez palet</div>
+    <div class="page-header__sub">Kartony pakowane bezpośrednio do pojazdu/kontenera</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:planner_shipment_detail' shipment.pk %}" class="btn btn-ghost btn-sm">← Wróć do palet</a>
+  </div>
+</div>
+
+<!-- Mode toggle: loose cartons vs built pallets -->
+<div class="card" style="padding:12px 16px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+  <span style="font-size:12px;color:var(--gray-500);margin-right:6px">Tryb:</span>
+  <a href="?vehicle={{ selected_key }}&mode=loose" class="btn btn-sm {% if mode == 'loose' %}btn-primary{% else %}btn-secondary{% endif %}">{% icon "package" %} Kartony luzem</a>
+  <a href="?vehicle={{ selected_key }}&mode=pallets" class="btn btn-sm {% if mode == 'pallets' %}btn-primary{% else %}btn-secondary{% endif %}">{% icon "package" %}Na paletach</a>
+</div>
+
+<!-- Vehicle selector -->
+<div class="card" style="padding:12px 16px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+  <span style="font-size:12px;color:var(--gray-500);margin-right:6px">Pojazd:</span>
+  {% for v in vehicles %}
+  <a href="?vehicle={{ v.key }}&mode={{ mode }}" class="btn btn-sm {% if v.key == selected_key %}btn-primary{% else %}btn-secondary{% endif %}"
+     style="font-size:12px">{{ v.name }}</a>
+  {% endfor %}
+</div>
+
+{% if data %}
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px">
+  <div class="card" style="text-align:center;padding:14px"><div style="font-size:24px;font-weight:800;color:#1a56db">{{ data.n_containers }}</div><div style="font-size:11px;color:var(--gray-400)">pojazdów/kontenerów</div></div>
+  {% if data.mode == 'pallets' %}
+  <div class="card" style="text-align:center;padding:14px"><div style="font-size:24px;font-weight:800">{{ data.n_pallets }}</div><div style="font-size:11px;color:var(--gray-400)">palet ({{ data.slots_per_vehicle }}/pojazd)</div></div>
+  {% else %}
+  <div class="card" style="text-align:center;padding:14px"><div style="font-size:24px;font-weight:800">{{ data.total_cartons }}</div><div style="font-size:11px;color:var(--gray-400)">kartonów luzem</div></div>
+  {% endif %}
+  <div class="card" style="text-align:center;padding:14px;border-top:3px solid {% if data.fill_pct > 80 %}#16a34a{% else %}#f59e0b{% endif %}"><div style="font-size:24px;font-weight:800">{{ data.fill_pct }}%</div><div style="font-size:11px;color:var(--gray-400)">wypełnienie kubatury</div></div>
+  <div class="card" style="text-align:center;padding:14px"><div style="font-size:15px;font-weight:700;line-height:1.2">{{ data.L }}×{{ data.W }}×{{ data.H }}</div><div style="font-size:11px;color:var(--gray-400)">wnętrze [cm]</div></div>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden;position:relative">
+  <canvas id="cl-canvas" style="display:block;width:100%;height:560px;background:#0b1020"></canvas>
+  <!-- Vehicle-type label (background watermark + crisp foreground) -->
+  <div style="position:absolute;top:16px;left:20px;pointer-events:none;z-index:3">
+    <div style="font-size:26px;font-weight:800;color:#eaf2ff;letter-spacing:.3px;text-shadow:0 2px 12px rgba(0,0,0,.7)">{{ vehicle.name }}</div>
+    <div style="font-size:13px;font-weight:600;color:#7fd6cf;text-shadow:0 1px 6px rgba(0,0,0,.7)">
+      wnętrze {{ data.L }}×{{ data.W }}×{{ data.H }} cm · {% if data.mode == 'pallets' %}na paletach{% else %}kartony luzem{% endif %}
+    </div>
+  </div>
+  <!-- Fill-efficiency HUD — always visible on the canvas (also in the embedded iframe) -->
+  <div style="position:absolute;top:16px;right:16px;z-index:4;pointer-events:none;background:rgba(8,12,24,.74);border:1px solid rgba(127,214,207,.4);border-radius:12px;padding:11px 15px;min-width:186px;color:#eaf2ff;box-shadow:0 6px 22px rgba(0,0,0,.55)">
+    <div style="font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:#9fb0d0">Efektywność wypełnienia</div>
+    <div style="font-size:32px;font-weight:800;line-height:1.05;margin:3px 0 5px;color:{% if data.fill_pct >= 85 %}#34d399{% elif data.fill_pct >= 65 %}#fbbf24{% else %}#f87171{% endif %}">{{ data.fill_pct }}<span style="font-size:18px">%</span></div>
+    <div style="height:7px;border-radius:5px;background:rgba(255,255,255,.13);overflow:hidden">
+      <div style="height:100%;width:{{ data.fill_pct }}%;background:{% if data.fill_pct >= 85 %}#34d399{% elif data.fill_pct >= 65 %}#fbbf24{% else %}#f87171{% endif %}"></div>
+    </div>
+    <div style="font-size:11px;color:#9fb0d0;margin-top:7px">kubatury · {{ data.n_containers }} × {{ vehicle.name }}</div>
+    {% if data.weight_pct %}
+    <div style="font-size:11px;color:var(--gray-300);margin-top:6px;display:flex;align-items:center;gap:6px">
+      <span style="color:#9fb0d0">waga</span>
+      <span style="flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,.13);overflow:hidden"><span style="display:block;height:100%;width:{{ data.weight_pct }}%;background:{% if data.weight_pct >= 95 %}#f87171{% elif data.weight_pct >= 70 %}#fbbf24{% else %}#60a5fa{% endif %}"></span></span>
+      <b>{{ data.weight_pct }}%</b>
+    </div>
+    {% endif %}
+  </div>
+  <div style="position:absolute;bottom:0;left:0;right:0;padding:8px 14px;font-size:11px;color:#9fb0d0;background:linear-gradient(transparent,rgba(0,0,0,.5));z-index:3;pointer-events:none">
+    Scroll = zoom · przeciągnij = obróć. {{ vehicle.name }} ({{ data.rendered }} z {{ data.n_containers }} narysowanych).
+  </div>
+</div>
+{% else %}
+<div class="card" style="padding:24px;color:var(--yellow)">{% icon "triangle-alert" %} Brak danych do załadunku — dodaj pozycje z instrukcją paletyzacji do przesyłki.</div>
+{% endif %}
+
+{% if data %}
+<script type="application/json" id="cl-data">{{ data_json|safe }}</script>
+<script type="importmap">{"imports":{"three":"/static/ui/vendor/three.module.js","three/addons/":"/static/ui/vendor/addons/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const data = JSON.parse(document.getElementById('cl-data').textContent);
+const VEHICLE_NAME = "{{ vehicle.name|escapejs }}";
+const canvas = document.getElementById('cl-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+
+const scene = new THREE.Scene();
+// Vertical gradient background (deep navy → near-black) for depth.
+(function () {
+  const cv = document.createElement('canvas'); cv.width = 8; cv.height = 256;
+  const g = cv.getContext('2d').createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, '#202a44'); g.addColorStop(0.55, '#121829'); g.addColorStop(1, '#070a14');
+  const x = cv.getContext('2d'); x.fillStyle = g; x.fillRect(0, 0, 8, 256);
+  scene.background = new THREE.CanvasTexture(cv);
+})();
+scene.fog = new THREE.Fog(0x0b1020, 2500, 7000);
+
+const camera = new THREE.PerspectiveCamera(45, 1, 1, 30000);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI / 2 - 0.02;
+
+// Lighting: ambient + warm key (shadow) + cool fill + back rim → colours pop, depth reads.
+scene.add(new THREE.HemisphereLight(0xbcd0ff, 0x404a66, 1.15));
+const sun = new THREE.DirectionalLight(0xfff2dc, 2.2);
+sun.position.set(1.2, 2.4, 1.0).multiplyScalar(1500);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -2500, right: 2500, top: 2500, bottom: -2500, near: 1, far: 9000 });
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0x9fc0ff, 0.6); fill.position.set(-1200, 700, -900); scene.add(fill);
+const rim = new THREE.DirectionalLight(0x66e0d6, 0.5); rim.position.set(0, 500, -1800); scene.add(rim);
+
+const { L, W, H } = data;
+const GAP = Math.max(80, L * 0.14);
+const n = data.containers.length;
+const span = n * L + (n - 1) * GAP;
+
+// Faceted carton: brighter top, darker sides/bottom (reads 3D, not flat). Colour saturation
+// is nudged up so the per-SKU palette looks lively rather than washed out.
+function faces(hex) {
+  const c = new THREE.Color(hex || '#c8a87e').offsetHSL(0, 0.18, 0.02);
+  const m = (k) => new THREE.MeshStandardMaterial({ color: c.clone().multiplyScalar(k), roughness: 0.62, metalness: 0.04 });
+  return [m(0.86), m(0.86), m(1.18), m(0.6), m(0.96), m(0.96)];   // +x -x +y -y +z -z
+}
+const edgeMat = new THREE.LineBasicMaterial({ color: 0x10131f, transparent: true, opacity: 0.35 });
+
+// Big faint vehicle-name watermark standing behind the load.
+function bgLabel(text, x, z) {
+  const cv = document.createElement('canvas'); cv.width = 1024; cv.height = 200;
+  const ctx = cv.getContext('2d');
+  ctx.font = '800 120px Segoe UI, system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(120,150,210,0.16)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(text, 512, 100);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false }));
+  spr.scale.set(Math.min(span * 1.4, 2600), Math.min(span * 1.4, 2600) * 0.195, 1);
+  spr.position.set(x, H * 0.62, z);
+  scene.add(spr);
+}
+bgLabel(VEHICLE_NAME, 0, -W / 2 - Math.max(700, L * 0.5));
+
+// Ground + grid (receives shadows).
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(span * 4 + 4000, 4000),
+  new THREE.MeshStandardMaterial({ color: 0x10162a, roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.position.y = -1; ground.receiveShadow = true; scene.add(ground);
+const grid = new THREE.GridHelper(span * 4 + 4000, 60, 0x2a3a66, 0x1a2440); grid.position.y = 0; scene.add(grid);
+
+data.containers.forEach((c, ci) => {
+  const ox = ci * (L + GAP) - span / 2 + L / 2;
+  // Container wireframe (internal volume) — brighter cyan.
+  const frame = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(L, H, W)),
+    new THREE.LineBasicMaterial({ color: 0x5ff0e4 }));
+  frame.position.set(ox, H / 2, 0); scene.add(frame);
+  // Pallet decks (na paletach)
+  const woodTop = new THREE.MeshStandardMaterial({ color: 0xcf9a52, roughness: 0.85 });
+  const woodSide = new THREE.MeshStandardMaterial({ color: 0x9c6f33, roughness: 0.9 });
+  for (const d of (c.decks || [])) {
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(120, 14, 80),
+      [woodSide, woodSide, woodTop, woodSide, woodSide, woodSide]);
+    deck.position.set(d[0] + ox, 7, d[1]); deck.castShadow = true; deck.receiveShadow = true; scene.add(deck);
+  }
+  // Cartons
+  for (const b of c.boxes) {
+    const [l, w, h] = b.dims;
+    const geo = new THREE.BoxGeometry(l * 0.97, h * 0.97, w * 0.97);
+    const mesh = new THREE.Mesh(geo, faces(b.color));
+    mesh.position.set(b.pos[0] + ox, b.pos[1], b.pos[2]);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    mesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMat));   // crisp outline
+    scene.add(mesh);
+  }
+});
+
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+resize();
+const dist = Math.max(span, H) * 1.25 + L;
+camera.position.set(span * 0.18, H * 1.7 + 240, dist);
+controls.target.set(0, H / 2, 0); controls.update();
+// Render on demand: only draw when the camera moves (controls.update() → true while
+// interacting/damping) or after a resize. Idle = no GPU work, so orbit stays smooth.
+let _dirty = true;
+controls.addEventListener('change', () => { _dirty = true; });
+// One observer: re-size the renderer AND flag a redraw (no duplicate observers).
+new ResizeObserver(() => { resize(); _dirty = true; }).observe(canvas.parentElement);
+(function loop(){
+  requestAnimationFrame(loop);
+  const moving = controls.update();
+  if (moving || _dirty) { renderer.render(scene, camera); _dirty = false; }
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,41 @@
+# Runtime dependencies — PINNED for reproducible builds.
+# These are the exact versions the test suite is green on. Bump deliberately
+# (change a pin, re-run both test suites) rather than letting `>=` drift.
+pandas==3.0.3
+matplotlib==3.11.1
+plotly==6.8.0
+django==5.2.17   # LTS; 6.x wymaga Pythona >=3.12, a CI/Docker stoją na 3.11 — nie podbijać bez zmiany Pythona
+openpyxl==3.1.5
+Pillow==12.3.0
+gunicorn==26.0.0
+whitenoise==6.12.0
+celery[redis]==5.6.3
+django-celery-results==2.6.0
+django-simple-history==3.12.0
+redis==6.4.0   # kombu[redis] (celery 5.6.x) wymaga redis <6.5 — nie podbijać do 7/8 bez bumpa celery/kombu
+django-axes==8.3.1
+mozilla-django-oidc==4.0.1        # optional SSO (Keycloak/OIDC) — only active when OIDC_ENABLED=true
+sentry-sdk[django]==2.64.0
+requests==2.34.2
+msal==1.37.0
+psycopg2-binary==2.9.12   # PostgreSQL driver (used when DATABASE_URL is set)
+numpy==2.4.6              # vectorised packing geometry (layout ranking)
+django-htmx==1.27.0       # htmx integration: request.htmx + middleware (partial renders)
+django-ninja==1.6.2       # typed REST API (HU scanner) with auto OpenAPI docs
+django-filter==25.2       # filterable list views
+django-tables2==3.0.0     # sortable / paginated tables
+polars==1.43.2            # fast Excel/CSV ingest for large WMS exports (lazy; pandas fallback)
+XlsxWriter==3.2.9         # richer Excel export engine (formatting / freeze panes)
+weasyprint==70.0          # HTML→PDF for quotes / readiness reports (imported lazily)
+ortools==9.15.6755        # CP-SAT optimal single-layer packer (optional engine; lazy import)
+rapidfuzz==3.10.1         # fuzzy REF suggestions in MatInfo search (optional; lazy import)
+django-redis==7.0.0       # Redis cache backend (reuses the Celery Redis; locmem fallback)
+django-celery-beat==2.9.0 # DB-editable periodic task schedules (driver reminders etc.)
+django-storages==1.14.6   # pluggable media/static backend (S3/object storage; opt-in via env)
+structlog==26.1.0         # structured logging (opt-in JSON renderer)
+python-barcode==0.16.1    # GS1/EAN/Code128 barcode + SSCC label generation
+qrcode==8.2               # QR codes for HU / location labels
+opentelemetry-sdk==1.44.0 # optional tracing (off unless OTEL_ENABLED=1)
+pydantic-settings==2.14.2 # typed, validated env config (fail-fast at startup — palletweb/config.py)
+anthropic==0.120.0        # ZARIA LLM calls (lazy import; only used when ZARIA_ANTHROPIC_API_KEY is set)
+openai==2.54.0            # ZARIA: Ollama / OpenAI / Azure (zgodne API; lazy import) — B-010; 2.x = ten sam httpx co anthropic

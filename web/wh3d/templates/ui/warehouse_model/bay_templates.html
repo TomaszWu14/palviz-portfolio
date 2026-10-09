@@ -1,0 +1,70 @@
+{% extends "ui/base.html" %}
+{% block title %}Szablony gniazd — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_model_list' %}">Modele magazynu</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Szablony gniazd</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Szablony gniazd</div>
+    <div class="page-header__sub">Słup regału: ile palet stoi na belce i jakie poziomy są od podłogi w górę — z szablonów powstają adresy miejsc</div>
+  </div>
+  {% if can_write_products %}
+  <div class="page-header__actions">
+    <a href="{% url 'ui:bay_template_new' %}" class="btn btn-primary">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nowy szablon
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card">
+  {% if templates %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nazwa</th><th>Palet na belce</th><th>Belka [mm]</th><th>Poziomy od dołu</th>
+          <th>Typy EWM</th><th>Użycie</th><th style="text-align:right">Akcje</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in templates %}
+        <tr>
+          <td>
+            <span class="font-semibold">{{ t.name }}</span>
+            {% if t.notes %}<div class="text-sm text-muted">{{ t.notes }}</div>{% endif %}
+          </td>
+          <td>{{ t.pallets_per_beam }}</td>
+          <td>{{ t.beam_mm }}</td>
+          <td><code>{{ t.level_label }}</code></td>
+          <td class="text-sm">{{ t.ewm_types_label|default:"—" }}</td>
+          <td class="text-sm text-muted">{{ t.n_racks }} rzędów (domyślny) · {{ t.n_bays }} gniazd (wyjątek)</td>
+          <td style="text-align:right;white-space:nowrap">
+            {% if can_write_products %}
+            <a href="{% url 'ui:bay_template_edit' t.pk %}" class="btn btn-secondary btn-sm">Edytuj</a>
+            <form method="post" action="{% url 'ui:bay_template_delete' t.pk %}" style="display:inline"
+                  onsubmit="return confirm('Usunąć szablon „{{ t.name|escapejs }}”? Rzędów z tym szablonem domyślnym: {{ t.n_racks }} (stracą adresy do ponownego „Wykryj z EWM”).')">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--red)">Usuń</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card-body text-muted">
+    Brak szablonów. Utwórz pierwszy albo otwórz model magazynu i użyj „Wykryj z EWM” — szablony powstaną z kodów lokalizacji.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

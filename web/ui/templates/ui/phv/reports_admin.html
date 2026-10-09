@@ -1,0 +1,57 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Zgłoszenia — {{ app_name }}{% endblock %}
+{% block content %}
+<div style="max-width:920px;margin:0 auto">
+  <div class="page-header">
+    <h1 class="page-header__title" style="margin:0">{% icon "search" %} Zgłoszenia z magazynu</h1>
+    {% if open_count %}<span class="badge badge-red">{{ open_count }} otwartych</span>{% endif %}
+  </div>
+  <p style="font-size:13px;color:var(--gray-500);margin:0 0 14px">
+    Zgłoszenia z przycisku „Zgłoś" — master data (hierarchia opakowań) i lokalizacje, od wszystkich użytkowników.
+    Rozmowy komunikatora są w <a href="{% url 'ui:messages_admin' %}">panelu wątków</a>.
+  </p>
+
+  <form method="get" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+    <label style="font-size:13px;font-weight:700;color:var(--gray-600)">Status:</label>
+    <select aria-label="Status" name="status" onchange="this.form.submit()"
+            style="padding:8px 10px;font-size:14px;border:1px solid var(--gray-300);border-radius:8px">
+      <option value="">Wszystkie</option>
+      {% for val, lbl in statuses %}<option value="{{ val }}" {% if f_status == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+    </select>
+  </form>
+
+  {% if rows %}
+  <div class="table-wrap" style="border:1px solid var(--gray-200);border-radius:12px;overflow:hidden">
+    <table class="table" style="font-size:13px">
+      <thead><tr>
+        <th>Typ</th><th>REF / Lokalizacja</th><th>Zgłoszenie</th><th>Szczegół</th>
+        <th>Zgłaszający</th><th>Data</th><th>Status</th>
+      </tr></thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          <td>
+            {% if r.kind == "material" %}<span style="font-size:11px;font-weight:800;background:#ede9fe;color:#6d28d9;border-radius:6px;padding:2px 7px">materiał</span>
+            {% else %}<span style="font-size:11px;font-weight:800;background:#dbeafe;color:#1d4ed8;border-radius:6px;padding:2px 7px">lokalizacja</span>{% endif %}
+          </td>
+          <td style="font-family:ui-monospace,Menlo,monospace;font-weight:700;color:var(--gray-900)">{{ r.label }}</td>
+          <td>{{ r.type_display }}{% if r.photo %} {% icon "camera" %}{% endif %}</td>
+          <td style="color:var(--gray-600)">{{ r.detail|default:"—"|truncatechars:60 }}</td>
+          <td style="color:var(--gray-600)">{{ r.reporter }}</td>
+          <td style="color:var(--gray-400);white-space:nowrap">{{ r.created_at|date:"Y-m-d H:i" }}</td>
+          <td>
+            <span class="badge {% if r.status == 'open' %}badge-red{% elif r.status == 'in_review' %}badge-yellow{% else %}badge-green{% endif %}">{{ r.status_display }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="border:1px dashed var(--gray-300);border-radius:12px;padding:28px;text-align:center;color:var(--gray-400)">
+    Brak zgłoszeń{% if f_status %} o wybranym statusie{% endif %}.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

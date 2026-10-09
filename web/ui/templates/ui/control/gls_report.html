@@ -1,0 +1,89 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Raport konsolidacji GLS — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:hu_control_hub' %}">Kontrola HU</a>
+  <span class="breadcrumb__sep">›</span><span>Konsolidacja GLS</span>
+</nav>
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{{ "📦"|pv_icon:26 }} Konsolidacja GLS — kartony → paczki</div>
+    <div class="page-header__sub">Kto najlepiej pakuje: współczynnik = kartony na paczkę (wyżej = lepsza konsolidacja)</div>
+  </div>
+</div>
+
+<form method="get" style="display:flex;gap:8px;margin-bottom:14px;align-items:center"
+      onsubmit="return glsDatesValid(this)">
+  <label style="font-size:13px">Od <input type="date" name="od" id="gls-od" value="{{ d_from|date:'Y-m-d' }}" class="input"></label>
+  <label style="font-size:13px">Do <input type="date" name="do" id="gls-do" value="{{ d_to|date:'Y-m-d' }}" class="input"></label>
+  <button type="submit" class="btn btn-ghost btn-sm">Filtruj</button>
+</form>
+<script>
+  // Cichy pusty wynik przy Od>Do → jawny komunikat zamiast pustej tabeli.
+  (function(){
+    var od = document.getElementById('gls-od'), dov = document.getElementById('gls-do');
+    function sync(){ if (od.value) dov.min = od.value; if (dov.value) od.max = dov.value; }
+    od.addEventListener('change', sync); dov.addEventListener('change', sync); sync();
+    window.glsDatesValid = function(){
+      if (od.value && dov.value && od.value > dov.value){
+        alert('Data „Od" nie może być późniejsza niż „Do".');
+        return false;
+      }
+      return true;
+    };
+  })();
+</script>
+
+<div style="display:flex;gap:14px;margin-bottom:16px;flex-wrap:wrap">
+  <div class="card" style="padding:12px 18px"><strong style="font-size:20px">{{ total_cartons }}</strong> kartonów</div>
+  <div class="card" style="padding:12px 18px"><strong style="font-size:20px">{{ total_parcels }}</strong> paczek</div>
+</div>
+
+<div class="card" style="margin-bottom:18px">
+  <div class="card-header"><span class="card-header__title">Ranking kontrolerów</span></div>
+  <div class="table-wrap"><table class="table">
+    <thead><tr>
+      <th>#</th><th>Kontroler</th><th style="text-align:right">Palet</th>
+      <th style="text-align:right">Kartony</th><th style="text-align:right">Paczki</th>
+      <th style="text-align:right">Kartony/paczkę</th>
+      <th style="text-align:right">Śr. m³/paczkę</th><th style="text-align:right">Σ m³</th>
+    </tr></thead>
+    <tbody>
+    {% for r in rows %}
+    <tr>
+      <td>{% if forloop.first %}{% icon "medal" %}{% elif forloop.counter == 2 %}{% icon "medal" %}{% elif forloop.counter == 3 %}{% icon "medal" %}{% else %}{{ forloop.counter }}{% endif %}</td>
+      <td style="font-weight:700">{{ r.name }}</td>
+      <td style="text-align:right">{{ r.n }}</td>
+      <td style="text-align:right">{{ r.cartons }}</td>
+      <td style="text-align:right">{{ r.parcels }}</td>
+      <td style="text-align:right;font-weight:800;color:{% if r.ratio >= 2 %}var(--green){% else %}var(--gray-900){% endif %}">{{ r.ratio }}</td>
+      <td style="text-align:right">{{ r.avg_parcel_m3|default:"—" }}</td>
+      <td style="text-align:right">{{ r.volume }}</td>
+    </tr>
+    {% empty %}<tr><td colspan="8" class="text-muted" style="text-align:center;padding:26px">Brak rozliczeń GLS w tym okresie.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+
+<div class="card">
+  <div class="card-header"><span class="card-header__title">Ostatnie rozliczenia</span></div>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>HU</th><th>Kontroler</th><th style="text-align:right">Kartony → paczki</th>
+      <th style="text-align:right">Objętość [m³]</th><th>Kiedy</th></tr></thead>
+    <tbody>
+    {% for e in recent %}
+    <tr>
+      <td><a href="{% url 'ui:hu_control_detail' e.hu.pk %}">{{ e.hu.code|default:e.hu.seq }}</a></td>
+      <td>{{ e.controller.username|default:"—" }}</td>
+      <td style="text-align:right;font-weight:700">{{ e.cartons }} → {{ e.parcels }}</td>
+      <td style="text-align:right">{{ e.volume_m3|floatformat:3|default:"—" }}</td>
+      <td class="text-muted">{{ e.created_at|date:"d.m H:i" }}</td>
+    </tr>
+    {% empty %}<tr><td colspan="5" class="text-muted" style="text-align:center;padding:20px">Brak wpisów.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

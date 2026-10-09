@@ -1,0 +1,72 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Lista adresowa wycen — {{ app_name }}{% endblock %}
+{% block nav_shipments %}topnav__link--active{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_shipments' %}">Wysyłki</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Lista adresowa wycen</span>
+</nav>
+
+<div class="page-header">
+  <div class="page-header__title">Lista adresowa wycen</div>
+</div>
+
+<div class="card" style="margin-bottom:16px">
+  <div class="card-body">
+    <form method="post" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add">
+      <div class="form-group" style="margin:0">
+        <label>Nazwa / firma</label>
+        <input aria-label="Nazwa / firma" type="text" name="name" required style="min-width:200px">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>E-mail</label>
+        <input aria-label="E-mail" type="email" name="email" required style="min-width:220px">
+      </div>
+      <div class="form-group" style="margin:0;flex:1">
+        <label>Uwagi (opcjonalnie)</label>
+        <input aria-label="Uwagi (opcjonalnie)" type="text" name="notes" style="width:100%">
+      </div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--gray-700);white-space:nowrap">
+        <input type="checkbox" name="is_warehouse" style="width:18px;height:18px"> Magazyn
+      </label>
+      <button type="submit" class="btn btn-primary">Dodaj</button>
+    </form>
+  </div>
+</div>
+
+<div class="card card--accent" style="--pc:#7c3aed">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Nazwa / firma</th><th>E-mail</th><th>Uwagi</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for r in recipients %}
+      <tr>
+        <td><strong>{{ r.name }}</strong>{% if r.is_warehouse %}<span class="badge" style="background:var(--blue-light);color:var(--blue-mid);margin-left:6px;font-size:10px">magazyn</span>{% endif %}</td>
+        <td><a href="mailto:{{ r.email }}">{{ r.email }}</a></td>
+        <td class="text-sm text-muted">{{ r.notes|default:"—" }}</td>
+        <td>{% if r.is_active %}<span class="badge badge-green">Aktywny</span>{% else %}<span class="badge badge-gray">Nieaktywny</span>{% endif %}</td>
+        <td>
+          <form method="post" onsubmit="return confirm('Usunąć {{ r.name }}?')">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="del">
+            <input type="hidden" name="rid" value="{{ r.pk }}">
+            <button type="submit" class="btn btn-ghost btn-sm btn-icon" style="color:var(--red)" title="Usuń">{% icon "x" cls="icon--em" %}</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5"><div class="empty-state"><div class="empty-state__title">Brak adresów</div>
+        <div class="empty-state__desc">Dodaj adresy, na które chcesz wysyłać zapytania o wycenę transportu.</div></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

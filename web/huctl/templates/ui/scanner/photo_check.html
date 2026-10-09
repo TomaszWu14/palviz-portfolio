@@ -1,0 +1,62 @@
+{% extends "ui/scanner/base.html" %}{% load palviz_extras %}
+{% block bar %}Zdjęcie palety{% endblock %}
+{% block content %}
+  {# Bramka fizycznej obecności: zdjęcie palety przed liczeniem. Ekran tylko na urządzeniach #}
+  {# z aparatem (Zebra bez aparatu nie trafia tu — _needs_photo ją przepuszcza). #}
+  <div class="pcard" style="text-align:center">
+    <div style="font-weight:800;font-size:18px;color:var(--teal-deep);margin-bottom:4px">HU {{ hu.ref }}</div>
+    <div style="font-size:13px;color:#64748b;margin-bottom:14px">
+      Zrób <strong>zdjęcie tej palety</strong>, zanim zaczniesz liczyć — dowód obecności przy towarze.
+    </div>
+    <form method="post" id="photo-form" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="file" name="photo" id="photo" accept="image/*" capture="environment"
+             style="display:none">
+      <button type="button" class="btn btn--xl btn--accent" style="width:100%"
+              onclick="document.getElementById('photo').click()">{% icon "camera" %} Zrób zdjęcie</button>
+      <img id="preview" alt="" style="display:none;max-width:100%;border-radius:10px;margin-top:12px">
+      <button type="submit" id="send" class="btn btn--xl btn--accent" style="width:100%;margin-top:12px;display:none">
+        Prześlij i licz
+      </button>
+      <button type="button" id="retake" class="btn btn--ghost" style="margin-top:8px;display:none"
+              onclick="document.getElementById('photo').click()">Zrób ponownie</button>
+    </form>
+  </div>
+  <script>
+    // Kompresja po stronie skanera: kanwa → JPEG ~1280 px, żeby nie ładować 12 MB na łącze
+    // magazynowe. Ten ekran leci tylko na telefonie/tablecie (nowoczesny Chrome → DataTransfer OK);
+    // gdyby API zawiodło, wysyłamy oryginał (serwer i tak przyjmuje ≤12 MB).
+    (function () {
+      var input = document.getElementById('photo');
+      var preview = document.getElementById('preview');
+      var send = document.getElementById('send');
+      var retake = document.getElementById('retake');
+      input.addEventListener('change', function () {
+        var file = input.files && input.files[0];
+        if (!file) return;
+        var img = new Image();
+        img.onload = function () {
+          var max = 1280, w = img.width, h = img.height;
+          if (w > max || h > max) { var s = max / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+          var c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          preview.src = c.toDataURL('image/jpeg', 0.72);
+          preview.style.display = 'block';
+          send.style.display = 'block';
+          retake.style.display = 'block';
+          try {
+            c.toBlob(function (blob) {
+              if (!blob) return;
+              var f = new File([blob], 'hu.jpg', { type: 'image/jpeg' });
+              var dt = new DataTransfer();
+              dt.items.add(f);
+              input.files = dt.files;   // podmień oryginał na skompresowany
+            }, 'image/jpeg', 0.72);
+          } catch (e) { /* stary browser — leci oryginał */ }
+        };
+        img.src = URL.createObjectURL(file);
+      });
+    })();
+  </script>
+{% endblock %}

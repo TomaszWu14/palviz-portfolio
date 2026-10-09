@@ -1,0 +1,229 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Macierz login × moduł — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  /* Akcent "Dostęp" na tym ekranie: Mountain Meadow (Crayola, #30BA8F) zamiast
+     jaskrawego globalnego --green. Styl ładuje się tylko tutaj, więc nadpisanie
+     :root działa per-ekran (JS czyta kolor przez getComputedStyle → też go widzi). */
+  :root, :root[data-theme="light"] { --green:#30BA8F; }
+  .mx-head { display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap; }
+  .mx-kpi { display:flex; gap:16px; }
+  .mx-kpi .n { font-size:20px; font-weight:800; line-height:1; }
+  .mx-kpi .n.hl { color:var(--green); }
+  .mx-kpi .l { font-size:11px; color:var(--gray-500); margin-top:3px; }
+  .mx-kpi .sep { width:1px; background:var(--gray-200); }
+  .mx-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:14px 0 12px; }
+  .mx-search { display:flex; align-items:center; gap:8px; height:36px; padding:0 12px;
+    border-radius:9px; background:var(--surface); border:1px solid var(--gray-200); min-width:250px; }
+  .mx-search input { border:0; outline:0; background:transparent; font-size:13px; color:var(--gray-900); width:100%; }
+  .mx-tabs { display:flex; gap:2px; padding:3px; border-radius:9px; background:var(--gray-100); }
+  .mx-tab { height:30px; padding:0 12px; border:0; border-radius:7px; cursor:pointer;
+    font-size:13px; font-weight:600; background:transparent; color:var(--gray-600); }
+  .mx-tab.on { background:var(--surface); color:var(--gray-900); box-shadow:0 1px 2px rgba(0,0,0,.14); }
+  .mx-legend { display:flex; align-items:center; gap:14px; height:36px; padding:0 12px;
+    border-radius:9px; background:var(--surface); border:1px solid var(--gray-200); font-size:12px; color:var(--gray-600); }
+  .mx-legend b { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--gray-400); font-weight:700; }
+  .mx-sw { width:13px; height:13px; border-radius:4px; display:inline-block; vertical-align:-2px; margin-right:5px; }
+  table.mx { border-collapse:separate; border-spacing:0; width:max-content; min-width:100%; }
+  .mx th, .mx td { border-bottom:1px solid var(--gray-100); }
+  .mx thead th { position:sticky; top:0; z-index:3; background:var(--gray-50); }
+  .mx thead tr:nth-child(2) th { top:38px; }
+  .mx th.usr, .mx td.usr { position:sticky; left:0; z-index:2; background:var(--surface);
+    text-align:left; width:250px; min-width:250px; border-right:1px solid var(--gray-100); }
+  .mx thead th.usr { z-index:4; background:var(--gray-50); }
+  .mx th { padding:8px 12px; text-align:left; }
+  .mx td { padding:9px 10px; text-align:center; vertical-align:middle; }
+  .mx .grp { font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--green);
+    font-weight:700; border-left:1px solid var(--gray-100); }
+  .mx .modh .nm { font-weight:600; font-size:12px; color:var(--gray-900); }
+  .mx .modh .cd { font-size:10px; color:var(--gray-400); margin-top:2px; }
+  .mx .modh { border-left:1px solid var(--gray-100); min-width:128px; }
+  .mx-av { width:32px; height:32px; flex:none; border-radius:9px; display:grid; place-items:center;
+    font-weight:800; font-size:11px; background:var(--gray-100); color:var(--gray-700); }
+  .mx-av.su { background:var(--green); color:#fff; }
+  .role-badge { font-size:10px; padding:1px 7px; border-radius:999px; background:var(--gray-100);
+    color:var(--gray-600); margin:1px 2px 0 0; display:inline-block; }
+  .badge-super { font-size:10px; font-weight:800; letter-spacing:.06em; padding:2px 6px; border-radius:5px;
+    background:var(--green); color:#fff; }
+  .seg { display:inline-flex; gap:2px; padding:2px; border-radius:8px; background:var(--gray-100); }
+  .seg button { width:26px; height:24px; display:grid; place-items:center; border:0; border-radius:6px;
+    cursor:pointer; background:transparent; color:var(--gray-400); font-weight:800; font-size:13px; line-height:1; }
+  .seg-hint { font-size:11px; margin-top:4px; color:var(--gray-400); }
+  .lock { display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:999px;
+    background:var(--green-light); color:var(--green); font-size:11px; font-weight:600; }
+  .save-bar { position:sticky; bottom:0; z-index:5; display:flex; align-items:center; gap:14px;
+    padding:12px 14px; margin-top:12px; background:var(--surface);
+    border:1px solid var(--gray-200); border-radius:12px; }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_panel' %}">Panel admina</a><span class="breadcrumb__sep">›</span><span>Macierz login × moduł</span></nav>
+
+<div class="mx-head">
+  <div>
+    <div class="page-header__title">Macierz login × moduł</div>
+    <div class="page-header__sub" style="max-width:640px">Uprawnienia per login, per moduł.
+      <b>Dziedzicz</b> działa wg roli, <b>Dostęp</b> wymusza, <b>Blokada</b> zabrania mimo roli.
+      Superuser zawsze ma wszystko.</div>
+  </div>
+  <div style="flex:1"></div>
+  <div class="mx-kpi">
+    <div style="text-align:right"><div class="n">{{ rows|length }}</div><div class="l">loginów</div></div>
+    <div class="sep"></div>
+    <div style="text-align:right"><div class="n">{{ modules|length }}</div><div class="l">modułów</div></div>
+    <div class="sep"></div>
+    <div style="text-align:right"><div class="n hl" id="mxOverrides">0</div><div class="l">nadpisań</div></div>
+  </div>
+</div>
+
+<div class="mx-bar">
+  <div class="mx-search">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--gray-400)"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.3-4.3"/></svg>
+    <input id="mxSearch" type="search" placeholder="Szukaj loginu lub roli" autocomplete="off">
+  </div>
+  <div class="mx-tabs" id="mxTabs">
+    <button type="button" class="mx-tab on" data-flt="all">Wszystkie</button>
+    <button type="button" class="mx-tab" data-flt="overrides">Z nadpisaniami</button>
+    <button type="button" class="mx-tab" data-flt="blocks">Z blokadami</button>
+  </div>
+  <div style="flex:1"></div>
+  <div class="mx-legend">
+    <b>Legenda</b>
+    <span><span class="mx-sw" style="border:1.5px solid var(--gray-300)"></span>Dziedzicz</span>
+    <span><span class="mx-sw" style="background:var(--green)"></span>Dostęp</span>
+    <span><span class="mx-sw" style="background:var(--red)"></span>Blokada</span>
+  </div>
+</div>
+
+<form method="post" id="mxForm">
+  {% csrf_token %}
+  <input type="hidden" name="matrix_token" value="{{ matrix_token }}">{# optimistic lock #}
+  <div class="card" style="padding:0; overflow:auto; max-height:calc(100vh - 320px)">
+    <table class="mx">
+      <thead>
+        <tr>
+          <th class="usr" rowspan="2">Użytkownik</th>
+          {% for g in col_groups %}<th class="grp" colspan="{{ g.span }}">{{ g.name }}</th>{% endfor %}
+        </tr>
+        <tr>
+          {% for m in modules %}<th class="modh"><div class="nm">{{ m.name }}</div><div class="cd">{{ m.key }}</div></th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+      {% for row in rows %}
+      <tr data-search="{{ row.user.username|lower }} {% for g in row.user.groups.all %}{{ g.name|lower }} {% endfor %}">
+        <td class="usr">
+          <div style="display:flex; align-items:center; gap:11px">
+            <div class="mx-av {% if row.user.is_superuser %}su{% endif %}">{{ row.user.username|slice:":2"|upper }}</div>
+            <div style="min-width:0">
+              <div style="display:flex; align-items:center; gap:7px">
+                <span style="font-weight:700; color:var(--gray-900)">{{ row.user.username }}</span>
+                {% if row.user.is_superuser %}<span class="badge-super">SUPER</span>{% endif %}
+              </div>
+              <div style="margin-top:2px">{% for g in row.user.groups.all %}<span class="role-badge">{{ g.name }}</span>{% empty %}<span style="font-size:11px;color:var(--gray-400)">brak ról</span>{% endfor %}</div>
+            </div>
+          </div>
+        </td>
+        {% for c in row.cells %}
+        <td>
+          {% if row.user.is_superuser %}
+            <span class="lock">{% icon "lock" %} zawsze</span>
+          {% else %}
+            <div class="seg" data-roleok="{% if c.role_ok %}1{% else %}0{% endif %}">
+              <input type="hidden" name="m_{{ row.user.pk }}_{{ c.module.key }}" value="{{ c.state }}" data-init="{{ c.state }}">
+              <button type="button" data-v="inherit" title="Dziedzicz z roli">–</button>
+              <button type="button" data-v="allow" title="Wymuś dostęp">{% icon "check" cls="icon--em" %}</button>
+              <button type="button" data-v="deny" title="Blokuj mimo roli">{% icon "x" cls="icon--em" %}</button>
+            </div>
+            <div class="seg-hint"></div>
+          {% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="save-bar">
+    <span id="mxDirty" style="font-size:13px; color:var(--gray-600)">Brak niezapisanych zmian</span>
+    <div style="flex:1"></div>
+    <button type="button" id="mxReset" class="btn btn-ghost">Odrzuć zmiany</button>
+    <button type="submit" id="mxSave" class="btn btn-primary" disabled>{% icon "save" %} Zapisz macierz</button>
+  </div>
+</form>
+
+<script>
+(function(){
+  var form = document.getElementById('mxForm');
+  var segs = Array.prototype.slice.call(form.querySelectorAll('.seg'));
+  var hintTxt = {inherit:'wg roli', allow:'wymuszony', deny:'zabroniony'};
+
+  function css(v){ var s=getComputedStyle(document.documentElement); return s.getPropertyValue(v).trim(); }
+  var C = {green:css('--green'), red:css('--red'), surface:css('--surface'),
+           g400:css('--gray-400'), g800:css('--gray-800')||css('--gray-900')};
+
+  function paint(seg){
+    var inp = seg.querySelector('input'), v = inp.value;
+    var hint = seg.parentNode.querySelector('.seg-hint');
+    seg.querySelectorAll('button').forEach(function(b){
+      var on = b.dataset.v === v;
+      b.style.background = on ? (v==='allow'?C.green : v==='deny'?C.red : C.surface) : 'transparent';
+      b.style.color = on ? (v==='inherit'?C.g800:'#fff') : C.g400;
+      b.style.boxShadow = on ? '0 1px 2px rgba(0,0,0,.18)' : 'none';
+    });
+    var roleok = seg.dataset.roleok === '1';
+    var txt = v==='inherit' ? ('wg roli '+(roleok?'✓':'—')) : hintTxt[v];
+    hint.textContent = txt;
+    hint.style.color = v==='allow'?C.green : v==='deny'?C.red : C.g400;
+  }
+
+  function overrideCount(){ return segs.filter(function(s){ return s.querySelector('input').value !== 'inherit'; }).length; }
+  function dirtyCount(){ return segs.filter(function(s){ var i=s.querySelector('input'); return i.value !== i.dataset.init; }).length; }
+
+  function refresh(){
+    document.getElementById('mxOverrides').textContent = overrideCount();
+    var d = dirtyCount(), lbl = document.getElementById('mxDirty'), save = document.getElementById('mxSave');
+    lbl.textContent = d===0 ? 'Brak niezapisanych zmian'
+      : d + (d===1?' niezapisana zmiana':(d<5?' niezapisane zmiany':' niezapisanych zmian'));
+    save.disabled = d===0;
+    applyFilter();
+  }
+
+  segs.forEach(function(seg){
+    seg.querySelectorAll('button').forEach(function(b){
+      b.addEventListener('click', function(){ seg.querySelector('input').value = b.dataset.v; paint(seg); refresh(); });
+    });
+    paint(seg);
+  });
+
+  // search + filter
+  var flt = 'all';
+  document.getElementById('mxTabs').addEventListener('click', function(e){
+    var b = e.target.closest('.mx-tab'); if(!b) return;
+    this.querySelectorAll('.mx-tab').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on'); flt = b.dataset.flt; applyFilter();
+  });
+  document.getElementById('mxSearch').addEventListener('input', applyFilter);
+
+  function applyFilter(){
+    var q = (document.getElementById('mxSearch').value||'').trim().toLowerCase();
+    form.querySelectorAll('tbody tr').forEach(function(tr){
+      var vals = Array.prototype.map.call(tr.querySelectorAll('.seg input'), function(i){ return i.value; });
+      var okQ = !q || (tr.dataset.search||'').indexOf(q) !== -1;
+      var okF = flt==='all' || (flt==='overrides' && vals.some(function(v){return v!=='inherit';}))
+                            || (flt==='blocks' && vals.some(function(v){return v==='deny';}));
+      tr.style.display = (okQ && okF) ? '' : 'none';
+    });
+  }
+
+  document.getElementById('mxReset').addEventListener('click', function(){
+    segs.forEach(function(s){ var i=s.querySelector('input'); i.value=i.dataset.init; paint(s); });
+    refresh();
+  });
+
+  refresh();
+})();
+</script>
+{% endblock %}

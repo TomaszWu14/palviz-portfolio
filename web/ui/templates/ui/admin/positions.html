@@ -1,0 +1,52 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Stanowiska — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_panel' %}">Panel administracyjny</a>
+  <span class="breadcrumb__sep">›</span><span>Stanowiska</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#7c3aed;--pcbg:#f5f3ff">
+    <div class="panel-head__chip">{% icon "user" cls="icon--em" %}</div>
+    <div>
+      <div class="page-header__title">Stanowiska (macierz uprawnień)</div>
+      <div class="page-header__sub">Stanowisko = zestaw ról; przypisanie synchronizuje grupy konta.
+        Nowe stanowisko z istniejących ról — bez zmian w kodzie.</div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:admin_position_new' %}" class="btn btn-primary">+ Nowe stanowisko</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap"><table class="table">
+    <thead><tr>
+      <th>Stanowisko</th><th>Role (grupy)</th><th class="text-right">Osób</th>
+      {% for m in modules %}<th title="{{ m.name }}" style="text-align:center">{{ m.icon }}</th>{% endfor %}
+      <th></th>
+    </tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr {% if not r.p.is_active %}style="opacity:.45"{% endif %}>
+        <td><strong>{{ r.p.name }}</strong>
+          {% if not r.p.is_active %}<span class="badge badge-gray">nieaktywne</span>{% endif %}
+          <div style="font-size:11px;color:var(--gray-500)">{{ r.p.description }}</div></td>
+        <td style="font-size:12px">{{ r.groups|join:", "|default:"—" }}</td>
+        <td class="text-right">{{ r.user_count }}</td>
+        {% for on in r.cols %}
+        <td style="text-align:center">{% if on %}<span style="color:var(--green);font-weight:800">{% icon "check" label="tak" cls="icon--em" %}</span>{% else %}<span style="color:var(--gray-300)">·</span>{% endif %}</td>
+        {% endfor %}
+        <td class="text-right"><a href="{% url 'ui:admin_position_edit' r.p.pk %}" class="btn btn-secondary btn-sm">Edytuj</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="20"><div class="empty-state" style="padding:24px">
+        <div class="empty-state__title">Brak stanowisk</div></div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+<div style="font-size:12px;color:var(--gray-500);margin-top:8px">
+  Kolumny = moduły platformy (ikony). {% icon "check" %} — stanowisko daje dostęp do modułu przez swoje role.
+</div>
+{% endblock %}

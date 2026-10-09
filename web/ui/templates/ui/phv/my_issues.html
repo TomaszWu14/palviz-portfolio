@@ -1,0 +1,47 @@
+{% extends "ui/scanner/base.html" %}
+{% block title %}Moje zgłoszenia{% endblock %}
+{% block bar %}Moje zgłoszenia{% endblock %}
+{% block back %}<a href="{% url 'ui:phv_home' %}">‹</a>{% endblock %}
+{% block content %}
+<div style="font-size:13px;color:var(--muted);font-weight:700;margin-bottom:10px">Ostatnie 30 dni — otwarte → w przeglądzie → rozwiązane</div>
+
+{% if single %}
+<div class="card" style="border-left:5px solid var(--teal)">
+  <div style="font-weight:800;font-size:16px">#{{ single.pk }} · {{ single.get_issue_type_display }} · <span style="font-family:monospace">{{ single.ref_code }}</span></div>
+  <div style="font-size:14px;margin-top:4px">Status:
+    {% if single.status == 'resolved' %}<strong style="color:var(--ok)">Rozwiązane</strong>
+    {% elif single.status == 'in_review' %}<strong style="color:var(--warn)">W przeglądzie</strong>
+    {% else %}<strong>Otwarte</strong>{% endif %}
+    · zgłoszono {{ single.created_at|date:"d.m.Y H:i" }}</div>
+  {% if single.resolver_notes %}<div style="font-size:14px;margin-top:4px">Rozwiązanie: {{ single.resolver_notes }}</div>{% endif %}
+</div>
+{% endif %}
+
+<form method="get" style="margin-bottom:10px">
+  <select aria-label="Status zgłoszeń" name="status" onchange="this.form.submit()"
+          style="width:100%;padding:13px;font-size:16px;border:2px solid var(--line-strong);border-radius:10px;background:var(--paper);color:var(--ink)">
+    <option value="">— wszystkie statusy —</option>
+    {% for val, lbl in statuses %}<option value="{{ val }}" {% if f_status == val %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+  </select>
+</form>
+
+{% for i in issues %}
+<div class="card">
+  <div style="display:flex;align-items:center;gap:8px">
+    <strong style="font-size:16px">#{{ i.pk }}</strong>
+    <span class="pill" style="background:{% if i.kind == 'location' %}var(--lok-bg);color:var(--lok-ink){% else %}var(--mat-bg);color:var(--mat-ink){% endif %};font-size:10px;font-weight:800">{% if i.kind == 'location' %}LOK{% else %}MAT{% endif %}</span>
+    <span style="font-family:monospace;font-size:15px;font-weight:700">{{ i.label }}</span>
+    <span class="pill" style="margin-left:auto;{% if i.status == 'resolved' %}background:var(--ok-bg);color:var(--ok){% elif i.status == 'in_review' %}background:var(--warn-bg);color:var(--warn){% else %}background:var(--neutral-bg);color:var(--neutral){% endif %}">
+      {% if i.status == 'resolved' %}Rozwiązane{% elif i.status == 'in_review' %}W przeglądzie{% else %}Otwarte{% endif %}</span>
+  </div>
+  <div style="font-size:14px;margin-top:4px">{{ i.type_display }}</div>
+  <div style="font-size:14px;color:var(--muted);margin-top:2px">{{ i.detail|truncatechars:80|default:"—" }}</div>
+  <div style="display:flex;gap:12px;font-size:13px;color:var(--muted);margin-top:6px">
+    <span>{{ i.created_at|date:"d.m H:i" }}</span>
+    {% if i.photo %}<a href="{{ i.photo.url }}" target="_blank" rel="noopener" style="font-weight:700;color:var(--teal-deep)">Zobacz zdjęcie</a>{% endif %}
+  </div>
+</div>
+{% empty %}
+<div class="card" style="text-align:center;color:var(--muted);font-size:15px">Brak zgłoszeń w ostatnich 30 dniach.</div>
+{% endfor %}
+{% endblock %}

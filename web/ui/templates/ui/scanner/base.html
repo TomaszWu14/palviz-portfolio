@@ -1,0 +1,637 @@
+{% load static palviz_extras %}<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  {# Allow pinch-zoom (WCAG 1.4.4) — the scanner is touch-heavy; don't block zoom. #}
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}Kontrola HU{% endblock %} — {{ app_name }}</title>
+  <!-- PWA: installable, full-screen, no browser chrome -->
+  {% include "ui/_pwa_head.html" %}
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Kontrola HU">
+  <script>
+    // Capture the install prompt so a "Zainstaluj aplikację" button can trigger it.
+    window._pwaPrompt = null;
+    // Odpalona jako zainstalowana apka (standalone) → nigdy nie pokazuj „Zainstaluj”.
+    function pvStandalone(){
+      return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+             || window.navigator.standalone === true;
+    }
+    window.addEventListener('beforeinstallprompt', function(e){
+      e.preventDefault(); window._pwaPrompt = e;
+      if (pvStandalone()) return;                 // już zainstalowana — bez przycisku
+      var b = document.getElementById('pwa-install'); if (b) b.style.display = 'block';
+    });
+    // Po instalacji schowaj przycisk od razu.
+    window.addEventListener('appinstalled', function(){
+      var b = document.getElementById('pwa-install'); if (b) b.style.display = 'none';
+    });
+    function palvizInstall(){
+      var p = window._pwaPrompt;
+      if (!p){ alert('Aby zainstalować: menu przeglądarki → „Zainstaluj aplikację" / „Dodaj do ekranu głównego".'); return; }
+      p.prompt(); p.userChoice.finally(function(){ window._pwaPrompt = null;
+        var b = document.getElementById('pwa-install'); if (b) b.style.display = 'none'; });
+    }
+  </script>
+  <style>
+    /* Scanner-sized: fills the device screen, no horizontal scroll, big touch targets. */
+    /* Turquoise / teal theme tokens — the scanner keeps its own palette (device theme,
+       separate from the desktop blue in ui/base.html). */
+    :root {
+      /* 60-30-10: tło/karty = 60% (dominujące), teal = 30% (wspierające, marka),
+         akcent bursztynowy = 10% (TYLKO akcja główna ekranu — jeden punkt uwagi). */
+      --teal:       #0f7d79;   /* 30% — akcje drugorzędne / pasek */
+      --teal-deep:  #0c5c58;   /* strong accents, labels */
+      --ink:        #133b3a;   /* body text */
+      --line:       #cfeae6;   /* card borders */
+      --wash:       #d8f0ec;   /* light teal fills */
+      --paper:      #fbffff;   /* 60% — tło karty */
+      --accent:      #b45309;  /* 10% — akcja główna (spójny z kaflem PAL); biały 5,0:1 (był #e07b18, 3:1) */
+      --accent-deep: #92400e;
+      /* Statusy — harmonizowane z motywem teal (przygaszone, nie jaskrawe jak desktop).
+         Para tekst + tło dla plakietek statusu. */
+      --muted:       #526b67;  /* przygaszony tekst pomocniczy (teal-grey) — ≥4,5:1 także na --wash (było #5f7a76, 4,3:1) */
+      --ok:          #2f6b3a;  --ok-bg:      #cfe9d2;  /* rozwiązane / OK */
+      --warn:        #8a6a06;  --warn-bg:    #f6edcd;  /* w przeglądzie / uwaga */
+      --neutral:     #334155;  --neutral-bg: #e2e8f0;  /* otwarte / neutralne */
+      --line-strong: #7fc9c2;  /* mocniejsze obramowanie pól (input/select) */
+      /* Rozszerzona mikropaleta teal (gradacje motywu — etykiety, tła sekcji, alert). */
+      --teal-grey:   #8aa6a2;  /* przygaszony teal-szary */
+      --label:       #3d6f6a;  /* etykiety sekcji (CZY CHODZIŁO O / LOKALIZACJA…); 5,7:1 (był #5f928d, 3,6:1) */
+      --teal-deepest:#0d4744;  /* najciemniejszy teal (mocne akcenty) */
+      --alert:       #9a3b25;  --alert-bg: #f3d3c8;  /* master data niekompletna (terakota) */
+      --tint:        #e3f1ee;  /* pale teal tło sekcji */
+      --tint-cool:   #eef2f6;  /* chłodne tło (używane poziomy) */
+      --brick:       #c0392b;  /* mocny czerwony akcent (braki/błąd) */
+      --lok-bg:#e0ecff; --lok-ink:#1e40af;  /* plakietka kategorii: lokalizacja */
+      --mat-bg:#e6f4f1; --mat-ink:#0f766e;  /* plakietka kategorii: materiał */
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: #c2e4e1; color: var(--ink);
+      display: flex; justify-content: center;
+      /* Bez font-smoothing/optimizeLegibility: antialiased wyłącza subpiksel (tekst
+         cieńszy/mydlany), optimizeLegibility zamula stary WebView Zebry. Default = ostro. */
+    }
+    /* Turquoise / teal theme with strong dark type for readability. */
+    .scr {
+      width: 100%; max-width: 480px; min-height: 100%;
+      background: #eef9f7; color: var(--ink); display: flex; flex-direction: column;
+    }
+    .scr__bar {
+      background: var(--teal); color: #fff; padding: 12px 12px;
+      display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px;
+    }
+    .scr__bar a { color: #fff; text-decoration: none; font-size: 30px; line-height: 1;
+                  padding: 4px 14px 6px 4px; margin: -6px 4px -6px -4px; border-radius: 8px; }
+    .scr__bar a:active { background: rgba(255,255,255,.18); }
+    .scr__body { padding: 10px 12px; flex: 1; }
+    /* Dolny tab-bar skanera (wg mockupu). Padding bezwarunkowy — :has() zawodzi na starym
+       Chrome skanerów Zebra; nadmiar miejsca na dole jest nieszkodliwy. */
+    /* Dubel: stała wartość jako fallback dla starych Chrome (Zebra) bez env()/calc. */
+    .scr__body { padding-bottom: 96px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+    .scan-nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: flex;
+                background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -2px 12px rgba(13,60,58,.10);
+                padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); }
+    .scan-nav__i { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+                   color: #64748b; text-decoration: none; font-size: 12px; font-weight: 700;
+                   padding: 7px 2px; border-radius: 12px; background: transparent; border: 0; cursor: pointer;
+                   min-height: 52px; justify-content: center; list-style: none; }
+    .scan-nav__i.is-active { color: var(--teal-deep); background: #e7f6f3; }
+    .msg { padding: 8px 10px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
+    .msg--success { background: #dcfce7; color: #166534; }
+    .msg--error   { background: #fee2e2; color: #b91c1c; }
+    .msg--warning { background: #fef9c3; color: #854d0e; }
+    .btn {
+      display: block; width: 100%; padding: 16px; border: 0; border-radius: 12px;
+      font-size: 17px; font-weight: 700; text-align: center; text-decoration: none;
+      margin-bottom: 10px; cursor: pointer;
+    }
+    /* Cele dotykowe (rękawice — grill 2026-09-05, pyt. 18): przyciski i pola wpisywania
+       ≥44px niezależnie od inline-paddingów; kompakt Zebra niżej świadomie trzyma 40px. */
+    button, .btn { min-height: 44px; }
+    input[type="text"], input[type="number"], input[type="date"], input[type="file"], select { min-height: 44px; }
+    summary { min-height: 24px; }
+    /* Inline SVG icons inside buttons/labels line up with the text baseline. */
+    .btn > svg, .cond > svg { vertical-align: -3px; margin-right: 6px; flex-shrink: 0; }
+    /* Ikony Lucide (tag icon z palviz_extras, sprite static/ui/icons/lucide.svg) zamiast emoji — ostre na każdym ekranie. */
+    .icon { display: inline-block; vertical-align: -.2em; flex: 0 0 auto; }
+    .icon--em { width: 1em; height: 1em; }
+    .btn > svg.icon, .cond > svg.icon { margin-right: 2px; }
+    /* Bigger main-menu buttons (~+35%) so they fill the screen and read at a glance. */
+    .btn--xl { padding: 23px 18px; font-size: 23px; border-radius: 16px; margin-bottom: 13px; }
+    .btn--primary { background: var(--teal); color: #fff; }
+    /* 10% akcent — TYLKO akcja główna ekranu (jeden na widok), żeby oko wiedziało gdzie iść. */
+    .btn--accent  { background: var(--accent); color: #fff; box-shadow: 0 2px 10px rgba(180,83,9,.32); }
+    .btn--accent:active { background: var(--accent-deep); }
+    .btn--ok      { background: #0b7a6e; color: #fff; }  /* biały 5,2:1 (był #0e8a7e, 4,1:1) */
+    .btn--err     { background: #b3402f; color: #fff; }
+    .btn--ghost   { background: var(--wash); color: var(--teal-deep); border:1px solid #a9ddd6; }
+    /* Menu actions — ONE confident teal (the old p1–p7 micro-shades read as noise);
+       actions are told apart by icon + label, not by colour. Class names kept so the
+       feature templates don't change. */
+    .btn--p1,.btn--p2,.btn--p3,.btn--p4,.btn--p5,.btn--p6,.btn--p7 {
+      background: var(--teal); color:#fff;
+      box-shadow:0 1px 3px rgba(13,60,58,.22);
+    }
+    /* Active/pressed button highlight — bright turquoise glow so the current tap is obvious. */
+    .btn:active, .btn.is-active {
+      transform: translateY(1px);
+      filter: brightness(1.1);
+      box-shadow: 0 0 0 3px rgba(45,212,191,.8), 0 2px 8px rgba(13,60,58,.3);
+    }
+    .btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(45,212,191,.85);
+    }
+    .field { margin-bottom: 10px; }
+    .field label { display: block; font-size: 14px; font-weight: 700; color: var(--teal-deep); margin-bottom: 4px; }
+    .field input {
+      width: 100%; padding: 13px; font-size: 18px; border: 2px solid #7fc9c2; border-radius: 10px;
+      background: var(--paper); color: var(--ink);
+    }
+    .pill { display:inline-block; padding:4px 11px; border-radius:999px; font-size:13px; font-weight:800; line-height:1.4; }
+    .pill--planned   { background:#d3e8e5; color:#2f6b67; }
+    .pill--in_control{ background:#bfe6df; color:#0c6f67; }
+    .pill--ok        { background:#cfe9d2; color:#2f6b3a; }
+    .pill--to_recheck{ background:#f3d3c8; color:#9a3b25; }
+    /* Shipping-condition badges (from customer master data) — readable on the teal HU header. */
+    .cond { display:inline-flex; align-items:center; gap:4px; padding:5px 11px; border-radius:999px; font-size:13px; font-weight:800; }
+    .cond--fum { background:var(--wash); color:var(--teal-deep); }   /* fumigacja */
+    .cond--h   { background:#f6d9cd; color:#992c1b; }   /* max wysokość — istotny limit (czerwony) */
+    .cond--pal { background:var(--wash); color:var(--teal-deep); }   /* typ palety */
+    .cond--w   { background:var(--wash); color:var(--teal-deep); }   /* max waga */
+    .card { background:var(--paper); color:var(--ink); border:1px solid var(--line); border-radius:14px; padding:12px; margin-bottom:10px; box-shadow:0 1px 3px rgba(13,60,58,.14); }
+    /* HU header card — sticky so the HU code, location and customer requirements stay
+       on top while the operator scrolls through positions. Compact (≈half height). */
+    .hu-head { background:linear-gradient(160deg,#13938b,#0a5f5a); color:#fff; border-radius:14px; padding:10px 13px; margin-bottom:12px;
+               position:sticky; top:0; z-index:20; box-shadow:0 6px 14px rgba(13,60,58,.28); }
+    .hu-head__code { font-size:21px; font-weight:800; letter-spacing:.5px; }
+    .vip { background:#7fe3d8; color:#063f3b; padding:5px 12px; border-radius:999px; font-size:12px; font-weight:800; }
+    .prog { height:7px; background:rgba(255,255,255,.25); border-radius:6px; overflow:hidden; }
+    .prog > div { height:7px; background:#d7f5ef; }
+    /* position card */
+    .pcard { background:var(--paper); color:var(--ink); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(13,60,58,.16); }
+    /* Confirmed positions collapse to a compact row (nr + REF + status). */
+    details.pos > summary { list-style:none; display:flex; align-items:center; gap:10px; cursor:pointer; }
+    details.pos > summary::-webkit-details-marker { display:none; }
+    details.pos[open] > summary { margin-bottom:4px; }
+    /* REF bywa długi i złożony (np. „(48301)V(BP-30F)V(LCH-PUK-30)") — zwijaj czytelnie
+       zamiast rozpychać linię: elastyczny, łamany, mniejszy font, równa interlinia. */
+    .pos-ref { font-weight:800; font-size:17px; line-height:1.25; color:var(--teal-deep);
+               flex:1 1 auto; min-width:0; overflow-wrap:anywhere; word-break:break-word; }
+    .pnum { flex:0 0 auto; width:32px;height:32px;border-radius:9px;background:var(--teal);color:#fff;font-weight:800;display:inline-flex;align-items:center;justify-content:center; }
+    details.pos > summary .pill, details.pos > summary .pos-ok { flex:0 0 auto; }
+    /* Link „Poziomy opakowań” leży OBOK <details> (nie w <summary> — axe nested-interactive:
+       klikalny element w przełączniku), nałożony na prawy górny róg karty. */
+    .pos-wrap { position:relative; }
+    .pos-wrap > .pos-md { position:absolute; top:10px; right:10px; color:var(--teal-deep); }
+    details.pos > summary.pos-sum--md { padding-right:48px; }
+    .chip { border-radius:10px; padding:8px 12px; border:1px solid var(--line); background:#f1fbf9; }
+    .chip--lot { border-left:4px solid var(--teal); }
+    .chip--exp { border-left:4px solid #1aa79c; }
+    .chip--exp .exp-lbl { color:#64748b; }
+    .chip--exp .exp-val { color:#0d4744; }
+    /* Expiry alerts — pulsing box: red when < 6 months left, orange when < 12 months. */
+    .exp-alert--red    { background:#fde2dd; border-left-color:#dc2626 !important; animation:expPulseRed 1.1s ease-in-out infinite; }
+    .exp-alert--red    .exp-lbl, .exp-alert--red    .exp-val { color:#b91c1c !important; }
+    .exp-alert--orange { background:#fdecd5; border-left-color:#ea8c14 !important; animation:expPulseOrange 1.1s ease-in-out infinite; }
+    .exp-alert--orange .exp-lbl, .exp-alert--orange .exp-val { color:#92400e !important; }
+    @keyframes expPulseRed    { 0%,100%{ box-shadow:0 0 0 0 rgba(220,38,38,.55);} 50%{ box-shadow:0 0 0 7px rgba(220,38,38,0);} }
+    @keyframes expPulseOrange { 0%,100%{ box-shadow:0 0 0 0 rgba(234,140,20,.55);} 50%{ box-shadow:0 0 0 7px rgba(234,140,20,0);} }
+    /* Four unit-conversion tiles (base / OPZ / KAR / PAL) — 2×2 grid. */
+    .utiles { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:6px; }
+    /* min-width:0 na kaflu — inaczej grid nie ściska poniżej min-content <input> (size~20 przy
+       26px) i kafle wychodziły poza kolumnę na szerokim ekranie. */
+    .utiles > .utile { min-width:0; }
+    /* Each unit gets its own colour: Sztuka = light blue, OPZ = dark green,
+       KAR = dark beige, PAL = orange. A thin dark-green frame separates the tiles
+       (colours no longer bleed together). White type on the saturated tiles. */
+    /* Układ: nazwa (góra) → rząd [−][liczba][+] → przelicznik. Przyciski POZA polem liczby. */
+    .utile { border-radius:12px; padding:10px 10px 8px; border:1.5px solid #14512f;
+             display:flex; flex-direction:column; align-items:center; gap:6px; }
+    .utile__u { font-size:14px; font-weight:900; letter-spacing:.04em; text-align:center; }
+    .utile__row { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; }
+    /* Ostrość: min 12px i waga ≤700 na drobnym tekście, bez opacity (mydli antyaliasing). */
+    .utile__h { font-size:12px; font-weight:700; text-align:center; }
+    .utile__none { font-size:12px; color:#4a6660; font-weight:700; margin-top:6px; }
+    .utile input { flex:1 1 0; min-width:0; width:0; border:0; background:transparent;
+                   font-size:26px; font-weight:900; outline:none; padding:0; text-align:center; }
+    .utile input::placeholder { opacity:.65; }
+    .utile--base { background:#cfe6ff; }
+    .utile--base .utile__u, .utile--base .utile__h, .utile--base input { color:#0b3d66; }
+    .utile--base input::placeholder { color:#0b3d66; }
+    .utile--opz  { background:#2f7d4f; }
+    .utile--opz .utile__u, .utile--opz .utile__h, .utile--opz input { color:#ffffff; }
+    .utile--opz input::placeholder { color:#ffffff; }
+    .utile--kar  { background:#8a6a35; }  /* biały 5,0:1 (był #9c7b43, 3,9:1) */
+    .utile--kar .utile__u, .utile--kar .utile__h, .utile--kar input { color:#ffffff; }
+    .utile--kar input::placeholder { color:#ffffff; }
+    .utile--pal  { background:var(--accent); }
+    .utile--pal .utile__u, .utile--pal .utile__h, .utile--pal input { color:#ffffff; }
+    .utile--pal input::placeholder { color:#ffffff; }
+    /* Stepper w rzędzie OBOK liczby (nie na niej). Cel dotykowy ≥44 px. */
+    .ustep { flex:0 0 auto; width:44px; height:44px; border:0; border-radius:12px;
+             font-size:24px; font-weight:900; line-height:1; display:flex;
+             align-items:center; justify-content:center; padding:0; cursor:pointer; }
+    .ustep--plus  { background:rgba(255,255,255,.85); color:#166534; }
+    .ustep--minus { background:rgba(255,255,255,.85); color:#b91c1c; }
+    .utile--base .ustep { background:rgba(11,61,102,.12); }
+    /* Podpowiedź: jednostka, w której pobrano — pulsujący kafel (z logu pobrań SAP). */
+    .utile--hint { border-color:#0d9488 !important; animation:utilePulse 1.1s ease-in-out infinite; }
+    @keyframes utilePulse { 0%,100%{ box-shadow:0 0 0 0 rgba(13,148,136,.6);} 50%{ box-shadow:0 0 0 7px rgba(13,148,136,0);} }
+    .utile--off  { background:#eef1f0; border:1.5px dashed #9bbcab; opacity:.9; }
+    .utile--off .utile__u { color:#4a6660; }
+    /* Small "clear the four tiles" button next to the converters. */
+    .uclear { flex:0 0 auto; border:1px solid #a9ddd6; background:#e4f6f2; color:var(--teal-deep);
+              font-size:12px; font-weight:800; padding:5px 11px; border-radius:999px; cursor:pointer; }
+    .uclear:active { background:var(--line); }
+    /* Collapsible error-flag bar — folded by default so a position stays compact. */
+    .vbox { background:#f0faf8; border:1px solid var(--line); border-radius:12px; margin-bottom:12px; }
+    .vbox__sum { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px;
+                 padding:11px 12px; font-weight:800; color:var(--teal-deep); font-size:14px; }
+    .vbox__sum::-webkit-details-marker { display:none; }
+    .vbox__sum::after { content:"▾"; margin-left:auto; color:var(--label); transition:transform .15s; }
+    .vbox[open] .vbox__sum::after { transform:rotate(180deg); }
+    .vbox__hint { font-weight:600; font-size:11px; color:#8aa6a2; }
+    /* iOS-style toggle */
+    .tg { position:relative; display:inline-block; width:50px; height:28px; }
+    .tg input { opacity:0; width:0; height:0; }
+    .tg span { position:absolute; inset:0; background:#cbd5e1; border-radius:999px; transition:.2s; }
+    .tg span:before { content:""; position:absolute; width:22px; height:22px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
+    .tg input:checked + span { background:#dc2626; }
+    .tg input:checked + span:before { transform:translateX(22px); }
+    .vrow { display:flex; justify-content:space-between; align-items:center; padding:11px 4px; border-top:1px solid #f1f5f9; font-size:15px; }
+    .vrow--on { color:#b91c1c; font-weight:700; }
+    /* Tryb kompaktowy — terminale Zebra MC33xx (4", 800×480, klawiatura fizyczna):
+       mniejsze kafle/fonty/odstępy, żeby karta pozycji mieściła się bez przewijania
+       w poziomie i z minimalnym pionowym. Aktywny na niskich ekranach. */
+    @media (max-height: 540px), (max-width: 500px) and (max-height: 900px) {
+      .scr__bar { padding: 6px 10px; font-size: 14px; }
+      /* Tryb kompaktowy NIE może zerować dolnego odstępu pod fixed tab-barem —
+         `padding: 8px` nadpisywało padding-bottom i ostatnia karta ginęła pod nawigacją.
+         Dubel deklaracji: stała wartość dla starych Chrome bez env()/calc(). */
+      .scr__body { padding: 8px 8px 96px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+      .pcard { padding: 8px 10px; margin-bottom: 8px; }
+      .pos-wrap > .pos-md { top:2px; right:4px; }
+      .utile { padding: 5px 8px; border-radius: 9px; }
+      .utile input { font-size: 19px; }
+      .utile__u { font-size: 12px; }
+      .utile__h { font-size: 10px; }
+      .chip { padding: 5px 8px; }
+      .chip .exp-val, .chip div[style*="19px"] { font-size: 15px !important; }
+      .msg { padding: 7px 10px; font-size: 13px; }
+      button, .btn { min-height: 40px; }   /* cel dotykowy dla rękawic mimo kompaktu */
+      /* Zebra: pełne piksele na cienkich ramkach (1.5px zamula na 800×480). */
+      .utile { border-width: 1px; }
+      .utile--off { border-width: 1px; }
+      /* Zebra: bez nieskończonych pulsów box-shadow — wymuszają warstwę GPU i zamulają
+         tekst na starym WebView. Kolor/tło alertu zostaje, znika tylko pulsowanie. */
+      .exp-alert--red, .exp-alert--orange, .utile--hint { animation: none !important; }
+    }
+    /* Respect reduced-motion: stop the expiry pulse + toggle/press transitions. */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  {# Motyw sekcji operatora (§5): kolor przewoźnika na całej aplikacji; brak sekcji = bazowy teal. #}
+  <div class="scr"{% if section_theme %} style="background:{{ section_theme.app_bg }}"{% endif %}>
+    <div class="scr__bar"{% if section_theme %} style="background:{{ section_theme.app_bar_bg }};color:{{ section_theme.app_bar_text }}"{% endif %}>
+      {% block back %}{% endblock %}
+      {# flex+min-width:0 — tytuł i pigułka operatora w JEDNYM wierszu; pigułka ścieśnia się z „…". #}
+      <span style="min-width:0;flex:1;display:flex;align-items:center;gap:8px;white-space:nowrap">{% block bar %}Kontrola HU{% endblock %}</span>
+      <span id="hu-net-badge" role="status" aria-live="polite" style="margin-left:12px;font-size:13px;font-weight:800;padding:5px 12px;border-radius:99px;display:none"></span>
+      {# Badge AKTYWNEJ strefy kontroli: login + strefa w nagłówku; >1 dozwolona → tap = zmiana strefy. #}
+      {% if section_theme %}
+      {% if section_theme.can_switch %}
+      <a href="{% url 'ui:hu_zone_select' %}" aria-label="Zmień strefę kontroli"
+         style="margin-left:auto;background:{{ section_theme.pill_bg }};color:{{ section_theme.pill_text }};font-size:11px;font-weight:900;letter-spacing:.06em;padding:4px 11px;border-radius:999px;text-decoration:none">STREFA {{ section_theme.section_code }} {% icon "arrow-left-right" %}</a>
+      {% else %}
+      <span style="margin-left:auto;background:{{ section_theme.pill_bg }};color:{{ section_theme.pill_text }};font-size:11px;font-weight:900;letter-spacing:.06em;padding:4px 11px;border-radius:999px">STREFA {{ section_theme.section_code }}</span>
+      {% endif %}
+      {% endif %}
+      {# Dzwonek powiadomień usunięty (przebudowa 2026-09): jedna koperta = wiadomości + powiadomienia. #}
+      {% if request.user.is_authenticated %}
+      <span style="color:#fff;{% if not section_theme %}margin-left:auto{% endif %}">{% include "ui/_messages_bell.html" %}</span>
+      {% endif %}
+      {# Koperta „Napisz do lidera" obok dzwonka — tylko w kontekście HU; napis po tapnięciu. #}
+      {% if leader_msg_url %}
+      <span class="lead-msg" style="position:relative;margin-left:8px">
+        <button type="button" aria-label="Napisz do lidera"
+                onclick="var l=this.nextElementSibling;l.hidden=!l.hidden;"
+                style="background:transparent;border:0;color:#fff;cursor:pointer;padding:8px;min-height:40px;display:inline-flex;align-items:center">{% icon "mail" 20 %}</button>
+        <a href="{{ leader_msg_url }}" hidden
+           style="position:absolute;top:100%;right:0;margin-top:4px;background:#fff;color:#0c5c58;font-size:13px;font-weight:800;white-space:nowrap;padding:8px 12px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.18);text-decoration:none;z-index:30">Napisz do lidera</a>
+      </span>
+      {% endif %}
+      <form method="post" action="{% url 'ui:logout' %}" style="margin-left:10px">
+        {% csrf_token %}
+        <button type="submit" data-testid="scanner-logout" style="background:transparent;border:0;color:#fff;font-size:13px;cursor:pointer">Wyloguj</button>
+      </form>
+    </div>
+    <div class="scr__body">
+      {% if messages %}{% for m in messages %}
+        <div class="msg msg--{{ m.tags }}">{{ m }}</div>
+      {% endfor %}{% endif %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  {# Dolny tab-bar skanera (wg mockupu): Skan / Status / MATinfo / Więcej. Aktywny wg url_name. #}
+  {% if role_is_control %}
+  {% with un=request.resolver_match.url_name %}
+  <nav class="scan-nav" aria-label="Nawigacja skanera">
+    <a href="{% url 'ui:hu_control_menu' %}" class="scan-nav__i{% if un == 'hu_control_menu' %} is-active{% endif %}">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8v8M11 8v8M15 8v8M19 8v8" stroke-width="1.6"/></svg><span>Skan</span></a>
+    <a href="{% url 'ui:hu_control_status' %}" class="scan-nav__i{% if un == 'hu_control_status' %} is-active{% endif %}">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg><span>Status</span></a>
+    {% if can_open_matinfo %}<a href="{% url 'ui:phv_home' %}" class="scan-nav__i{% if un == 'phv_home' %} is-active{% endif %}">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18" stroke-width="1.6"/></svg><span>MATinfo</span></a>{% endif %}
+    {# Bez „Więcej”: dzwonek/Wyloguj w nagłówku, Jakość/Zainstaluj na ekranie Skan — zero dubli. #}
+  </nav>
+  {% endwith %}
+  {% endif %}
+
+  <!-- Camera barcode/QR scanner overlay (used by the "Skanuj aparatem" buttons).
+       Uses the browser-native BarcodeDetector — reads EAN-13/EAN-8/Code128/QR etc.,
+       works fully OFFLINE (no CDN, no library) on Android Chrome / the TWA app. -->
+  <div id="qr-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:60;flex-direction:column">
+    <video id="qr-video" playsinline muted style="flex:1;min-height:0;width:100%;object-fit:cover"></video>
+    <div id="qr-frame" style="position:absolute;left:8%;right:8%;top:38%;height:24%;border:3px solid #64748b;border-radius:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.35);pointer-events:none"></div>
+    <div style="position:absolute;top:0;left:0;right:0;padding:14px;color:#fff;font-weight:700;text-align:center;text-shadow:0 1px 4px #000">Wyceluj ramką w kod, potem naciśnij „Skanuj"</div>
+    <!-- Pasek potwierdzenia: NIC nie wysyła się samo — kod z ramki pokazuje się tu,
+         a operator akceptuje przyciskiem (gęste etykiety = auto-strzał łapał złe kody). -->
+    <div style="background:#111827;padding:10px 12px 14px">
+      <div id="qr-hit" style="min-height:22px;color:#e5e7eb;font-size:15px;font-weight:700;
+           text-align:center;margin-bottom:10px;word-break:break-all">Szukam kodu…</div>
+      <div style="display:flex;gap:10px">
+        <button type="button" onclick="palvizStopScan()"
+                style="flex:1;padding:18px;border:0;border-radius:12px;background:#374151;color:#fff;font-size:17px;font-weight:700">Zamknij</button>
+        <button type="button" id="qr-accept" onclick="palvizScanAccept()" disabled
+                style="flex:2;padding:18px;border:0;border-radius:12px;background:#4b5563;color:#9ca3af;font-size:19px;font-weight:800">{% icon "check" 20 %} Skanuj</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    var _scanStream = null, _scanRun = false, _scanInput = null,
+        _scanValue = '', _scanSeen = 0, _scanLastAt = 0;
+    function _scanSetHit(value){
+      var hit = document.getElementById('qr-hit'), btn = document.getElementById('qr-accept'),
+          frame = document.getElementById('qr-frame');
+      if (value){
+        hit.textContent = value;
+        btn.disabled = false; btn.style.background = '#16a34a'; btn.style.color = '#fff';
+        frame.style.borderColor = '#22c55e';
+      } else {
+        hit.textContent = 'Szukam kodu…';
+        btn.disabled = true; btn.style.background = '#4b5563'; btn.style.color = '#9ca3af';
+        frame.style.borderColor = '#64748b';
+      }
+    }
+    function _scanInFrame(code, video){
+      // Tylko kod, którego środek leży w celowniku (ta sama geometria co #qr-frame:
+      // 8–92% szerokości, 38–62% wysokości klatki). Przybliżenie przy object-fit:cover
+      // wystarcza, by przy gęstych etykietach nie łapać kodów z brzegu ekranu.
+      var b = code.boundingBox; if (!b) return true;
+      var W = video.videoWidth || 1, H = video.videoHeight || 1;
+      var cx = (b.x + b.width / 2) / W, cy = (b.y + b.height / 2) / H;
+      return cx > 0.08 && cx < 0.92 && cy > 0.30 && cy < 0.70;
+    }
+    async function palvizScan(inputId){
+      var ov = document.getElementById('qr-overlay'), video = document.getElementById('qr-video');
+      if (!('BarcodeDetector' in window)){
+        alert('Ten telefon nie obsługuje skanera aparatem w przeglądarce. Użyj skanera ręcznego albo wpisz numer HU ręcznie.');
+        return;
+      }
+      var formats = ['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','codabar','qr_code'];
+      try { var sup = await BarcodeDetector.getSupportedFormats();
+            formats = formats.filter(function(f){ return sup.indexOf(f) !== -1; }); } catch(e){}
+      var detector = new BarcodeDetector({formats: formats.length ? formats : undefined});
+      try { _scanStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}}); }
+      catch(e){ alert('Nie udało się uruchomić kamery. Zezwól na dostęp do aparatu w ustawieniach.'); return; }
+      _scanInput = inputId; _scanValue = ''; _scanSeen = 0; _scanLastAt = 0;
+      _scanSetHit('');
+      ov.style.display = 'flex';
+      video.srcObject = _scanStream; _scanRun = true;
+      try { await video.play(); } catch(e){}
+      (function loop(){
+        if (!_scanRun) return;
+        detector.detect(video).then(function(codes){
+          var best = null;
+          (codes || []).forEach(function(c){
+            if (c.rawValue && _scanInFrame(c, video) && !best) best = c.rawValue.trim();
+          });
+          if (best){
+            _scanLastAt = Date.now();
+            if (best === _scanValue){ _scanSeen++; }
+            else { _scanValue = best; _scanSeen = 1; }
+            // 2 zgodne odczyty z rzędu = stabilne celowanie → pokaż i odblokuj przycisk.
+            if (_scanSeen === 2){ _scanSetHit(best); if (navigator.vibrate) navigator.vibrate(30); }
+          } else if (_scanValue && Date.now() - _scanLastAt > 1200){
+            _scanValue = ''; _scanSeen = 0; _scanSetHit('');   // zgubiono cel → wygaś
+          }
+          setTimeout(loop, 120);
+        }).catch(function(){ setTimeout(loop, 200); });
+      })();
+    }
+    function palvizScanAccept(){
+      var el = document.getElementById(_scanInput), text = _scanValue;
+      if (!text) return;
+      palvizStopScan();
+      if (el){ el.value = text; if (navigator.vibrate) navigator.vibrate(60);
+               if (el.form) el.form.submit(); }
+    }
+    function palvizStopScan(){
+      _scanRun = false;
+      if (_scanStream){ _scanStream.getTracks().forEach(function(t){ t.stop(); }); _scanStream = null; }
+      var v = document.getElementById('qr-video'); if (v) v.srcObject = null;
+      document.getElementById('qr-overlay').style.display = 'none';
+    }
+
+    // Audio + haptic feedback on a scan/control error or warning (scanner ergonomics).
+    function palvizBeep(freq, ms){
+      try {
+        var Ctx = window.AudioContext || window.webkitAudioContext; if (!Ctx) return;
+        var ctx = new Ctx(), o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'square'; o.frequency.value = freq; o.connect(g); g.connect(ctx.destination);
+        g.gain.value = 0.08; o.start();
+        setTimeout(function(){ o.stop(); ctx.close(); }, ms);
+      } catch (e) {}
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+      if (document.querySelector('.msg--error')) {
+        palvizBeep(220, 320); if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+      } else if (document.querySelector('.msg--warning')) {
+        palvizBeep(360, 160); if (navigator.vibrate) navigator.vibrate(80);
+      }
+    });
+
+    /* ── Offline support: queue position counts locally and replay on reconnect ── */
+    (function(){
+      var QKEY = 'hu_offline_queue', SYNC = "{% url 'ui:hu_control_sync' %}";
+      function getCookie(name){
+        var m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+        return m ? m.pop() : '';
+      }
+      function queue(){ try { return JSON.parse(localStorage.getItem(QKEY) || '[]'); } catch(e){ return []; } }
+      function setQueue(q){ localStorage.setItem(QKEY, JSON.stringify(q)); }
+      // Odrzucone przez serwer (bramki jak online, BIZ-006) zostają w kolejce z powodem
+      // (`rejected`) — nie wysyłamy ich ponownie; kontroler dokańcza pozycję online.
+      function pending(){ return queue().filter(function(a){ return !a.rejected; }); }
+      function badge(err){
+        var b = document.getElementById('hu-net-badge'); if (!b) return;
+        var n = pending().length, rej = queue().filter(function(a){ return a.rejected; });
+        b.title = ''; b.style.cursor = '';
+        if (err && navigator.onLine && n) {
+          // Sync padł mimo online — powiedz to wprost zamiast wiecznego „Synchronizacja…".
+          b.style.display = ''; b.style.background = '#dc2626'; b.style.color = '#fff';
+          b.style.boxShadow = 'none';
+          b.textContent = '⚠ Błąd synchronizacji · ' + n + ' w kolejce';
+          return;
+        }
+        if (!navigator.onLine) {
+          // Prominent OFFLINE state: solid red, high contrast, gentle pulse.
+          b.style.display = ''; b.style.background = '#dc2626'; b.style.color = '#fff';
+          b.style.boxShadow = '0 0 0 3px rgba(220,38,38,.25)';
+          b.textContent = '● OFFLINE' + (n ? ' · ' + n + ' w kolejce' : '');
+        } else if (n) {
+          b.style.display = ''; b.style.background = '#f59e0b'; b.style.color = '#fff';
+          b.style.boxShadow = 'none';
+          b.textContent = '⟳ Synchronizacja ' + n + '…';
+        } else if (rej.length) {
+          b.style.display = ''; b.style.background = '#b45309'; b.style.color = '#fff';
+          b.style.boxShadow = 'none';
+          b.textContent = '⚠ ' + rej.length + ' do dokończenia online';
+          b.title = rej.map(function(a){ return a.rejected; }).join('\n');
+          b.style.cursor = 'pointer';
+        } else { b.style.display = 'none'; b.style.boxShadow = 'none'; }
+      }
+      // Na karcie HU: powód odrzucenia nad formularzem pozycji — policz ją ponownie online.
+      function showRejected(){
+        queue().forEach(function(a){
+          if (!a.rejected) return;
+          var f = document.querySelector('form[data-count-form][data-item="' + a.item + '"]');
+          if (!f || f.querySelector('.pv-offline-rej')) return;
+          var m = document.createElement('div');
+          m.className = 'msg msg--error pv-offline-rej';
+          m.textContent = 'Odrzucone z trybu offline: ' + a.rejected;
+          f.insertBefore(m, f.firstChild);
+          var d = f.parentNode; if (d && d.tagName === 'DETAILS') d.open = true;
+        });
+      }
+      function flush(){
+        var q = pending();
+        if (!q.length || !navigator.onLine) { badge(); return; }
+        fetch(SYNC, {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+                     body: JSON.stringify({actions: q})})
+          .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+          .then(function(d){
+            var ok = {}, rej = {};
+            (d.results||[]).forEach(function(x){
+              if (x.ok) ok[x.client_id] = 1; else rej[x.client_id] = x.message || x.error || 'odrzucone';
+            });
+            setQueue(queue().filter(function(a){ return !ok[a.client_id]; })
+                            .map(function(a){ if (rej[a.client_id]) a.rejected = rej[a.client_id]; return a; }));
+            badge(); showRejected();
+            if (d.applied) location.reload();        // refresh server-rendered state
+          })
+          .catch(function(){ badge(true); });
+      }
+      window.addEventListener('online', flush);
+      window.addEventListener('offline', badge);
+
+      // Intercept position-count submits while offline: store the count and mark the card.
+      document.addEventListener('submit', function(e){
+        var f = e.target;
+        if (!f.matches('form[data-count-form]')) return;
+        if (navigator.onLine) {                      // dokończenie online zdejmuje odrzucony wpis
+          var it = f.getAttribute('data-item');
+          setQueue(queue().filter(function(a){ return !(a.rejected && String(a.item) === it); }));
+          return;
+        }
+        var action = (e.submitter && e.submitter.value) || 'confirm';
+        if (action !== 'confirm') return;            // "edit" needs the server
+        e.preventDefault();
+        var flags = [];
+        f.querySelectorAll('input[type=checkbox][name^="flag_"]').forEach(function(c){
+          if (c.checked) flags.push(c.name.slice(5));
+        });
+        var fd = new FormData(f);
+        var q = queue();
+        q.push({client_id: 'c' + Date.now() + Math.random().toString(36).slice(2,7),
+                item: f.getAttribute('data-item'),
+                input_source: f.getAttribute('data-src') || '',
+                qty_base: fd.get('qty_base'), qty_alt: fd.get('qty_alt'), flags: flags,
+                // Kafle addytywne (OP/OPZ/KAR/PAL) + „Tak, jestem pewien" — te same dane co online.
+                units: {base: fd.get('qty_base'), opz: fd.get('c_opz'),
+                        kar: fd.get('c_kar'), pal: fd.get('c_pal')},
+                sure: fd.get('sure') || ''});
+        setQueue(q);
+        f.style.opacity = '.6';
+        f.querySelectorAll('input,button').forEach(function(el){ el.disabled = true; });
+        if (navigator.vibrate) navigator.vibrate(40);
+        badge();
+      });
+
+      document.addEventListener('DOMContentLoaded', function(){
+        badge(); showRejected(); flush();
+        // Klik w „do dokończenia online": lista powodów + świadome usunięcie ze skanera.
+        var nb = document.getElementById('hu-net-badge');
+        if (nb) nb.addEventListener('click', function(){
+          var rej = queue().filter(function(a){ return a.rejected; });
+          if (!rej.length) return;
+          if (confirm('Odrzucone wpisy offline (dokończ je online):\n• '
+                      + rej.map(function(a){ return a.rejected; }).join('\n• ')
+                      + '\n\nUsunąć je z kolejki skanera?')) { setQueue(pending()); badge(); }
+        });
+      });
+
+      // ── Strażnik double-submit (UX audyt top-1; ES5 — stary Chrome Zebry).
+      // Zarejestrowany PO intercepcie offline, więc offline'owy preventDefault go pomija.
+      function pvGuardReset(f){
+        f.removeAttribute('data-gv-submitting');
+        var bs = f.querySelectorAll('button[type="submit"], input[type="submit"], button:not([type])');
+        for (var i = 0; i < bs.length; i++){ bs[i].disabled = false; bs[i].style.opacity = ''; }
+      }
+      document.addEventListener('submit', function(e){
+        var f = e.target;
+        if (!f || !f.getAttribute) return;
+        if ((f.getAttribute('method') || '').toLowerCase() !== 'post') return;
+        if (f.hasAttribute('data-no-guard') || e.defaultPrevented) return;
+        if (f.hasAttribute('data-gv-submitting')){ e.preventDefault(); return; }
+        f.setAttribute('data-gv-submitting', '1');
+        setTimeout(function(){   // po ticku — name/value klikniętego przycisku musi wejść do POST
+          var bs = f.querySelectorAll('button[type="submit"], input[type="submit"], button:not([type])');
+          for (var i = 0; i < bs.length; i++){ bs[i].disabled = true; bs[i].style.opacity = '.6'; }
+        }, 0);
+        setTimeout(function(){ if (document.contains(f)) pvGuardReset(f); }, 20000);
+      });
+      window.addEventListener('pageshow', function(){
+        var fs = document.querySelectorAll('form[data-gv-submitting]');
+        for (var i = 0; i < fs.length; i++) pvGuardReset(fs[i]);
+      });
+      // Upload z feedbackiem (audyt top-2): onchange="pvUpload(this)" na input[type=file].
+      window.pvUpload = function(input){
+        if (!input.value) return;
+        var f = input.form; if (!f) return;
+        var note = document.createElement('div');
+        note.textContent = 'Wysyłanie zdjęcia…';
+        note.style.cssText = 'font-size:13px;opacity:.8;padding:4px 0';
+        f.appendChild(note);
+        f.style.opacity = '.6';
+        if (f.requestSubmit) f.requestSubmit(); else f.submit();
+      };
+    })();
+  </script>
+  {% if request.user.is_authenticated %}{% include "ui/_notif_alert.html" %}{% endif %}
+</body>
+</html>

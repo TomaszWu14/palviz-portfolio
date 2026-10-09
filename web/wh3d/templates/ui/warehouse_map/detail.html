@@ -1,0 +1,1180 @@
+{% extends "ui/base.html" %}{% load palviz_extras %}
+{% load static %}
+{% block title %}{{ snapshot.name }} — Mapa 3D{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+.wmap-layout { display:grid; grid-template-columns:1fr 300px; gap:16px; align-items:start; }
+.wmap-canvas-wrap {
+  width:100%; aspect-ratio:16/9; background:#0f172a;
+  border-radius:12px; overflow:hidden; position:relative;
+}
+#wmap-canvas { display:block; width:100%; height:100%; }
+.wmap-legend { display:flex; gap:12px; flex-wrap:wrap; margin:8px 0; }
+.wmap-legend-item { display:flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:var(--gray-700); }
+.wmap-legend-dot { width:11px; height:11px; border-radius:3px; flex-shrink:0; }
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.stat-box { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:8px; padding:10px 12px; }
+.stat-box__val { font-size:22px; font-weight:900; color:var(--gray-900); line-height:1; }
+.stat-box__lbl { font-size:10px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:.4px; margin-top:2px; }
+.aisle-bar-wrap { display:flex; align-items:center; gap:6px; padding:4px 0; border-bottom:1px solid var(--gray-100); }
+.aisle-bar-bg { flex:1; height:8px; background:var(--gray-100); border-radius:4px; overflow:hidden; }
+.aisle-bar-fill { height:100%; border-radius:4px; }
+/* Tooltip */
+.tooltip-box {
+  position:absolute; top:12px; left:12px;
+  background:rgba(15,23,42,.92); color:var(--gray-200);
+  font-size:11px; padding:9px 13px; border-radius:8px;
+  pointer-events:none; display:none; line-height:1.75;
+  border:1px solid rgba(255,255,255,.1);
+  min-width:190px;
+}
+.tooltip-box b { color:#93c5fd; }  /* panel zawsze ciemny — literał, nie token motywu */
+/* Camera preset buttons */
+.cam-overlay {
+  position:absolute; bottom:12px; right:12px;
+  display:flex; gap:5px; z-index:10;
+}
+.cam-btn {
+  padding:5px 12px; border-radius:6px;
+  font-size:11px; font-weight:600;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(15,23,42,.78); color:var(--gray-300);
+  cursor:pointer; transition:all .15s;
+}
+.cam-btn:hover { background:rgba(37,99,235,.75); border-color:#60a5fa; color:#fff; }
+.cam-btn.active { background:#1d4ed8; border-color:#3b82f6; color:#fff; }
+/* Info overlay top-right */
+.info-overlay {
+  position:absolute; top:10px; right:12px;
+  font-size:10px; color:rgba(148,163,184,.7);
+  text-align:right; pointer-events:none; line-height:1.6;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_map' %}">Mapa magazynu</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{{ snapshot.name }}</span>
+</nav>
+
+<div class="page-header" style="margin-bottom:12px">
+  <div>
+    <div class="page-header__title">{{ snapshot.name }}</div>
+    <div class="page-header__sub">{{ snapshot.uploaded_at|date:"d.m.Y H:i" }} · {{ stats.total }} lokalizacji</div>
+  </div>
+  <div class="page-header__actions">
+    {% if active_layout %}
+    <a href="{% url 'ui:warehouse_aisle_config' snapshot.pk %}" class="btn btn-secondary btn-sm">Szerokości alej</a>
+    <a href="{% url 'ui:warehouse_layout_features' snapshot.pk %}" class="btn btn-secondary btn-sm">Elementy hali</a>
+    {% endif %}
+    <a href="{% url 'ui:warehouse_map' %}" class="btn btn-ghost btn-sm">{% icon "arrow-left" %}Powrót</a>
+  </div>
+</div>
+
+{% if not from_layout %}
+<div style="margin:8px 0;padding:10px 14px;background:var(--yellow-light);border:1px solid #92400e;border-radius:8px;font-size:13px;color:var(--yellow-dark)">
+  {% icon "triangle-alert" %} Brak fizycznego układu (MAP) pasującego do tego snapshotu — pozycje wyprowadzono z kodów lokalizacji, więc rozmieszczenie jest przybliżone i bez konstrukcji regałów.
+  Wgraj plik <strong>MAP</strong> obejmujący te alejki, aby zobaczyć dokładną mapę 3D.
+</div>
+{% endif %}
+
+<div class="wmap-layout">
+
+  <!-- Left: 3D canvas -->
+  <div>
+    <div class="wmap-legend">
+      <div class="wmap-legend-item"><div class="wmap-legend-dot" style="background:#22c55e"></div> Realna paleta (HU)</div>
+      <div class="wmap-legend-item"><div class="wmap-legend-dot" style="background:#f0ead6"></div> Zajęta (snapshot)</div>
+      <div class="wmap-legend-item"><div class="wmap-legend-dot" style="background:var(--gray-700)"></div> Pusta</div>
+      <div class="wmap-legend-item"><div class="wmap-legend-dot" style="background:#f59e0b"></div> Zajęta + blokada</div>
+      <div class="wmap-legend-item"><div class="wmap-legend-dot" style="background:#ef4444"></div> Pusta + blokada</div>
+      <div class="wmap-legend-item"><div class="wmap-legend-dot" style="background:#fbbf24;opacity:.6"></div> Przejazd</div>
+      {% if pallet_stats.total %}<div class="wmap-legend-item" style="margin-left:auto">
+        <span style="color:var(--green)">{% icon "circle" %}</span> Palety: <b>{{ pallet_stats.placed }}</b> na mapie{% if pallet_stats.unplaced %} · <b style="color:#b91c1c">{{ pallet_stats.unplaced }}</b> poza mapą (kod nie pasuje){% endif %}</div>{% endif %}
+    </div>
+    <div class="wmap-canvas-wrap">
+      <canvas id="wmap-canvas"></canvas>
+      {% include "ui/_wh3d_boot.html" with status_id="wmap-status" %}
+      <div class="tooltip-box" id="wmap-tooltip"></div>
+      <div id="wmap-loc-panel" style="display:none;position:absolute;top:10px;right:10px;width:300px;
+           max-height:70%;overflow:auto;background:#0f172aee;color:var(--gray-200);border:1px solid var(--gray-700);
+           border-radius:10px;padding:12px 14px;font-size:12px;z-index:5;backdrop-filter:blur(3px)">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <b id="wmap-loc-title" style="color:#93c5fd"></b>
+          <button onclick="document.getElementById('wmap-loc-panel').style.display='none'"
+                  aria-label="Zamknij" style="background:none;border:none;color:var(--gray-400);cursor:pointer;min-width:32px;min-height:32px">{% icon "x" %}</button>
+        </div>
+        <div id="wmap-loc-body"></div>
+      </div>
+      <!-- Camera presets -->
+      <div class="cam-overlay">
+        <button class="cam-btn active" id="cbtn-iso"   onclick="window._setCam('iso')">Izo</button>
+        <button class="cam-btn"        id="cbtn-top"   onclick="window._setCam('top')">Góra</button>
+        <button class="cam-btn"        id="cbtn-front" onclick="window._setCam('front')">Przód</button>
+        <button class="cam-btn"        id="cbtn-side"  onclick="window._setCam('side')">Bok</button>
+      </div>
+      <div class="info-overlay">
+        Przeciągnij — obracaj<br>Scroll — zoom<br>Hover — szczegóły<br>Klik — zawartość
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: stats panel -->
+  <div style="display:flex;flex-direction:column;gap:12px">
+
+    <div class="card" style="padding:16px">
+      <div class="stat-grid">
+        <div class="stat-box" style="border-top:3px solid #22c55e">
+          <div class="stat-box__val">{{ stats.fill_pct }}%</div>
+          <div class="stat-box__lbl">wypełnienie</div>
+        </div>
+        <div class="stat-box" style="border-top:3px solid #2563eb">
+          <div class="stat-box__val">{{ stats.occupied }}</div>
+          <div class="stat-box__lbl">zajętych</div>
+        </div>
+        <div class="stat-box" style="border-top:3px solid var(--gray-500)">
+          <div class="stat-box__val">{{ stats.empty }}</div>
+          <div class="stat-box__lbl">pustych</div>
+        </div>
+        <div class="stat-box" style="border-top:3px solid #f59e0b">
+          <div class="stat-box__val">{{ stats.blocked }}</div>
+          <div class="stat-box__lbl">zablokowanych</div>
+        </div>
+        {% if stats.nonrack %}
+        <div class="stat-box" style="border-top:3px solid #8b5cf6" title="Kod spoza wzorca regału — magazyn blokowy/zewnętrzny (pozycja schematyczna do czasu wgrania planu)">
+          <div class="stat-box__val">{{ stats.nonrack }}</div>
+          <div class="stat-box__lbl">blok/zewn.</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if special_zones %}
+    <div class="card" style="padding:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--gray-900);margin-bottom:10px">
+        Strefy nietypowe (blok / zewnętrzne)
+      </div>
+      {% for z in special_zones %}
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-100)">
+        <span style="width:10px;height:10px;border-radius:2px;background:#8b5cf6;flex-shrink:0"></span>
+        <span style="font-size:12px;font-weight:700;color:var(--gray-800);min-width:64px">{{ z.prefix }}</span>
+        <div style="flex:1;height:6px;background:var(--gray-100);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:{{ z.fill_pct }}%;background:#8b5cf6"></div>
+        </div>
+        <span style="font-size:11px;color:var(--gray-600);min-width:96px;text-align:right">
+          {{ z.occupied }}/{{ z.total }}{% if z.blocked %} · {{ z.blocked }} blok.{% endif %}{% if z.hu %} · {{ z.hu }} HU{% endif %}
+        </span>
+      </div>
+      {% endfor %}
+      <div style="font-size:10px;color:var(--gray-400);margin-top:8px">
+        Kody spoza wzorca regału — pozycja schematyczna do czasu wgrania planu strefy.
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card" style="padding:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--gray-900);margin-bottom:10px">Wypełnienie wg przejścia</div>
+      {% for a in aisle_stats %}
+      <div class="aisle-bar-wrap">
+        <span style="font-size:11px;font-weight:700;color:var(--gray-700);min-width:28px">{{ a.label }}</span>
+        <div class="aisle-bar-bg">
+          <div class="aisle-bar-fill" style="width:{{ a.pct }}%;background:{% if a.pct > 90 %}#ef4444{% elif a.pct > 70 %}#f59e0b{% else %}#22c55e{% endif %}"></div>
+        </div>
+        <span style="font-size:10px;color:var(--gray-500);min-width:32px;text-align:right">{{ a.pct }}%</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="card" style="padding:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--gray-900);margin-bottom:8px">Zdolności (max. wys. mat.)</div>
+      <div id="cap-chart"></div>
+    </div>
+
+  </div>
+</div>
+
+{{ aisle_meta|json_script:"id_aisle_meta" }}
+{{ cap_groups|json_script:"id_cap" }}
+{{ rack_types_ctx|json_script:"id_rack_types" }}
+{{ hall_features|json_script:"id_hall_features" }}
+
+<script type="importmap">{"imports": {
+  "three": "/static/ui/vendor/three.module.js",
+  "three-mesh-bvh": "/static/ui/vendor/three-mesh-bvh.module.js"
+}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from 'three-mesh-bvh';
+// Accelerate raycasting (hover/click) over the thousands of instanced locations.
+THREE.BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
+THREE.BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
+
+// Guard WebGL — bez tego new WebGLRenderer() rzuca i zostaje czarny ekran.
+if (window.__wh3dNoWebGL) {
+  window.wh3dFail('Twoja przeglądarka lub urządzenie nie obsługuje grafiki 3D (WebGL). ' +
+                  'Użyj nowszej przeglądarki albo włącz akcelerację sprzętową.');
+  throw new Error('WebGL unavailable');
+}
+
+/* ── Data ────────────────────────────────────────────────────────────────────
+   LOCS physical:   [px, pz, level, state, h_mm, 1, vol, wgt, wtype, loc_code, aisle]
+   LOCS fallback:   [aisle, stack, level, state, h_mm, 0, vol, wgt, wtype, loc_code, aisle]
+   state 0=empty 1=occupied 2=blocked+occupied 3=blocked+empty                */
+// R2: lokalizacje (~37k) dociągane fetch-em zamiast inline w HTML — dokument
+// jest lekki, dane leżą w cache przeglądarki. Moduł ES → top-level await OK.
+let LOCS;
+try {
+  const _r = await fetch(location.pathname + '?fmt=json', {credentials: 'same-origin'});
+  if (!_r.ok) throw new Error('HTTP ' + _r.status);
+  LOCS = (await _r.json()).locs;
+} catch (err) {
+  window.wh3dFail('Nie udało się pobrać danych lokalizacji magazynu. ' +
+                  'Odśwież stronę lub spróbuj ponownie za chwilę.');
+  throw err;
+}
+const CAP        = JSON.parse(document.getElementById('id_cap').textContent);
+const USE_PHYSICAL = {{ use_physical|yesno:"true,false" }};
+// Draw rack steelwork (uprights/beams) only for a real physical layout — for
+// code-derived positions it becomes a dense forest, so show just the loads.
+const SHOW_STRUCTURE = {{ from_layout|yesno:"true,false" }};
+const RACK_TYPES = JSON.parse(document.getElementById('id_rack_types').textContent);
+const AISLE_META = JSON.parse(document.getElementById('id_aisle_meta').textContent);
+
+/* ── helpers ── */
+function nColsForLevel(wtype, level) {
+  const rt = RACK_TYPES[wtype];
+  if (!rt || !rt.level_cols) return 1;
+  return rt.level_cols[String(level)] || rt.level_cols[level] || 1;
+}
+
+/* ── Capacity chart ── */
+const capEl = document.getElementById('cap-chart');
+const capTotal = Object.values(CAP).reduce((a,b)=>a+b,0);
+capEl.innerHTML = Object.entries(CAP).map(([k,v]) => {
+  const pct = capTotal ? Math.round(v/capTotal*100) : 0;
+  return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+    <span style="min-width:52px;font-size:11px;color:var(--gray-700)">${k} mm</span>
+    <div style="flex:1;height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden">
+      <div style="width:${pct}%;height:100%;background:#7c3aed;border-radius:4px"></div>
+    </div>
+    <span style="font-size:11px;color:var(--gray-500);min-width:36px;text-align:right">${v.toLocaleString()}</span>
+  </div>`;
+}).join('');
+
+/* ── Renderer ── */
+const canvas = document.getElementById('wmap-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setClearColor(0x0f172a);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x0f172a, 80, 400);
+
+const camera = new THREE.PerspectiveCamera(40, 1, 0.5, 2000);
+
+/* ── Lighting ── */
+scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+const sunLight = new THREE.DirectionalLight(0xfff5e0, 0.9);
+sunLight.position.set(200, 400, 150);
+sunLight.castShadow = true;
+sunLight.shadow.mapSize.set(2048, 2048);
+sunLight.shadow.camera.near = 1;
+sunLight.shadow.camera.far = 2000;
+scene.add(sunLight);
+const fillLight = new THREE.DirectionalLight(0xc0d8ff, 0.3);
+fillLight.position.set(-100, 100, -100);
+scene.add(fillLight);
+
+/* ── Physical scale constants ── */
+const SLOT_W_MM = {{ slot_width_mm|default:0 }};
+const SCALE   = SLOT_W_MM > 0 ? SLOT_W_MM * 0.001 : 0.35;
+const LEVEL_H = 2.2;
+const PALLET_H = 0.12;
+const LOAD_H   = 1.6;
+const UPRIGHT_W = 0.07;
+const BEAM_H  = 0.05;
+const BEAM_D  = 0.08;
+
+const dummy = new THREE.Object3D();
+const META  = [];
+
+/* ── Materials ── */
+const matPalletWood = new THREE.MeshLambertMaterial({ color: 0x8B6914 });
+const matOrangeSteel = new THREE.MeshLambertMaterial({ color: 0xe07020 });
+const matBlueSteel   = new THREE.MeshLambertMaterial({ color: 0x1e40af });
+const matBeam        = new THREE.MeshLambertMaterial({ color: 0xe07020 });
+const matLoad = [
+  new THREE.MeshLambertMaterial({ color: 0x1e293b, transparent: true, opacity: 0.15 }),
+  new THREE.MeshLambertMaterial({ color: 0xf0ead6 }),
+  new THREE.MeshLambertMaterial({ color: 0xf59e0b }),
+  new THREE.MeshLambertMaterial({ color: 0xef4444 }),
+  new THREE.MeshLambertMaterial({ color: 0x22c55e }),   // 4 = realna paleta (stock HU)
+];
+// Efektywny stan: realna paleta (hu>0) ma pierwszeństwo; blokada zajętego → 2, reszta ze snapshotu.
+const effState = l => (l[11] > 0) ? ((l[3] === 2 || l[3] === 3) ? 2 : 4) : l[3];
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MODULE-LEVEL CAMERA STATE  — shared between buildPhysical, buildFallback
+   and the HTML camera-preset buttons
+   ══════════════════════════════════════════════════════════════════════════ */
+let camAz = -0.6, camEl = 0.55, camRad = 100;
+let camCX = 0, camCY = 0, camCZ = 0;
+
+/* Persistent text labels (aisle signs + number plates), decluttered in screen space so
+   they never overlap. _labelsDirty triggers a re-evaluation after any camera move. */
+const LABELS = [];
+let _labelsDirty = true;
+
+function updateCam() {
+  camera.position.set(
+    camCX + camRad * Math.cos(camEl) * Math.sin(camAz),
+    camCY + camRad * Math.sin(camEl),
+    camCZ + camRad * Math.cos(camEl) * Math.cos(camAz)
+  );
+  camera.lookAt(camCX, camCY * 0.5, camCZ);
+  _labelsDirty = true;
+}
+
+/* Hide the farther of any two labels that would overlap on screen (and any label that is
+   off-screen or behind the camera), so signs never pile up on top of each other while the
+   shown ones stay always-visible. Cheap: a handful of labels, O(n²) screen-box test. */
+const _lblNDC = new THREE.Vector3();
+function declutterLabels() {
+  const items = [];
+  for (const sp of LABELS) {
+    _lblNDC.copy(sp.position).project(camera);
+    const onScreen = _lblNDC.z < 1 && Math.abs(_lblNDC.x) < 1.15 && Math.abs(_lblNDC.y) < 1.15;
+    if (!onScreen) { sp.visible = false; continue; }
+    // Approx half-extent in NDC: sprite world-width foreshortened by camera distance.
+    const dist = camera.position.distanceTo(sp.position) || 1;
+    const halfX = Math.min(0.4, (sp.scale.x * 0.5) / dist * 1.6);
+    const halfY = Math.min(0.2, (sp.scale.y * 0.5) / dist * 1.6);
+    items.push({ sp, x: _lblNDC.x, y: _lblNDC.y, dist, halfX, halfY,
+                 pri: sp.userData.lblPriority || 0 });
+  }
+  // Higher priority first (aisle number plates beat the long "ALEJA X" signs), then
+  // nearest-to-camera, so the most identifying label always wins contested screen space.
+  items.sort((a, b) => (b.pri - a.pri) || (a.dist - b.dist));
+  const placed = [];
+  for (const it of items) {
+    let ok = true;
+    for (const p of placed) {
+      if (Math.abs(it.x - p.x) < (it.halfX + p.halfX) &&
+          Math.abs(it.y - p.y) < (it.halfY + p.halfY)) { ok = false; break; }
+    }
+    it.sp.visible = ok;
+    if (ok) placed.push(it);
+  }
+}
+
+const CAM_PRESETS = {
+  iso:   { az: -0.6,         el: 0.55 },
+  top:   { az: 0.001,        el: 1.47 },
+  front: { az: 0.001,        el: 0.18 },
+  side:  { az: Math.PI / 2,  el: 0.28 },
+};
+function setPresetCam(key) {
+  const p = CAM_PRESETS[key]; if (!p) return;
+  camAz = p.az; camEl = p.el;
+  updateCam();
+  document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('cbtn-' + key);
+  if (btn) btn.classList.add('active');
+}
+window._setCam = setPresetCam;   // expose to onclick=""
+
+/* ── Location contents panel (click a location) ───────────────────────────── */
+function showLocContents(code) {
+  if (!code) return;
+  const panel = document.getElementById('wmap-loc-panel');
+  const title = document.getElementById('wmap-loc-title');
+  const body  = document.getElementById('wmap-loc-body');
+  const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  panel.style.display = 'block';
+  title.textContent = code;
+  body.innerHTML = '<div style="color:var(--gray-400)">Wczytywanie…</div>';
+  fetch('{% url "ui:warehouse_location_contents" %}?code=' + encodeURIComponent(code))
+    .then(r => r.json())
+    .then(d => {
+      if (!d.items.length) {
+        body.innerHTML = '<div style="color:var(--gray-400)">Brak pozycji stocku w tej lokalizacji.</div>';
+        return;
+      }
+      body.innerHTML = d.items.map(it => `
+        <div style="border-bottom:1px solid #1e293b;padding:6px 0">
+          <div><b style="color:#93c5fd">${esc(it.code)}</b> · ${esc(it.qty)} ${esc(it.unit)}</div>
+          <div style="color:var(--gray-300)">${esc(it.name)}</div>
+          <div style="color:var(--gray-400);font-size:11px">HU ${esc(it.hu_ref)}${it.lot ? ' · LOT '+esc(it.lot) : ''}${it.expiry ? ' · do '+esc(it.expiry) : ''} · ${esc(it.status)}</div>
+        </div>`).join('');
+    })
+    .catch(() => { body.innerHTML = '<div style="color:#f87171">Błąd pobierania danych.</div>'; });
+}
+window._showLoc = showLocContents;
+
+/* ── Text sprite helper ───────────────────────────────────────────────────── */
+function makeTextSprite(text, { w=512, h=128, fontSize=52, bg='#1e3a8a', fg='#ffffff' } = {}) {
+  const cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  const ctx = cv.getContext('2d');
+  const r = 22, pad = 4;
+  ctx.clearRect(0, 0, w, h);
+  ctx.beginPath();
+  ctx.moveTo(pad + r, pad);
+  ctx.lineTo(w - pad - r, pad);
+  ctx.arcTo(w - pad, pad,   w - pad, pad + r,   r);
+  ctx.lineTo(w - pad, h - pad - r);
+  ctx.arcTo(w - pad, h - pad, w - pad - r, h - pad, r);
+  ctx.lineTo(pad + r, h - pad);
+  ctx.arcTo(pad, h - pad, pad, h - pad - r, r);
+  ctx.lineTo(pad, pad + r);
+  ctx.arcTo(pad, pad, pad + r, pad, r);
+  ctx.closePath();
+  ctx.fillStyle = bg;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.font = `bold ${fontSize}px Arial,Helvetica,sans-serif`;
+  ctx.fillStyle = fg;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, w / 2, h / 2);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.needsUpdate = true;
+  // depthTest:false → labels always draw on top and stay readable from any angle (never
+  // hidden behind racks). They are kept from piling up on each other by declutterLabels(),
+  // which hides the farther of any two labels that would overlap in screen space.
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false });
+  const sp = new THREE.Sprite(mat);
+  sp.renderOrder = 999;
+  return sp;
+}
+
+/* ── buildPhysical ─────────────────────────────────────────────────────────── */
+function buildPhysical() {
+  const physLocs = LOCS.filter(l => l[5] === 1);
+  if (!physLocs.length) return false;
+
+  /* Bounds */
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  let maxLevel = 1;
+  for (const l of physLocs) {
+    if (l[0] < minX) minX = l[0]; if (l[0] > maxX) maxX = l[0];
+    if (l[1] < minZ) minZ = l[1]; if (l[1] > maxZ) maxZ = l[1];
+    if (l[2] > maxLevel) maxLevel = l[2];
+  }
+
+  /* Per-level heights */
+  const MM = 0.001;
+  const DEFAULT_H_MM = 2500;
+  const levelCapMM = {};
+  for (const l of physLocs) {
+    const lv = l[2], cap = l[4];
+    if (cap > 0 && (!(lv in levelCapMM) || cap > levelCapMM[lv])) levelCapMM[lv] = cap;
+  }
+  const levelYBase = {};
+  let cumY = 0;
+  for (let lv = 1; lv <= maxLevel; lv++) {
+    levelYBase[lv] = cumY;
+    cumY += (levelCapMM[lv] || DEFAULT_H_MM) * MM;
+  }
+
+  const FW = (maxX - minX + 1) * SCALE;
+  const FD = (maxZ - minZ + 1) * SCALE;
+  const FH = cumY + 0.5;
+  const cx = (maxX - minX) / 2 * SCALE;
+  const cz = (maxZ - minZ) / 2 * SCALE;
+  const cy = FH / 2;
+
+  /* ── Etap 4: skrzydło prostopadłe ──
+     Aleje z kątem 90° (13. pole locs = l[12]) tworzą blok obrócony jako całość wokół
+     swojego środka. yaw() obraca pozycję sceny wokół pivotu; wywołujący dodatkowo ustawia
+     dummy.rotation.y = kąt → sztywny obrót pod-obiektu (pozycja+geometria) wokół pivotu. */
+  let wingPivot = null;
+  {
+    const rx = [], rz = [];
+    for (const l of physLocs) if (l[12]) { rx.push((l[0] - minX) * SCALE); rz.push((l[1] - minZ) * SCALE); }
+    if (rx.length) wingPivot = { x: (Math.min(...rx) + Math.max(...rx)) / 2,
+                                 z: (Math.min(...rz) + Math.max(...rz)) / 2 };
+  }
+  const pzAngle = {};
+  for (const l of physLocs) pzAngle[l[1]] = l[12] || 0;
+  function yaw(xw, zw, angleDeg) {
+    if (!angleDeg || !wingPivot) return [xw, zw];
+    const a = THREE.MathUtils.degToRad(angleDeg);
+    const dx = xw - wingPivot.x, dz = zw - wingPivot.z;
+    return [wingPivot.x + dx * Math.cos(a) - dz * Math.sin(a),
+            wingPivot.z + dx * Math.sin(a) + dz * Math.cos(a)];
+  }
+
+  /* ── Pallet loads (InstancedMesh per state) ── */
+  const stateCounts = [0, 0, 0, 0, 0];
+  for (const l of physLocs) stateCounts[effState(l)]++;
+
+  const loadGeo   = new THREE.BoxGeometry(SCALE * 0.88, LOAD_H,   SCALE * 0.88);
+  const palletGeo = new THREE.BoxGeometry(SCALE * 0.92, PALLET_H, SCALE * 0.92);
+
+  const loadMeshes = matLoad.map((mat, i) => {
+    if (!stateCounts[i]) return null;
+    const m = new THREE.InstancedMesh(loadGeo, mat, stateCounts[i]);
+    m.count = 0; m.castShadow = true; m.receiveShadow = true;
+    scene.add(m);
+    return m;
+  });
+
+  const palletMesh = new THREE.InstancedMesh(palletGeo, matPalletWood, physLocs.length);
+  palletMesh.count = 0; palletMesh.castShadow = true; palletMesh.receiveShadow = true;
+  scene.add(palletMesh);
+
+  // Materiał przegrody lokalizacji dzielonej (…C-1/…C-2) — ciemna krata jak na zdjęciu.
+  const matSeparator = new THREE.MeshLambertMaterial({ color: 0x1f2937 });
+
+  for (const l of physLocs) {
+    const [px, pz, level, state, cap, , vol, wgt, wtype, loc_code, aisle] = l;
+    const eff = effState(l);
+    const huc = l[11] || 0;
+    const ang = l[12] || 0;
+    const angRad = THREE.MathUtils.degToRad(ang);
+    let [x, z] = yaw((px - minX) * SCALE, (pz - minZ) * SCALE, ang);
+    const baseY   = levelYBase[level] !== undefined ? levelYBase[level] : (level - 1) * LEVEL_H;
+    const palletY = baseY + BEAM_H + PALLET_H / 2;
+    const loadY   = baseY + BEAM_H + PALLET_H + LOAD_H / 2;
+    const nCols   = nColsForLevel(wtype, level);
+    let xScale    = 1 / nCols;
+
+    // Lokalizacja DZIELONA separatorem: kod …<litera>-<sub> (np. 300C-1 / 300C-2).
+    // Pół slotu wzdłuż lokalnej osi X: sub-1 = lewy, sub-2 = prawy. Offset obraca się z aleją.
+    const subM = /[A-Z]-(\d+)$/.exec(loc_code || '');
+    if (subM) {
+      const sub = parseInt(subM[1]);
+      xScale *= 0.5;
+      const subOff = (sub === 1 ? -0.25 : 0.25) * SCALE;
+      x += subOff * Math.cos(angRad);
+      z += subOff * Math.sin(angRad);
+      if (sub === 1) {
+        // Przegroda w środku slotu (granica sub-1/sub-2) — cienka, wzdłuż głębokości.
+        const [cx, cz] = yaw((px - minX) * SCALE, (pz - minZ) * SCALE, ang);
+        const sep = new THREE.Mesh(new THREE.BoxGeometry(0.03, LOAD_H + PALLET_H, SCALE * 0.8), matSeparator);
+        sep.position.set(cx, palletY + LOAD_H / 2, cz);
+        sep.rotation.y = angRad;
+        scene.add(sep);
+      }
+    }
+
+    dummy.position.set(x, palletY, z);
+    dummy.scale.set(xScale, 1, 1);
+    dummy.rotation.set(0, angRad, 0);
+    dummy.updateMatrix();
+    palletMesh.setMatrixAt(palletMesh.count++, dummy.matrix);
+
+    dummy.position.set(x, loadY, z);
+    dummy.scale.set(xScale, 1, 1);
+    dummy.rotation.set(0, angRad, 0);
+    dummy.updateMatrix();
+    const lm = loadMeshes[eff];
+    if (lm) {
+      const li = lm.count++;
+      lm.setMatrixAt(li, dummy.matrix);
+      META.push({ m: lm, idx: li, px, pz, level, state: eff, hu: huc,
+                  cap: cap || 0, vol: vol || 0, wgt: wgt || 0,
+                  wtype: wtype || '', loc_code: loc_code || '', aisle: aisle || '' });
+    }
+  }
+  palletMesh.instanceMatrix.needsUpdate = true;
+  for (const m of loadMeshes) { if (m) m.instanceMatrix.needsUpdate = true; }
+
+  /* ── Rack uprights ── */
+  const uniquePX = [...new Set(physLocs.map(l => l[0]))].sort((a,b) => a-b);
+  const uniquePZ = [...new Set(physLocs.map(l => l[1]))].sort((a,b) => a-b);
+
+  if (SHOW_STRUCTURE) {
+  const uprightXSet = new Set();
+  for (const px of uniquePX) { uprightXSet.add(px - 0.5); uprightXSet.add(px + 0.5); }
+  const uprightXArr = [...uprightXSet].sort((a,b) => a-b);
+  const UPRIGHT_Z_OFFSETS = [-SCALE * 0.45, SCALE * 0.45];
+  const uprightH = cumY + 0.5;
+  const uprightGeo = new THREE.BoxGeometry(UPRIGHT_W, uprightH, UPRIGHT_W);
+
+  // Rysunek techniczny: słupy NIEBIESKIE (dominujące), pomarańczowe jako akcent co 3.
+  const uprightCountTotal = uprightXArr.length * uniquePZ.length * 2;
+  const meshUB = new THREE.InstancedMesh(uprightGeo, matBlueSteel, uprightCountTotal);
+  meshUB.count = 0; meshUB.castShadow = true; scene.add(meshUB);
+  const meshUO = new THREE.InstancedMesh(uprightGeo, matOrangeSteel, Math.ceil(uprightCountTotal * 0.4) + 2);
+  meshUO.count = 0; meshUO.castShadow = true; scene.add(meshUO);
+
+  let uIdx = 0;
+  for (const pz of uniquePZ) {
+    const pzAng = pzAngle[pz] || 0;
+    const pzAngRad = THREE.MathUtils.degToRad(pzAng);
+    for (const zOff of UPRIGHT_Z_OFFSETS) {
+      for (const ux of uprightXArr) {
+        const [wx, wz] = yaw((ux - minX) * SCALE, (pz - minZ) * SCALE + zOff, pzAng);
+        dummy.position.set(wx, uprightH / 2, wz);
+        dummy.scale.set(1, 1, 1); dummy.rotation.set(0, pzAngRad, 0); dummy.updateMatrix();
+        if (uIdx % 3 === 2 && meshUO.count < meshUO.instanceCount) {
+          meshUO.setMatrixAt(meshUO.count++, dummy.matrix);      // akcent pomarańczowy
+        } else if (meshUB.count < meshUB.instanceCount) {
+          meshUB.setMatrixAt(meshUB.count++, dummy.matrix);      // słup niebieski
+        }
+        uIdx++;
+      }
+    }
+  }
+  meshUO.instanceMatrix.needsUpdate = true;
+  meshUB.instanceMatrix.needsUpdate = true;
+
+  /* ── Rack beams ── */
+  const pxByPZ = {};
+  for (const l of physLocs) {
+    if (!pxByPZ[l[1]]) pxByPZ[l[1]] = new Set();
+    pxByPZ[l[1]].add(l[0]);
+  }
+  let totalBeams = 0;
+  for (const pz of uniquePZ) {
+    const pxArr = [...pxByPZ[pz]].sort((a,b) => a-b);
+    let runStart = pxArr[0], prev = pxArr[0];
+    for (let i = 1; i <= pxArr.length; i++) {
+      if (i === pxArr.length || pxArr[i] !== prev + 1) {
+        totalBeams += 2 * (maxLevel + 1);
+        runStart = pxArr[i]; prev = pxArr[i];
+      } else { prev = pxArr[i]; }
+    }
+  }
+
+  const beamMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, BEAM_H, BEAM_D), matBeam, totalBeams + 10);
+  beamMesh.count = 0; beamMesh.receiveShadow = true; beamMesh.castShadow = true;
+  scene.add(beamMesh);
+
+  for (const pz of uniquePZ) {
+    const pxArr = [...pxByPZ[pz]].sort((a,b) => a-b);
+    let runStart = pxArr[0], prev = pxArr[0];
+    for (let i = 1; i <= pxArr.length; i++) {
+      if (i === pxArr.length || pxArr[i] !== prev + 1) {
+        const runEnd = prev;
+        const beamSpan = (runEnd - runStart + 1) * SCALE;
+        const beamCX2 = ((runStart + runEnd) / 2 - minX) * SCALE;
+        const wz0 = (pz - minZ) * SCALE;
+        const pzAng = pzAngle[pz] || 0;
+        const pzAngRad = THREE.MathUtils.degToRad(pzAng);
+        const beamYs = [];
+        for (let lv = 1; lv <= maxLevel; lv++) beamYs.push(levelYBase[lv]);
+        beamYs.push(cumY);
+        for (const faceOff of [-SCALE * 0.45, SCALE * 0.45]) {
+          for (const by of beamYs) {
+            const [bx, bz] = yaw(beamCX2, wz0 + faceOff, pzAng);
+            dummy.position.set(bx, by, bz);
+            dummy.scale.set(beamSpan, 1, 1); dummy.rotation.set(0, pzAngRad, 0); dummy.updateMatrix();
+            if (beamMesh.count < beamMesh.instanceCount)
+              beamMesh.setMatrixAt(beamMesh.count++, dummy.matrix);
+          }
+        }
+        if (i < pxArr.length) runStart = pxArr[i];
+      }
+      if (i < pxArr.length) prev = pxArr[i];
+    }
+  }
+  beamMesh.instanceMatrix.needsUpdate = true;
+  }  /* end if SHOW_STRUCTURE */
+
+  /* ── Floor ── */
+  const floorMargin = 4;
+  const visualFD = Math.max(FD, SCALE * 2.0);
+  const floorGeo = new THREE.PlaneGeometry(FW + floorMargin * 2, visualFD + floorMargin * 2);
+  const floorMat = new THREE.MeshLambertMaterial({ color: 0x1e293b });
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.set(FW / 2, 0, FD / 2);
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  /* ── Floor grid (subtle) ── */
+  const gridHelper = new THREE.GridHelper(
+    Math.max(FW, visualFD) + floorMargin * 2, 40,
+    0x334155, 0x263347
+  );
+  gridHelper.position.set(FW / 2, 0.001, FD / 2);
+  // GridHelper has 2 materials (array) — set opacity on each
+  const ghMats = Array.isArray(gridHelper.material) ? gridHelper.material : [gridHelper.material];
+  ghMats.forEach(m => { m.opacity = 0.3; m.transparent = true; });
+  scene.add(gridHelper);
+
+  /* ════════════════════════════════════════════════════════════════════════
+     CORRIDOR (PRZEJAZD) MARKINGS  — yellow safety floor bands between aisles
+     ════════════════════════════════════════════════════════════════════════ */
+  const uniquePZSorted = [...uniquePZ].sort((a,b) => a-b);
+  for (let i = 0; i < uniquePZSorted.length - 1; i++) {
+    const pzA = uniquePZSorted[i], pzB = uniquePZSorted[i + 1];
+    if (pzB - pzA < 1.6) continue;   // not a real corridor gap
+
+    const midZ  = ((pzA + pzB) / 2 - minZ) * SCALE;
+    const corrD = (pzB - pzA - 1) * SCALE;
+
+    // Pale yellow fill
+    const bandGeo = new THREE.PlaneGeometry(FW + floorMargin * 2, corrD * 0.65);
+    const bandMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.13 });
+    const band = new THREE.Mesh(bandGeo, bandMat);
+    band.rotation.x = -Math.PI / 2;
+    band.position.set(FW / 2, 0.003, midZ);
+    scene.add(band);
+
+    // Two solid yellow border lines
+    for (const off of [-corrD * 0.30, corrD * 0.30]) {
+      const lineGeo = new THREE.PlaneGeometry(FW + floorMargin * 2, 0.10);
+      const lineMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+      const line = new THREE.Mesh(lineGeo, lineMat);
+      line.rotation.x = -Math.PI / 2;
+      line.position.set(FW / 2, 0.006, midZ + off);
+      scene.add(line);
+    }
+
+    // Chevron arrows indicating forklift direction — every 6 scene units
+    const arrowMat = new THREE.MeshBasicMaterial({ color: 0xfde68a, transparent: true, opacity: 0.45 });
+    const arrowW = 0.9, arrowH = 0.55;
+    for (let ax = 1; ax < FW + floorMargin * 2 - 1; ax += 6) {
+      const aGeo = new THREE.BufferGeometry();
+      const verts = new Float32Array([
+        ax - arrowW/2,  0.008, midZ - arrowH/2,
+        ax,             0.008, midZ + arrowH/2,
+        ax + arrowW/2,  0.008, midZ - arrowH/2,
+        ax,             0.008, midZ + arrowH/2 - 0.08,
+      ]);
+      aGeo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+      aGeo.setIndex([0,1,3, 1,2,3]);
+      const arrow = new THREE.Mesh(aGeo, arrowMat);
+      scene.add(arrow);
+    }
+  }
+
+  /* ════════════════════════════════════════════════════════════════════════
+     AISLE LABELS  — numbered signs at each rack row entrance
+     ════════════════════════════════════════════════════════════════════════ */
+  // Tylko literały hex: kolor idzie do canvas (fillStyle) i THREE.Color — żadne z nich nie
+  // rozwiązuje var(--…) (było 'var(--green)' → biały słupek i tło tabliczki co 9. alei).
+  const SIGN_COLORS = [
+    '#93c5fd','#0f766e','#7c3aed','#b45309','#be123c',
+    '#047857','#9f1239','#1d4ed8','#16a34a','#6d28d9',
+  ];
+
+  // Dominujący typ regału per aleja → etykiety nośności kg per poziom (rysunek A/B/C/D).
+  const aisleWtypeCount = {};
+  for (const l of physLocs) {
+    const a = l[10], wt = l[8] || '';
+    if (!a || !wt) continue;
+    (aisleWtypeCount[a] = aisleWtypeCount[a] || {})[wt] = (aisleWtypeCount[a][wt] || 0) + 1;
+  }
+  const aisleWtype = {};
+  for (const a in aisleWtypeCount)
+    aisleWtype[a] = Object.entries(aisleWtypeCount[a]).sort((x, y) => y[1] - x[1])[0][0];
+
+  for (let ai = 0; ai < AISLE_META.length; ai++) {
+    const am = AISLE_META[ai];
+    const signColor = SIGN_COLORS[ai % SIGN_COLORS.length];
+    const aisleZc = (am.pz_center - minZ) * SCALE;
+    const aisleXL  = (am.px_min  - minX) * SCALE;
+    const aisleXR  = (am.px_max  - minX) * SCALE;
+    // Etap 4: etykiety/słupki alei obróconej trzymają się skrzydła (yaw wokół pivotu).
+    const aAng = am.angle_deg || 0;
+    const P = (xx, zz) => yaw(xx, zz, aAng);
+
+    /* ── Hanging label (right side of aisle) ── */
+    // width_m z konfiguracji alei (Etap 3) dopisany do etykiety, gdy ustawiony.
+    // label = numer alei, albo 'strefa-aleja', gdy ta sama numeracja jest w kilku strefach.
+    const aisleName = am.label || am.aisle;
+    const aisleTxt = am.width_m ? `ALEJA  ${aisleName}  (${am.width_m} m)` : `ALEJA  ${aisleName}`;
+    const lbl = makeTextSprite(aisleTxt, {
+      w: 420, h: 108, fontSize: 50, bg: signColor, fg: '#ffffff'
+    });
+    { const [lx, lz] = P(aisleXR + 3.5, aisleZc); lbl.position.set(lx, cumY * 0.52 + 0.4, lz); }
+    lbl.scale.set(5.0, 1.28, 1);
+    scene.add(lbl);
+    LABELS.push(lbl);
+
+    /* ── Etykiety nośności kg per poziom (z dominującego typu regału alei) ── */
+    const wtDef = RACK_TYPES[aisleWtype[am.aisle]];
+    if (wtDef && wtDef.level_weights) {
+      for (let lv = 1; lv <= maxLevel; lv++) {
+        const kg = wtDef.level_weights[lv] || wtDef.level_weights[String(lv)];
+        if (!kg) continue;
+        const ky = (levelYBase[lv] !== undefined ? levelYBase[lv] : (lv - 1) * LEVEL_H) + 0.9;
+        const kgSpr = makeTextSprite(`${Number(kg).toLocaleString('pl')} kg`, {
+          w: 220, h: 70, fontSize: 40, bg: '#e07020', fg: '#ffffff'
+        });
+        const [kx, kz] = P(aisleXR + 1.6, aisleZc);
+        kgSpr.position.set(kx, ky, kz);
+        kgSpr.scale.set(2.2, 0.7, 1);
+        scene.add(kgSpr);
+        LABELS.push(kgSpr);
+      }
+    }
+
+    /* ── Sign post at left entrance ── */
+    const postH = cumY * 0.72;
+    const postGeo = new THREE.BoxGeometry(0.13, postH, 0.13);
+    const postMat = new THREE.MeshLambertMaterial({ color: new THREE.Color(signColor) });
+    const post = new THREE.Mesh(postGeo, postMat);
+    { const [pxp, pzp] = P(aisleXL - 1.0, aisleZc); post.position.set(pxp, postH / 2, pzp); }
+    post.castShadow = true;
+    scene.add(post);
+
+    /* ── Number plate on post ── */
+    const plate = makeTextSprite(aisleName, {
+      w: 160, h: 108, fontSize: 68, bg: signColor, fg: '#ffffff'
+    });
+    { const [qx, qz] = P(aisleXL - 1.0, aisleZc); plate.position.set(qx, postH * 0.88, qz); }
+    plate.scale.set(1.4, 0.94, 1);
+    scene.add(plate);
+    plate.userData.lblPriority = 1;   // the aisle number is the key id → wins overlaps
+    LABELS.push(plate);
+
+    /* ── Floor stripe at aisle entrance (left) ── */
+    const stripeLen = aisleXR - aisleXL + 2;
+    const entryStripeGeo = new THREE.PlaneGeometry(stripeLen, 0.08);
+    const entryStripeMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(signColor), transparent: true, opacity: 0.55
+    });
+    for (const zOff of [-(SCALE * 0.52), SCALE * 0.52]) {
+      const es = new THREE.Mesh(entryStripeGeo, entryStripeMat);
+      es.rotation.x = -Math.PI / 2;
+      const [ex, ez] = P(aisleXL + stripeLen/2 - 1, aisleZc + zOff);
+      es.position.set(ex, 0.007, ez);
+      if (aAng) es.rotation.z = THREE.MathUtils.degToRad(aAng);   // pas obraca się z aleją
+      scene.add(es);
+    }
+  }
+
+  /* ── Camera setup ── */
+  camCX = cx; camCY = FH * 0.3; camCZ = cz;
+  const singleRow = uniquePZ.length <= 1;
+  camAz = singleRow ? Math.PI / 2 : -0.6;
+  camEl = 0.55;
+  camRad = singleRow ? FW * 0.6 : Math.max(FW, FD) * 1.1;
+  updateCam();
+
+  /* ── Resize ── */
+  function resize() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(canvas.parentElement);
+  resize();
+
+  /* ── Mouse controls ── */
+  let drag = false, lx = 0, ly = 0;
+  canvas.addEventListener('mousedown', e => { drag = true; lx = e.clientX; ly = e.clientY; });
+  window.addEventListener('mouseup', () => { drag = false; });
+  window.addEventListener('mousemove', e => {
+    if (!drag) return;
+    camAz -= (e.clientX - lx) * 0.004;
+    camEl = Math.max(0.05, Math.min(1.45, camEl + (e.clientY - ly) * 0.004));
+    lx = e.clientX; ly = e.clientY;
+    updateCam();
+  });
+  canvas.addEventListener('wheel', e => {
+    camRad = Math.max(3, camRad + e.deltaY * 0.12);
+    updateCam(); e.preventDefault();
+  }, { passive: false });
+
+  /* ── Touch controls ── */
+  let lastTouchDist = 0;
+  canvas.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) { drag = true; lx = e.touches[0].clientX; ly = e.touches[0].clientY; }
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      lastTouchDist = Math.sqrt(dx*dx + dy*dy);
+    }
+  }, { passive: true });
+  canvas.addEventListener('touchmove', e => {
+    if (e.touches.length === 1 && drag) {
+      camAz -= (e.touches[0].clientX - lx) * 0.004;
+      camEl = Math.max(0.05, Math.min(1.45, camEl + (e.touches[0].clientY - ly) * 0.004));
+      lx = e.touches[0].clientX; ly = e.touches[0].clientY; updateCam();
+    }
+    if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      camRad = Math.max(3, camRad - (dist - lastTouchDist) * 0.05);
+      lastTouchDist = dist; updateCam();
+    }
+  }, { passive: true });
+  canvas.addEventListener('touchend', () => { drag = false; });
+
+  /* ── Tooltip (shows actual location code) ── */
+  const ray = new THREE.Raycaster(), mv = new THREE.Vector2();
+  ray.firstHitOnly = true;   // three-mesh-bvh: stop at the nearest hit
+  const tip = document.getElementById('wmap-tooltip');
+  const SL = ['Pusta', 'Zajęta', 'Zajęta+blok.', 'Pusta+blok.', 'Realna paleta'];
+  const rayTargets = loadMeshes.filter(Boolean);
+  rayTargets.forEach(m => { if (m.geometry && !m.geometry.boundsTree) m.geometry.computeBoundsTree(); });
+
+  canvas.addEventListener('mousemove', e => {
+    if (drag) { tip.style.display = 'none'; return; }
+    const r = canvas.getBoundingClientRect();
+    mv.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    mv.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+    ray.setFromCamera(mv, camera);
+    const hits = ray.intersectObjects(rayTargets);
+    if (hits.length) {
+      const h = hits[0];
+      const lm = META.find(x => x.m === h.object && x.idx === h.instanceId);
+      if (lm) {
+        const sw  = lm.cap > 0 ? (lm.cap + 125) + ' mm' : '—';
+        const vol = lm.vol > 0 ? lm.vol.toFixed(2) + ' m³' : '—';
+        const wgt = lm.wgt > 0 ? lm.wgt.toLocaleString() + ' kg' : '—';
+        const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        tip.style.display = 'block';
+        tip.innerHTML = `<b>${esc(lm.loc_code) || 'poz. ' + lm.px + '/' + lm.pz}</b><br>
+Aleja: <b>${esc(lm.aisle) || '—'}</b> · Poziom: <b>${lm.level}</b><br>
+Stan: <b>${esc(SL[lm.state])}</b>${lm.hu > 0 ? ' · Palety: <b>' + lm.hu + '</b>' : ''} · Typ: <b>${esc(lm.wtype) || '—'}</b><br>
+Wys. max: <b>${lm.cap} mm</b> · Światło: <b>${sw}</b><br>
+Obj.: <b>${vol}</b> · Max waga: <b>${wgt}</b>`;
+      }
+    } else { tip.style.display = 'none'; }
+  });
+  canvas.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+
+  // Click a location → show its stock contents (ignore clicks that were drags).
+  let _dx = 0, _dy = 0;
+  canvas.addEventListener('mousedown', e => { _dx = e.clientX; _dy = e.clientY; });
+  canvas.addEventListener('click', e => {
+    if (Math.abs(e.clientX - _dx) > 5 || Math.abs(e.clientY - _dy) > 5) return;
+    const r = canvas.getBoundingClientRect();
+    mv.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    mv.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+    ray.setFromCamera(mv, camera);
+    const hits = ray.intersectObjects(rayTargets);
+    if (hits.length) {
+      const lm = META.find(x => x.m === hits[0].object && x.idx === hits[0].instanceId);
+      if (lm && lm.loc_code) window._showLoc(lm.loc_code);
+    }
+  });
+
+  return true;
+}
+
+/* ── buildFallback ─────────────────────────────────────────────────────────── */
+function buildFallback() {
+  const CW = 1.1, CD = 1.0;
+  const RACK_GAP = 0.14, AISLE_GAP = 4.0;
+  const CH = LEVEL_H;
+
+  const numSort = (a, b) => String(a).localeCompare(String(b), undefined, {numeric: true});
+  const aisleSet = [...new Set(LOCS.map(l => l[0]))].sort(numSort);
+  const aisleIdx = Object.fromEntries(aisleSet.map((a, i) => [a, i]));
+  const stackSets = {};
+  for (const l of LOCS) {
+    if (!stackSets[l[0]]) stackSets[l[0]] = new Set();
+    stackSets[l[0]].add(l[1]);
+  }
+  const stackIdx = {};
+  for (const a of aisleSet) {
+    stackIdx[a] = Object.fromEntries([...stackSets[a]].sort(numSort).map((s,i) => [s,i]));
+  }
+
+  const stateCounts = [0, 0, 0, 0];
+  for (const l of LOCS) stateCounts[l[3]]++;
+
+  const geo = new THREE.BoxGeometry(CW - 0.05, CH - 0.05, CD - 0.05);
+  const meshes = matLoad.map((mat, i) => {
+    if (!stateCounts[i]) return null;
+    const m = new THREE.InstancedMesh(geo, mat, stateCounts[i]);
+    m.count = 0; scene.add(m); return m;
+  });
+
+  for (const l of LOCS) {
+    const [aisle, stack, level, state] = l;
+    const ai = aisleIdx[aisle] ?? 0;
+    const si = stackIdx[aisle]?.[stack] ?? 0;
+    const x = si * (3 * CW + RACK_GAP);
+    const y = (level - 1) * CH + CH / 2;
+    const z = ai * (AISLE_GAP + CD);
+    dummy.position.set(x, y, z); dummy.scale.set(1,1,1); dummy.rotation.set(0,0,0);
+    dummy.updateMatrix();
+    const m = meshes[state];
+    if (m) {
+      const idx = m.count++;
+      m.setMatrixAt(idx, dummy.matrix);
+      META.push({ m, idx, aisle, stack, level, state, cap: l[4] || 0,
+                  loc_code: l[9] || '', wtype: l[8] || '' });
+    }
+  }
+  for (const m of meshes) { if (m) m.instanceMatrix.needsUpdate = true; }
+
+  const maxSI = Math.max(...aisleSet.map(a => stackIdx[a] ? Object.keys(stackIdx[a]).length : 0));
+  const FW = maxSI * (3 * CW + RACK_GAP) + 10;
+  const FD = aisleSet.length * (AISLE_GAP + CD) + 10;
+
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(FW, FD),
+    new THREE.MeshLambertMaterial({ color: 0x1e293b })
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.set(FW/2 - 5, 0, (aisleSet.length-1)*(AISLE_GAP+CD)/2);
+  scene.add(floor);
+
+  /* Aisle labels for fallback */
+  for (let ai = 0; ai < aisleSet.length; ai++) {
+    const aisle = aisleSet[ai];
+    const z = ai * (AISLE_GAP + CD);
+    const lbl = makeTextSprite(`ALEJA  ${aisle}`, { w:380, h:96, fontSize:48, bg:'#93c5fd' });
+    lbl.position.set(-2.5, 4, z);
+    lbl.scale.set(4.5, 1.14, 1);
+    scene.add(lbl);
+    LABELS.push(lbl);
+  }
+
+  camCX = FW / 2 - 5; camCY = 8; camCZ = (aisleSet.length - 1) * (AISLE_GAP + CD) / 2;
+  camAz = -0.6; camEl = 0.5; camRad = Math.max(FW, FD) * 0.75;
+  updateCam();
+
+  function resize() {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(canvas.parentElement); resize();
+
+  let drag = false, lx = 0, ly = 0;
+  canvas.addEventListener('mousedown', e => { drag=true; lx=e.clientX; ly=e.clientY; });
+  window.addEventListener('mouseup', () => { drag=false; });
+  window.addEventListener('mousemove', e => {
+    if (!drag) return;
+    camAz -= (e.clientX-lx)*0.004;
+    camEl = Math.max(0.05, Math.min(1.45, camEl+(e.clientY-ly)*0.004));
+    lx=e.clientX; ly=e.clientY; updateCam();
+  });
+  canvas.addEventListener('wheel', e => {
+    camRad = Math.max(5, camRad+e.deltaY*0.15); updateCam(); e.preventDefault();
+  }, { passive: false });
+
+  const ray = new THREE.Raycaster(), mv = new THREE.Vector2();
+  ray.firstHitOnly = true;   // three-mesh-bvh
+  const tip = document.getElementById('wmap-tooltip');
+  const SL = ['Pusta', 'Zajęta', 'Zajęta+blok.', 'Pusta+blok.', 'Realna paleta'];
+  meshes.filter(Boolean).forEach(m => { if (m.geometry && !m.geometry.boundsTree) m.geometry.computeBoundsTree(); });
+  canvas.addEventListener('mousemove', e => {
+    if (drag) { tip.style.display='none'; return; }
+    const r = canvas.getBoundingClientRect();
+    mv.x = ((e.clientX-r.left)/r.width)*2-1;
+    mv.y = -((e.clientY-r.top)/r.height)*2+1;
+    ray.setFromCamera(mv, camera);
+    const hits = ray.intersectObjects(meshes.filter(Boolean));
+    if (hits.length) {
+      const h = hits[0];
+      const lm = META.find(x => x.m===h.object && x.idx===h.instanceId);
+      if (lm) {
+        const sw = lm.cap > 0 ? (lm.cap+125)+' mm' : '—';
+        tip.style.display = 'block';
+        {# esc() jak w bliźniaczym tooltipie wyżej — kody lokalizacji idą z importu (stored XSS). #}
+        tip.innerHTML = `<b>${esc(lm.loc_code) || 'Aleja '+esc(lm.aisle)+' / Stos '+esc(lm.stack)}</b><br>
+Poziom: <b>${lm.level}</b> · Stan: <b>${esc(SL[lm.state])}</b><br>
+Maks. wys. mat.: <b>${lm.cap} mm</b> · Światło: <b>${sw}</b>`;
+      }
+    } else { tip.style.display='none'; }
+  });
+  canvas.addEventListener('mouseleave', () => { tip.style.display='none'; });
+
+  // Click a location → show its stock contents (ignore clicks that were drags).
+  let _dx = 0, _dy = 0;
+  canvas.addEventListener('mousedown', e => { _dx = e.clientX; _dy = e.clientY; });
+  canvas.addEventListener('click', e => {
+    if (Math.abs(e.clientX - _dx) > 5 || Math.abs(e.clientY - _dy) > 5) return;
+    const r = canvas.getBoundingClientRect();
+    mv.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    mv.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+    ray.setFromCamera(mv, camera);
+    const hits = ray.intersectObjects(meshes.filter(Boolean));
+    if (hits.length) {
+      const lm = META.find(x => x.m === hits[0].object && x.idx === hits[0].instanceId);
+      if (lm && lm.loc_code) window._showLoc(lm.loc_code);
+    }
+  });
+}
+
+/* ── Elementy hali (doki/bramy/strefy/liderzy) — ręczne, z aktywnego layoutu (Etap 5) ── */
+function buildHallFeatures() {
+  let feats = [];
+  try { feats = JSON.parse(document.getElementById('id_hall_features').textContent) || []; }
+  catch (e) { return; }
+  const FLAT = new Set(['corridor', 'block_zone', 'returns']);
+  const EDGE = new Set(['dock', 'gate']);
+  for (const f of feats) {
+    const w = Math.max(0.2, f.width), d = Math.max(0.2, f.depth);
+    const col = new THREE.Color(f.color || '#6b7280');
+    const g = new THREE.Group();
+    g.position.set(f.x, 0, f.y);                 // pozycja w metrach (użytkownik stawia „na oko")
+    g.rotation.y = THREE.MathUtils.degToRad(f.angle || 0);
+    scene.add(g);
+    if (FLAT.has(f.kind)) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, d),
+        new THREE.MeshLambertMaterial({ color: col, transparent: true, opacity: 0.32, side: THREE.DoubleSide }));
+      m.rotation.x = -Math.PI / 2; m.position.set(w / 2, 0.03, d / 2); g.add(m);
+      // Etap 5 slice 3: siatka lokalizacji nietypowych (po zone_code) wewnątrz strefy,
+      // kolory jak regały: 0 puste / 1 zajęte / 2 blok+zajęte / 3 blok+puste.
+      if (f.slots && f.slots.length) {
+        const SLOT_COL = ['#334155', '#f0ead6', '#ef4444', '#f59e0b'];
+        const n = f.slots.length;
+        const cols = Math.max(1, Math.round(Math.sqrt(n * w / d)));
+        const rows = Math.ceil(n / cols);
+        const cw = w / cols, cd = d / rows, pad = Math.min(cw, cd) * 0.15;
+        for (let i = 0; i < n; i++) {
+          const ci = i % cols, ri = Math.floor(i / cols);
+          const sm = new THREE.Mesh(
+            new THREE.BoxGeometry(cw - pad, 0.3, cd - pad),
+            new THREE.MeshLambertMaterial({ color: new THREE.Color(SLOT_COL[f.slots[i]] || '#334155') }));
+          sm.position.set(ci * cw + cw / 2, 0.18, ri * cd + cd / 2);
+          sm.castShadow = true; g.add(sm);
+        }
+      }
+    } else {
+      const h = EDGE.has(f.kind) ? 0.4 : 1.0;
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d),
+        new THREE.MeshLambertMaterial({ color: col, transparent: true, opacity: 0.85 }));
+      m.position.set(w / 2, h / 2, d / 2); m.castShadow = true; g.add(m);
+    }
+    const occ = (f.slots && f.slots.length) ? `  ${f.occupied}/${f.slots.length}` : '';
+    const lbl = makeTextSprite((f.label || f.kind_label) + occ, { w: 340, h: 80, fontSize: 42, bg: '#0f172a', fg: '#e2e8f0' });
+    lbl.position.set(w / 2, (FLAT.has(f.kind) ? 1.2 : 1.8), d / 2);
+    lbl.scale.set(3.2, 0.85, 1);
+    g.add(lbl);
+  }
+}
+
+/* ── Build & render ── */
+if (USE_PHYSICAL) {
+  if (!buildPhysical()) buildFallback();
+} else {
+  buildFallback();
+}
+buildHallFeatures();
+
+// Render on demand: scena jest statyczna (read-only), rusza się tylko kamera (drag +
+// przyciski presetów) i etykiety. Zamiast mielić GPU (shadow map 2048² + InstancedMeshe)
+// 60×/s bez końca, rysujemy tylko gdy macierz kamery się zmieni lub etykiety są brudne;
+// karta w tle nie rysuje wcale. Porównanie macierzy łapie KAŻDY ruch kamery — nie trzeba
+// tropić wszystkich miejsc, które ją zmieniają. Wentylator cichnie.
+let _camKey = '';
+window.wh3dReady();   // scena zbudowana — zdejmij spinner
+(function loop() {
+  requestAnimationFrame(loop);
+  if (document.hidden) return;
+  let dirty = false;
+  if (_labelsDirty) { declutterLabels(); _labelsDirty = false; dirty = true; }
+  camera.updateMatrixWorld();
+  const key = camera.matrixWorld.elements.join(',');
+  if (key !== _camKey) { _camKey = key; dirty = true; }
+  if (dirty) renderer.render(scene, camera);
+})();
+</script>
+{% endblock %}

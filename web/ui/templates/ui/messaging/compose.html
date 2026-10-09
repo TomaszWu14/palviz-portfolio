@@ -1,0 +1,61 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Wiadomość — {{ app_name }}{% endblock %}
+{% block content %}
+<div style="max-width:560px;margin:0 auto">
+  <div class="page-header"><h1 class="page-header__title" style="margin:0">{% icon "mail" %} Nowa wiadomość</h1></div>
+
+  {% if ctx %}
+  <div class="card" style="margin-bottom:10px;font-size:13px;color:var(--gray-600)">
+    Kontekst: <strong>{{ ctx }}</strong>{% if url %} — link dołączony do wiadomości{% endif %}
+  </div>
+  {% endif %}
+
+  <form method="post" action="" class="card" style="display:flex;flex-direction:column;gap:12px">
+    {% csrf_token %}
+    {% if url %}<input type="hidden" name="url" value="{{ url }}">{% endif %}
+    {% if ctx %}<input type="hidden" name="ctx" value="{{ ctx }}">{% endif %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+    <label style="font-weight:700;font-size:14px">Do kogo
+      <select name="target" required
+              style="width:100%;padding:12px;font-size:16px;margin-top:6px;border:1px solid var(--gray-300);border-radius:8px">
+        <option value="">— wybierz odbiorcę —</option>
+        <optgroup label="Grupy / role">
+          {% for val, lbl in groups %}<option value="{{ val }}" {% if val == to %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+        </optgroup>
+        <optgroup label="Osoby">
+          {% for val, lbl in users_opts %}<option value="{{ val }}" {% if val == to %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+        </optgroup>
+      </select>
+    </label>
+
+    <label style="font-weight:700;font-size:14px">Treść
+      <textarea name="body" required rows="4" maxlength="400" autofocus
+                placeholder="Opisz problem…"
+                style="width:100%;padding:12px;font-size:16px;margin-top:6px;border:1px solid var(--gray-300);border-radius:8px;box-sizing:border-box"></textarea>
+    </label>
+
+    {# Szybkie szablony — jeden tap zamiast pisania (kluczowe na skanerze). #}
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <button type="button" class="btn btn-sm" onclick="mqSet('Błąd ilości.')">Błąd ilości</button>
+      <button type="button" class="btn btn-sm" onclick="mqSet('Zła seria / partia.')">Zła seria</button>
+      <button type="button" class="btn btn-sm" onclick="mqSet('Uszkodzony towar.')">Uszkodzenie</button>
+      <button type="button" class="btn btn-sm" onclick="mqSet('Potrzebuję decyzji lidera.')">Decyzja lidera</button>
+      <button type="button" class="btn btn-sm" onclick="mqSet('HU zablokowana — proszę o pomoc.')">HU zablokowana</button>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="padding:12px;font-size:16px;font-weight:800">Wyślij</button>
+  </form>
+</div>
+
+<script>
+  // Wstaw szablon do treści (dołącza, nie kasuje). Vanilla — działa na starym Chrome.
+  function mqSet(txt){
+    var ta = document.querySelector('textarea[name="body"]');
+    if(!ta) return;
+    ta.value = (ta.value ? ta.value.replace(/\s*$/, '') + ' ' : '') + txt;
+    ta.focus();
+  }
+</script>
+{% endblock %}

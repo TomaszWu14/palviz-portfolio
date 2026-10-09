@@ -1,0 +1,1564 @@
+{
+ "all_rows_skipped": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-A",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "HU-B",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 2,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-B",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-1",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    }
+   ]
+  },
+  "info": {
+   "hu": 1,
+   "items": 1,
+   "locked_hus": 0,
+   "missing_batch": 0,
+   "missing_expiry": 0,
+   "no_delivery": 0,
+   "skipped_locked": 0,
+   "with_delivery": 1
+  },
+  "ok": true
+ },
+ "dims": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-A",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": 100.0,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": 60.0
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-1",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    }
+   ]
+  },
+  "info": {
+   "hu": 1,
+   "items": 2,
+   "locked_hus": 0,
+   "missing_batch": 0,
+   "missing_expiry": 0,
+   "no_delivery": 0,
+   "skipped_locked": 0,
+   "with_delivery": 2
+  },
+  "ok": true
+ },
+ "dup_names": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-A",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-1",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": "PIERWSZA"
+    },
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-1",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": "DRUGA"
+    }
+   ]
+  },
+  "info": {
+   "hu": 1,
+   "items": 1,
+   "locked_hus": 0,
+   "missing_batch": 0,
+   "missing_expiry": 0,
+   "no_delivery": 0,
+   "skipped_locked": 0,
+   "with_delivery": 1
+  },
+  "ok": true
+ },
+ "fill_if_blank": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-A",
+     "height_cm": null,
+     "is_completed": true,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "PL",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-1",
+     "outbound_created_date": "2026-08-01",
+     "outbound_delivery_date": "2020-01-01",
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    }
+   ]
+  },
+  "info": {
+   "hu": 1,
+   "items": 2,
+   "locked_hus": 0,
+   "missing_batch": 0,
+   "missing_expiry": 0,
+   "no_delivery": 0,
+   "skipped_locked": 0,
+   "with_delivery": 2
+  },
+  "ok": true
+ },
+ "full_feed": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-A",
+     "height_cm": 145.0,
+     "is_completed": true,
+     "last_seen_at_set": true,
+     "length_cm": 120.0,
+     "location": "A-01",
+     "picker": "jan",
+     "recipient_type": "Szpital",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "B6-DŁUGI-STA",
+     "warehouse_type": "WT01",
+     "weight_kg": null,
+     "width_cm": 80.0
+    },
+    {
+     "code": "HU-B",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 2,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "HU-C",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-2",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "HU-S",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": true,
+     "shipment__name": "Stock magazynowy",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 250.125,
+     "alt_unit": "KAR",
+     "base_qty": 1000.5,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 1000.5,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": 12.5
+    },
+    {
+     "alt_qty": 0.0,
+     "alt_unit": "szt",
+     "base_qty": 0.0,
+     "base_unit": "szt",
+     "description": "Opaska",
+     "expected_qty": 0.0,
+     "expiry": "2027-12-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "BP-30F",
+     "ref_code": "BP-30F",
+     "unit": "szt",
+     "vendor_batch": "",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 3.0,
+     "alt_unit": "OP",
+     "base_qty": 3.0,
+     "base_unit": "OP",
+     "description": "Opis z pliku yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+     "expected_qty": 3.0,
+     "expiry": "2027-12-31",
+     "hu__code": "HU-A",
+     "lot": "LLLLLLLLLLLLLLLL",
+     "product__code": null,
+     "ref_code": "ZZZ-UNKNOWN",
+     "unit": "OP",
+     "vendor_batch": "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.0,
+     "alt_unit": "OP",
+     "base_qty": 2.0,
+     "base_unit": "OP",
+     "description": "",
+     "expected_qty": 2.0,
+     "expiry": "2027-12-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": null,
+     "ref_code": "OLD",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.0,
+     "alt_unit": "KAR",
+     "base_qty": 8.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 8.0,
+     "expiry": null,
+     "hu__code": "HU-B",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 1.0,
+     "alt_unit": "KAR",
+     "base_qty": 4.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 4.0,
+     "expiry": "2027-06-30",
+     "hu__code": "HU-B",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 0.0,
+     "alt_unit": "KAR",
+     "base_qty": 0.0,
+     "base_unit": "szt",
+     "description": "Produkt P1",
+     "expected_qty": 0.0,
+     "expiry": null,
+     "hu__code": "HU-C",
+     "lot": "",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "szt",
+     "vendor_batch": "",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 1.25,
+     "alt_unit": "KAR",
+     "base_qty": 5.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 5.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-S",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": "Klient 123",
+     "destination_country": "DE",
+     "is_stock": false,
+     "kunnr": "123",
+     "name": "D-1",
+     "outbound_created_date": "2026-08-01",
+     "outbound_delivery_date": "2026-08-05",
+     "picking_complete": true,
+     "picking_complete_at_set": true,
+     "wz_number": "WZ/2026/1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-2",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    },
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": true,
+     "kunnr": "",
+     "name": "Stock magazynowy",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    }
+   ]
+  },
+  "info": {
+   "hu": 4,
+   "items": 8,
+   "locked_hus": 0,
+   "missing_batch": 2,
+   "missing_expiry": 2,
+   "no_delivery": 1,
+   "skipped_locked": 0,
+   "with_delivery": 7
+  },
+  "ok": true
+ },
+ "kunnr_existing": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-A",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "HU-B",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-2",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "HU-C",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-3",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-B",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-C",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "555",
+     "name": "D-1",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    },
+    {
+     "customer__name": "Klient 999",
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "000123",
+     "name": "D-2",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    },
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "000",
+     "name": "D-3",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    }
+   ]
+  },
+  "info": {
+   "hu": 3,
+   "items": 3,
+   "locked_hus": 0,
+   "missing_batch": 0,
+   "missing_expiry": 0,
+   "no_delivery": 0,
+   "skipped_locked": 0,
+   "with_delivery": 3
+  },
+  "ok": true
+ },
+ "locked": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-A",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "in_progress",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "HU-B",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 2,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "HU-C",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 3,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-B",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 13.75,
+     "alt_unit": "KAR",
+     "base_qty": 55.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 55.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-C",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-1",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    }
+   ]
+  },
+  "info": {
+   "hu": 3,
+   "items": 1,
+   "locked_hus": 2,
+   "missing_batch": 0,
+   "missing_expiry": 0,
+   "no_delivery": 0,
+   "skipped_locked": 2,
+   "with_delivery": 3
+  },
+  "ok": true
+ },
+ "missing_columns": {
+  "db": {
+   "hus": [],
+   "items": [],
+   "shipments": []
+  },
+  "info": "Brak rozpoznanych kolumn pickHU i REF. Nagłówki: dokument, opis, ilość",
+  "ok": false
+ },
+ "missing_ref": {
+  "db": {
+   "hus": [],
+   "items": [],
+   "shipments": []
+  },
+  "info": "Brak rozpoznanych kolumn pickHU i REF. Nagłówki: jednostka obsługi, ilość",
+  "ok": false
+ },
+ "old_feed": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU9",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": true,
+     "shipment__name": "Stock magazynowy",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 10.0,
+     "alt_unit": "Sztuka",
+     "base_qty": 10.0,
+     "base_unit": "Sztuka",
+     "description": "Opaska",
+     "expected_qty": 10.0,
+     "expiry": null,
+     "hu__code": "HU9",
+     "lot": "",
+     "product__code": "BP-30F",
+     "ref_code": "BP-30F",
+     "unit": "Sztuka",
+     "vendor_batch": "",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.0,
+     "alt_unit": "KAR",
+     "base_qty": 8.0,
+     "base_unit": "szt",
+     "description": "Produkt P1",
+     "expected_qty": 8.0,
+     "expiry": null,
+     "hu__code": "HU9",
+     "lot": "",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "szt",
+     "vendor_batch": "",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": true,
+     "kunnr": "",
+     "name": "Stock magazynowy",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    }
+   ]
+  },
+  "info": {
+   "hu": 1,
+   "items": 2,
+   "locked_hus": 0,
+   "missing_batch": 2,
+   "missing_expiry": 2,
+   "no_delivery": 2,
+   "skipped_locked": 0,
+   "with_delivery": 0
+  },
+  "ok": true
+ },
+ "reimport_move": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-A",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-2",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "HU-B",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "STARA",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 2,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "F2",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 0.25,
+     "alt_unit": "KAR",
+     "base_qty": 1.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 1.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 0.5,
+     "alt_unit": "KAR",
+     "base_qty": 2.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 2.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-B",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-1",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": "WZ-STARY"
+    },
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-2",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": "WZ-NOWY"
+    }
+   ]
+  },
+  "info": {
+   "hu": 2,
+   "items": 2,
+   "locked_hus": 0,
+   "missing_batch": 0,
+   "missing_expiry": 0,
+   "no_delivery": 0,
+   "skipped_locked": 0,
+   "with_delivery": 2
+  },
+  "ok": true
+ },
+ "rows_at_limit": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-A",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "HU-B",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 2,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-A",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-B",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-1",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    }
+   ]
+  },
+  "info": {
+   "hu": 2,
+   "items": 2,
+   "locked_hus": 0,
+   "missing_batch": 0,
+   "missing_expiry": 0,
+   "no_delivery": 0,
+   "skipped_locked": 0,
+   "with_delivery": 2
+  },
+  "ok": true
+ },
+ "seq_gap": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-M",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 7,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "HU-N",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 6,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "OLD-1",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": false,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "OLD-5",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": false,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 5,
+     "shipment__is_stock": false,
+     "shipment__name": "D-1",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-M",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-N",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-1",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    },
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "D-9",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    }
+   ]
+  },
+  "info": {
+   "hu": 2,
+   "items": 2,
+   "locked_hus": 0,
+   "missing_batch": 0,
+   "missing_expiry": 0,
+   "no_delivery": 0,
+   "skipped_locked": 0,
+   "with_delivery": 2
+  },
+  "ok": true
+ },
+ "stock_name_collision": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-S",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": true,
+     "shipment__name": "Stock magazynowy",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    },
+    {
+     "code": "HU-T",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": false,
+     "shipment__name": "Stock magazynowy",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-S",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    },
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-T",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "Stock magazynowy",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    },
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": true,
+     "kunnr": "",
+     "name": "Stock magazynowy",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    }
+   ]
+  },
+  "info": {
+   "hu": 2,
+   "items": 2,
+   "locked_hus": 0,
+   "missing_batch": 0,
+   "missing_expiry": 0,
+   "no_delivery": 1,
+   "skipped_locked": 0,
+   "with_delivery": 1
+  },
+  "ok": true
+ },
+ "stock_vs_transport": {
+  "db": {
+   "hus": [
+    {
+     "code": "HU-S",
+     "height_cm": null,
+     "is_completed": false,
+     "last_seen_at_set": true,
+     "length_cm": null,
+     "location": "",
+     "picker": "",
+     "recipient_type": "",
+     "seq": 1,
+     "shipment__is_stock": true,
+     "shipment__name": "Stock magazynowy",
+     "status": "planned",
+     "stock_status": "",
+     "warehouse_type": "",
+     "weight_kg": null,
+     "width_cm": null
+    }
+   ],
+   "items": [
+    {
+     "alt_qty": 2.5,
+     "alt_unit": "KAR",
+     "base_qty": 10.0,
+     "base_unit": "OP",
+     "description": "Produkt P1",
+     "expected_qty": 10.0,
+     "expiry": "2027-05-31",
+     "hu__code": "HU-S",
+     "lot": "L1",
+     "product__code": "P1",
+     "ref_code": "P1",
+     "unit": "OP",
+     "vendor_batch": "VB1",
+     "weight_kg": null
+    }
+   ],
+   "shipments": [
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": false,
+     "kunnr": "",
+     "name": "Stock magazynowy",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    },
+    {
+     "customer__name": null,
+     "destination_country": "",
+     "is_stock": true,
+     "kunnr": "",
+     "name": "Stock magazynowy",
+     "outbound_created_date": null,
+     "outbound_delivery_date": null,
+     "picking_complete": false,
+     "picking_complete_at_set": false,
+     "wz_number": ""
+    }
+   ]
+  },
+  "info": {
+   "hu": 1,
+   "items": 1,
+   "locked_hus": 0,
+   "missing_batch": 0,
+   "missing_expiry": 0,
+   "no_delivery": 1,
+   "skipped_locked": 0,
+   "with_delivery": 0
+  },
+  "ok": true
+ },
+ "too_many_rows": {
+  "db": {
+   "hus": [],
+   "items": [],
+   "shipments": []
+  },
+  "info": "Zbyt dużo wierszy (max 2).",
+  "ok": false
+ }
+}

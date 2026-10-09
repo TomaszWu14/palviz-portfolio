@@ -1,0 +1,20 @@
+{% load palviz_extras %}{# Jeden wiersz HU na liście „Znajdź dla odbiorcy" (grupy klientów + rodzeństwo skanu). #}
+{% if hu.out_of_zone %}
+{# Poza Twoją strefą — tylko podgląd (bez wejścia do kontroli). #}
+<div class="card" style="display:flex;justify-content:space-between;align-items:center;opacity:.85">
+  <div>
+    <div style="font-weight:800">HU: {{ hu.ref }}{% if hu.shipment.customer.is_vip %} <span class="pill" style="background:#fbbf24;color:#78350f;font-size:11px">{% icon "star" %} VIP</span>{% endif %} <span class="pill" style="background:#e2e8f0;color:#475569;font-size:11px">inna strefa</span></div>
+    <div style="font-size:12px;color:#475569">{% if hu.shipment.kunnr %}{{ hu.shipment.kunnr }} · {% endif %}{{ hu.shipment.recipient_name|default:hu.recipient_type }} · {{ hu.location|default:"—" }}{% if hu.warehouse_type %} · {{ hu.warehouse_type }}{% endif %}</div>
+  </div>
+  <span class="pill pill--{{ hu.status }}">{{ hu.get_status_display }}</span>
+</div>
+{% else %}
+<a class="card" style="display:flex;justify-content:space-between;text-decoration:none;color:inherit"
+   href="{% url 'ui:hu_control_detail' hu.pk %}">
+  <div>
+    <div style="font-weight:800">HU: {{ hu.ref }}{% if hu.shipment.customer.is_vip %} <span class="pill" style="background:#fbbf24;color:#78350f;font-size:11px">{% icon "star" %} VIP</span>{% endif %}</div>
+    <div style="font-size:12px;color:#475569">{% if hu.shipment.kunnr %}{{ hu.shipment.kunnr }} · {% endif %}{{ hu.shipment.recipient_name|default:hu.recipient_type }} · {{ hu.location|default:"—" }}{% if hu.warehouse_type %} · {{ hu.warehouse_type }}{% endif %}</div>
+  </div>
+  <span class="pill pill--{{ hu.status }}">{{ hu.get_status_display }}</span>
+</a>
+{% endif %}

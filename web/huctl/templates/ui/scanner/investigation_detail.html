@@ -1,0 +1,41 @@
+{% extends "ui/scanner/base.html" %}{% load palviz_extras %}
+{% block title %}Wyjaśnianie błędu{% endblock %}
+{% block bar %}Wyjaśnianie błędu{% endblock %}
+{% block back %}<a href="{% url 'ui:hu_control_menu' %}">‹</a>{% endblock %}
+{% block content %}
+  <div class="card">
+    <div style="font-size:12px;color:var(--label);font-weight:800">HU</div>
+    <div style="font-size:20px;font-weight:900">{{ inv.hu.ref }}</div>
+    <div style="font-size:13px;color:#475569;margin-top:4px">
+      {{ inv.get_error_type_display }}{% if inv.item %} · {{ inv.item.ref_code }}{% endif %}
+      {% if inv.note %} · „{{ inv.note }}”{% endif %}
+    </div>
+    <div style="font-size:13px;color:#475569;margin-top:4px">
+      Kontroler: <b>{{ inv.controller.get_username|default:"—" }}</b>
+      · start {{ inv.started_at|date:"H:i" }}{% if inv.ended_at %} · koniec {{ inv.ended_at|date:"H:i" }}{% endif %}
+      · picker: <b>{{ inv.hu.picker|default:"—" }}</b>
+    </div>
+  </div>
+
+  {% if inv.rejected %}
+  <div class="msg msg--error">Wyjaśnianie ODRZUCONE przez {{ inv.confirmed_by.get_username }} — czas liczy się do kontroli.</div>
+  {% elif inv.confirmed_at %}
+  <div class="msg msg--ok">{% icon "check" %} Błąd potwierdzony przez {{ inv.confirmed_by.get_username }} ({{ inv.confirmed_at|date:"H:i" }}) — pauza KPI ważna.</div>
+  {% else %}
+  <div class="msg msg--warning">Czeka na potwierdzenie (okno {{ window_min }} min od startu) — bez potwierdzenia czas wróci do licznika kontroli.</div>
+    {% if can_confirm %}
+    <form method="post" action="{% url 'ui:hu_investigation_confirm' inv.pk %}" style="margin-top:10px"
+          onsubmit="return confirm('Potwierdzić błąd? Pauza zostanie uznana w KPI.')">
+      {% csrf_token %}
+      <button class="btn btn--ok" style="width:100%;padding:16px;font-size:17px;font-weight:900">POTWIERDZAM BŁĄD</button>
+    </form>
+    <form method="post" action="{% url 'ui:hu_investigation_reject' inv.pk %}" style="margin-top:8px"
+          onsubmit="return confirm('Odrzucić wyjaśnianie? Czas wróci do licznika kontroli.')">
+      {% csrf_token %}
+      <button class="btn btn--ghost" style="width:100%">Odrzuć (tylko lider)</button>
+    </form>
+    {% else %}
+    <div class="card" style="font-size:13px;color:#475569">Potwierdzić może picker tej palety ({{ inv.hu.picker|default:"—" }}) albo lider.</div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

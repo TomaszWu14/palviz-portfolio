@@ -1,0 +1,99 @@
+{% extends "ui/base.html" %}
+{% block title %}Zadania magazynowe EWM — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .wt-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px 18px; align-items: end; }
+  .wt-form label { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 600; color: var(--gray-500); }
+  .wt-form .wt-wide { grid-column: 1 / -1; }
+  .wt-map { font-size: 13px; color: var(--gray-600, var(--gray-700)); line-height: 1.6; margin: 8px 0 10px; }
+  .wt-map code { background: var(--gray-100); padding: 1px 5px; border-radius: 4px; }
+  .wt-form textarea { font-family: var(--font-mono, monospace); font-size: 13px; min-height: 72px; }
+  details.wt-details summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--blue-mid); }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_map' %}">Magazyn 3D</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Zadania magazynowe EWM</span>
+</nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#0891b2;--pcbg:rgba(8,145,178,.12)">
+    <div class="panel-head__chip">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 17h13V7H3z"/><path d="M16 11h3l2 3v3h-5"/><circle cx="7" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg>
+    </div>
+    <div>
+      <div class="page-header__title">Zadania magazynowe EWM</div>
+      <div class="page-header__sub">Import listy zadań (WT) z monitora magazynu /SCWM/MON — ruchy wózków w animacji przepływów modelu 3D</div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:warehouse_model_list' %}" class="btn btn-ghost">Modele magazynu</a>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:20px">
+  <div class="card-body">
+    <form method="post" action="{% url 'ui:ewm_tasks_preview' %}" enctype="multipart/form-data" class="wt-form">
+      {% csrf_token %}
+      <label>Nazwa importu
+        <input type="text" name="name" class="form-control" maxlength="200" placeholder="np. Zadania marzec–sierpień 2026">
+      </label>
+      <label>Plik eksportu (CSV lub XLSX, max {{ max_mb }} MB)
+        <input type="file" name="file" class="form-control" accept="{{ accept }}" required>
+      </label>
+      <label>Czas w pliku
+        <select name="tz" class="form-control">
+          {% for value, label in tz_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+        </select>
+      </label>
+      <div class="wt-wide">
+        <details class="wt-details">
+          <summary>Mapowanie procesów na rodzaje ruchu</summary>
+          <div class="wt-map">
+            Domyślnie wg <b>rodzaju procesu magazynowego</b>: <code>1xxx</code>, <code>9010</code> → przyjęcie / odłożenie;
+            <code>2xxx</code> → wydanie / załadunek, a gdy kolejka zawiera „PICK” → kompletacja;
+            <code>3010–3012</code>, <code>301D</code>, <code>3100</code> → uzupełnienie; pozostałe → przesunięcie.
+            Bez rodzaju procesu decyduje działanie (PTWY/PICK/REPL) albo kategoria procesu.
+            Wózek = kolumna <b>Zasób</b>, a gdy jest pusta — użytkownik potwierdzający.
+          </div>
+          <label>Nadpisania (linia na proces: <code>kod = rodzaj</code>)
+            <textarea name="kind_map" class="form-control" placeholder="2010 = wydanie&#10;3040 = przesunięcie&#10;21GL = kompletacja"></textarea>
+          </label>
+        </details>
+      </div>
+      <div class="wt-wide"><button type="submit" class="btn btn-primary">Podgląd pliku</button>
+        <span class="text-muted text-sm" style="margin-left:8px">Nic nie trafia do bazy przed zatwierdzeniem podglądu.</span></div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  {% if batches %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Import</th><th>Status</th><th>Zadań</th><th>Potwierdzone od–do</th><th>Wgrano</th><th></th></tr></thead>
+      <tbody>
+        {% for b in batches %}
+        <tr>
+          <td><a href="{% url 'ui:ewm_tasks_detail' b.pk %}" class="font-semibold">{{ b.name }}</a>
+            <div class="text-muted text-sm">{{ b.file_name }}</div></td>
+          <td><span class="badge {% if b.status == 'done' %}badge-green{% elif b.status == 'error' %}badge-red{% else %}badge-yellow{% endif %}">{{ b.get_status_display }}</span></td>
+          <td>{{ b.row_count }}{% if b.error_count %} <span class="text-muted text-sm">({{ b.error_count }} błędnych)</span>{% endif %}</td>
+          <td>{% if b.first_confirmed %}{{ b.first_confirmed|date:"d.m.Y H:i" }} – {{ b.last_confirmed|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
+          <td>{{ b.uploaded_at|date:"d.m.Y H:i" }}{% if b.uploaded_by %}<div class="text-muted text-sm">{{ b.uploaded_by.get_username }}</div>{% endif %}</td>
+          <td class="text-right"><a href="{% url 'ui:ewm_tasks_detail' b.pk %}" class="btn btn-secondary btn-sm">Raport</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card-body text-muted">Brak importów. Wyeksportuj listę zadań z /SCWM/MON (np. 6 miesięcy, potwierdzone) do XLSX albo CSV i wgraj powyżej.</div>
+  {% endif %}
+</div>
+{% endblock %}

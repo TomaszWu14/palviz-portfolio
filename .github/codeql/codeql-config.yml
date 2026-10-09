@@ -1,0 +1,13 @@
+name: "PalViz CodeQL config"
+
+# Keep the analysis high-signal: skip vendored front-end libraries (we don't own
+# three.js / echarts / plotly) and generated Django migrations.
+paths-ignore:
+  - "web/ui/static/ui/vendor"
+  - "web/ui/migrations"
+  - "**/*.min.js"
+
+# Extra query packs beyond the default set — security-and-quality adds maintainability
+# and more security rules on top of the default security queries.
+queries:
+  - uses: security-and-quality

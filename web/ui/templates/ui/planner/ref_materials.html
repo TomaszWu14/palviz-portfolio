@@ -1,0 +1,122 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Materiały referencyjne — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block subnav %}{% include "ui/planner/_tabs.html" %}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Materiały referencyjne</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Baza materiałów referencyjnych</div>
+    <div class="page-header__sub">{{ total }} materiałów zaimportowanych z SAP · używana do walidacji kodów produktów</div>
+  </div>
+  <div class="page-header__actions">
+    <form method="post" action="{% url 'ui:planner_ref_materials_import' %}" enctype="multipart/form-data" style="display:inline-flex;gap:0">
+      {% csrf_token %}
+      <label class="btn btn-primary" style="cursor:pointer">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Importuj Excel (SAP MARM)
+        <input type="file" name="file" accept=".xlsx,.xls" style="display:none" onchange="gvUpload(this)">
+      </label>
+    </form>
+  </div>
+</div>
+
+{% if messages %}
+<div style="margin-bottom:12px">
+  {% for m in messages %}
+  <div class="alert alert--{{ m.tags }}" style="padding:10px 14px;border-radius:6px;margin-bottom:6px;
+    background:{% if 'error' in m.tags %}#fef2f2{% else %}#f0fdf4{% endif %};
+    border:1px solid {% if 'error' in m.tags %}#fca5a5{% else %}#86efac{% endif %};
+    color:{% if 'error' in m.tags %}var(--red){% else %}var(--green){% endif %};font-size:13px">
+    {{ m }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<form method="get" style="display:flex;gap:8px;margin-bottom:16px;align-items:center">
+  <div class="search-input-wrap" style="flex:1">
+    <svg class="search-icon" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Szukaj kodu lub nazwy…">
+  </div>
+  <select aria-label="Dostawca" name="supplier" style="height:36px;border:1px solid var(--gray-300);border-radius:6px;padding:0 8px;font-size:13px">
+    <option value="">Wszyscy dostawcy</option>
+    {% for s in suppliers %}
+    <option value="{{ s }}" {% if supplier == s %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn btn-secondary">Filtruj</button>
+  {% if query or supplier %}<a href="{% url 'ui:planner_ref_materials' %}" class="btn btn-ghost">{% icon "x" %} Wyczyść</a>{% endif %}
+</form>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:110px">Kod mat.</th>
+          <th>Nazwa</th>
+          <th style="width:100px">Dostawca</th>
+          <th style="width:140px">S×W×D [cm]</th>
+          <th style="width:80px">Szt/KAR</th>
+          <th style="width:80px">Brutto</th>
+          <th style="width:80px">EAN</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for ref in page_obj %}
+      <tr>
+        <td><span style="font-family:monospace;font-weight:700;color:var(--blue-mid)">{{ ref.code }}</span></td>
+        <td>
+          <div class="font-semibold">{{ ref.name|truncatechars:60 }}</div>
+          {% if ref.supplier_full %}<div class="text-sm text-muted">{{ ref.supplier_full|truncatechars:50 }}</div>{% endif %}
+        </td>
+        <td>
+          {% if ref.supplier_short %}
+          <span class="badge badge-gray">{{ ref.supplier_short }}</span>
+          {% else %}<span class="text-muted">—</span>{% endif %}
+        </td>
+        <td style="font-family:monospace;font-size:12px">
+          {% if ref.width_cm %}{{ ref.width_cm }}×{{ ref.height_cm }}×{{ ref.length_cm }}{% else %}<span class="text-muted">—</span>{% endif %}
+        </td>
+        <td>{{ ref.pieces_per_carton|default:"—" }}</td>
+        <td>{{ ref.gross_kg|default:"—" }}{% if ref.gross_kg %} kg{% endif %}</td>
+        <td class="text-muted text-sm">{{ ref.ean|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7">
+          <div class="empty-state">
+            <div class="empty-state__icon">{% icon "clipboard-list" cls="icon--em" %}</div>
+            <div class="empty-state__title">Brak danych referencyjnych</div>
+            <div class="empty-state__desc">Zaimportuj plik Excel z eksportu SAP (tabela MARM) aby wypełnić bazę referencyjną.</div>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+  {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if supplier %}&supplier={{ supplier }}{% endif %}">‹</a>{% else %}<span class="disabled">‹</span>{% endif %}
+  {% for num in page_obj.paginator.page_range %}
+  {% if page_obj.number == num %}<span class="current">{{ num }}</span>
+  {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}<a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if supplier %}&supplier={{ supplier }}{% endif %}">{{ num }}</a>
+  {% endif %}{% endfor %}
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if supplier %}&supplier={{ supplier }}{% endif %}">›</a>{% else %}<span class="disabled">›</span>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,267 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Warianty kartonów — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .co-nav { display:flex; gap:8px; margin-bottom:16px; }
+  .co-nav a { padding:8px 16px; border-radius:8px; text-decoration:none; font-weight:600;
+              font-size:13px; color:var(--gray-700); border:1px solid var(--gray-200); background:var(--surface); }
+  .co-nav a.active { background:var(--yellow-solid); border-color:var(--yellow-solid); color:#fff; }
+  .co-search { display:flex; gap:8px; margin-bottom:16px; max-width:520px; }
+  .co-search input { flex:1; padding:10px 12px; border:1px solid var(--gray-200); border-radius:8px; }
+  .vtable { width:100%; border-collapse:collapse; }
+  .vtable th, .vtable td { padding:11px 14px; text-align:left; border-bottom:1px solid var(--gray-100); font-size:13px; }
+  .vtable th { font-size:11px; text-transform:uppercase; color:var(--gray-500); letter-spacing:.03em; }
+  .vfill { font-weight:800; font-size:16px; }
+  .vfill--best { color:var(--green); } .vfill--none { color:var(--gray-400); font-weight:600; }
+  .vrow--base td { background:var(--gray-50); }
+  .vdims { font-family:monospace; }
+  .vhist { font-size:11px; color:var(--gray-400); }
+  .vbadge { display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:6px; }
+  .vbadge--up { background:var(--green-light); color:var(--green); } .vbadge--down { background:var(--gray-100); color:var(--gray-500); }
+  .vkpi { display:block; font-size:11px; font-weight:700; color:var(--green); margin-top:3px; }
+  .vform { display:grid; grid-template-columns:1.4fr repeat(3,80px) auto; gap:8px; align-items:end; margin-top:8px; }
+  .vform label { font-size:11px; color:var(--gray-500); display:block; margin-bottom:3px; }
+  .vform input { width:100%; padding:8px 10px; border:1px solid var(--gray-200); border-radius:8px; }
+  .vgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; align-items:start; margin-bottom:16px; }
+  @media (max-width:1100px) { .vgrid { grid-template-columns:1fr; } }
+  .vcol__head { display:flex; align-items:center; gap:8px; padding:8px 2px; font-size:14px; }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><span>Optymalizacja kartonów</span> › <span>Warianty kartonów</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#d97706;--pcbg:#fffbeb">
+    <div class="panel-head__chip">{% icon "package" cls="icon--em" %}</div>
+    <div>
+      <div class="page-header__title">Warianty kartonów</div>
+      <div class="page-header__sub">Porównaj wypełnienie palety dla różnych wymiarów kartonu — z historią zmian</div>
+    </div>
+  </div>
+</div>
+
+<div class="co-nav">
+  <a href="{% url 'ui:carton_opt_inbox' %}">Skrzynka zgłoszeń</a>
+  <a href="{% url 'ui:carton_opt_dashboard' %}">Pilność wypełnienia</a>
+  <a href="{% url 'ui:carton_opt_variants' %}" class="active">Warianty kartonów</a>
+  <a href="{% url 'ui:carton_opt_redesigns' %}">Projekty A/B</a>
+</div>
+
+<form method="get" class="co-search">
+  <input name="product" value="{{ q }}" placeholder="Kod materiału (REF) lub EAN…" autofocus
+         data-ref-ac data-ref-submit data-ref-url="{% url 'ui:phv_suggest' %}">
+  <button class="btn btn-primary" type="submit">Szukaj</button>
+</form>
+
+{% if suggestions %}
+<div class="card" style="padding:12px 16px;margin-bottom:16px">
+  <div style="font-size:12px;color:var(--gray-500);margin-bottom:6px">Podpowiedzi:</div>
+  {% for s in suggestions %}
+  <a href="?product={{ s.code }}" style="display:inline-block;margin:2px 6px 2px 0">{{ s.code }} — {{ s.name|truncatechars:40 }}</a>
+  {% endfor %}
+</div>
+{% elif q and not product %}
+<div class="card" style="padding:20px;text-align:center;color:var(--gray-500)">Nie znaleziono materiału „{{ q }}”.</div>
+{% endif %}
+
+{% if product %}
+{% if issue %}
+<div class="card" style="padding:14px 16px;margin-bottom:16px;border-left:5px solid var(--yellow-solid)">
+  <div style="font-weight:700">Zgłoszenie #{{ issue.pk }} · {{ issue.get_issue_type_display }}
+    {% if issue.status == 'resolved' %}<span class="vbadge vbadge--up">rozwiązane</span>{% endif %}</div>
+  <div style="font-size:12px;color:var(--gray-500);margin-top:3px">
+    zgłosił {% if issue.reporter %}{{ issue.reporter.get_full_name|default:issue.reporter.username }}{% else %}—{% endif %}
+    · {{ issue.created_at|date:"d.m.Y H:i" }}
+    {% if issue.assigned_to %} · przyjął {{ issue.assigned_to.get_full_name|default:issue.assigned_to.username }}{% endif %}</div>
+  {% if issue.description %}<div style="font-size:13px;margin-top:5px">{{ issue.description }}</div>{% endif %}
+  {% if not issue.assigned_to %}
+  <form method="post" action="{% url 'ui:carton_opt_claim_issue' issue.pk %}" style="margin-top:8px">
+    {% csrf_token %}<button class="btn btn-primary btn-sm" type="submit">Przyjmij zgłoszenie</button>
+  </form>
+  {% endif %}
+</div>
+{% endif %}
+{% if instr %}
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+  <strong>Porównanie wariantów A · B · C</strong>
+  <a class="btn btn-ghost btn-sm" style="margin-left:auto"
+     href="{% url 'ui:planner_product_hierarchy' product.pk %}">Pełna hierarchia 3D →</a>
+</div>
+<div class="vgrid">
+  {% include "ui/carton_opt/_variant_column.html" with col_title="Wariant A — obecny" col_badge="" levels=hier_a empty_msg="Brak instrukcji bazowej materiału." %}
+  {% include "ui/carton_opt/_variant_column.html" with col_title="Wariant B" col_badge=variant_b.label levels=hier_b empty_msg="Brak wariantu B — zapisz wymiary w formularzu poniżej (slot B)." %}
+  {% include "ui/carton_opt/_variant_column.html" with col_title="Wariant C" col_badge=variant_c.label levels=hier_c empty_msg="Brak wariantu C — zapisz wymiary w formularzu poniżej (slot C)." %}
+</div>
+{% endif %}
+{% if instr %}
+<div class="card" style="padding:12px 16px;margin-bottom:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+  <div style="font-size:13px;color:var(--gray-600)">
+    Auto-sugestia: kartony o objętości −{{ cfg.suggest_vol_down_pct }}% / +{{ cfg.suggest_vol_up_pct }}% obecnej,
+    lepiej wypełniające paletę. Próg konfiguruje admin w „Pilności".
+  </div>
+  <a class="btn btn-primary btn-sm" style="margin-left:auto"
+     href="?product={{ product.code }}&suggest=1">Zaproponuj wymiary</a>
+</div>
+{% if request.GET.suggest %}
+<div class="card" style="padding:0;margin-bottom:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:700">
+    Sugestie wymiarów{% if not dim_suggestions %} — brak lepszych w paśmie objętości{% endif %}</div>
+  {% if dim_suggestions %}
+  <table class="vtable">
+    <thead><tr><th>Wymiary L×W×H</th><th>Kartonów/paletę</th><th>Wypełnienie</th><th></th></tr></thead>
+    <tbody>
+      {% for s in dim_suggestions %}
+      <tr>
+        <td class="vdims">{{ s.l }}×{{ s.w }}×{{ s.h }}</td>
+        <td>{{ s.cartons_per_pallet|default:"—" }}</td>
+        <td><span class="vfill {% if forloop.first %}vfill--best{% endif %}">{{ s.fill }}%</span>
+            <span class="vbadge vbadge--up">+{{ s.delta_pp }} pp</span>
+            {% if s.save_pallets and s.save_pallets > 0 %}<span class="vkpi">−{{ s.save_pallets }} palet/rok{% if s.save_trucks and s.save_trucks > 0 %} · −{{ s.save_trucks }} aut/rok{% endif %}</span>{% endif %}</td>
+        <td style="white-space:nowrap">
+          <form method="post" action="{% url 'ui:carton_opt_variant_save' %}" style="margin:0;display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.pk }}">
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <input type="hidden" name="label" value="Sugestia {{ s.fill }}%">
+            <input type="hidden" name="length_cm" value="{{ s.l }}">
+            <input type="hidden" name="width_cm" value="{{ s.w }}">
+            <input type="hidden" name="height_cm" value="{{ s.h }}">
+            <button class="btn btn-secondary btn-sm" type="submit">Zapisz jako wariant</button>
+          </form>
+          <form method="post" action="{% url 'ui:carton_opt_suggest_to_redesign' %}" style="margin:0;display:inline">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.pk }}">
+            <input type="hidden" name="length_cm" value="{{ s.l }}">
+            <input type="hidden" name="width_cm" value="{{ s.w }}">
+            <input type="hidden" name="height_cm" value="{{ s.h }}">
+            <input type="hidden" name="fill" value="{{ s.fill }}">
+            <button class="btn btn-ghost btn-sm" type="submit">Załóż Projekt A/B</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div style="padding:10px 16px;font-size:12px;color:var(--gray-500)">
+    Zapisz sugestię jako wariant, a potem użyj „Przenieś do instrukcji" w tabeli poniżej.</div>
+  {% endif %}
+</div>
+{% endif %}
+{% endif %}
+<div class="card" style="padding:0;margin-bottom:16px">
+  <div style="padding:14px 16px;border-bottom:1px solid var(--gray-100);display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+    <div><strong>{{ product.code }}</strong> — {{ product.name }}
+    {% if not instr %}<span style="color:var(--red)"> · brak instrukcji bazowej — nie policzę wypełnienia</span>{% endif %}</div>
+    {% if instr %}
+    <form method="get" style="margin:0 0 0 auto;display:flex;gap:6px;align-items:center;font-size:12px;color:var(--gray-500)">
+      <input type="hidden" name="product" value="{{ product.code }}">
+      {% if request.GET.suggest %}<input type="hidden" name="suggest" value="1">{% endif %}
+      <label>Wolumen roczny:</label>
+      <input aria-label="Wolumen roczny" type="number" name="annual" min="0" value="{{ annual }}" style="width:110px;padding:6px 8px;border:1px solid var(--gray-200);border-radius:8px">
+      <span>szt/rok</span>
+      <button class="btn btn-secondary btn-sm" type="submit">Przelicz KPI</button>
+    </form>
+    {% endif %}
+  </div>
+  <table class="vtable">
+    <thead><tr><th>Wariant</th><th>Wymiary L×W×H</th><th>Kartonów/paletę</th><th>Wypełnienie</th><th></th></tr></thead>
+    <tbody>
+      {% if baseline %}
+      <tr class="vrow--base">
+        <td>{{ baseline.label }}</td>
+        <td class="vdims">{{ baseline.l }}×{{ baseline.w }}×{{ baseline.h }}</td>
+        <td>{{ baseline.cartons_per_pallet|default:"—" }}</td>
+        <td>{% if baseline.fill is not None %}<span class="vfill">{{ baseline.fill }}%</span>{% else %}<span class="vfill--none">—</span>{% endif %}</td>
+        <td></td>
+      </tr>
+      {% endif %}
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.alt.label }}
+          {% if r.history %}<div class="vhist">Historia:
+            {% for h in r.history %}{{ h.l }}×{{ h.w }}×{{ h.h }}{% if not forloop.last %} → {% endif %}{% endfor %}</div>{% endif %}
+        </td>
+        <td class="vdims">{{ r.l }}×{{ r.w }}×{{ r.h }}</td>
+        <td>{{ r.cartons_per_pallet|default:"—" }}</td>
+        <td>{% if r.fill is not None %}<span class="vfill {% if forloop.first %}vfill--best{% endif %}">{{ r.fill }}%</span>
+            {% if r.delta_pp is not None and r.delta_pp > 0 %}<span class="vbadge vbadge--up">lepszy +{{ r.delta_pp }} pp{% if r.delta_cpp and r.delta_cpp > 0 %} · +{{ r.delta_cpp }} kart.{% endif %}</span>
+            {% elif r.delta_pp is not None and r.delta_pp < 0 %}<span class="vbadge vbadge--down">{{ r.delta_pp }} pp</span>{% endif %}
+            {% if r.save_pallets and r.save_pallets > 0 %}<span class="vkpi">−{{ r.save_pallets }} palet/rok{% if r.save_trucks and r.save_trucks > 0 %} · −{{ r.save_trucks }} aut/rok{% endif %}</span>{% endif %}
+            {% else %}<span class="vfill--none" title="{{ r.error }}">—</span>{% endif %}</td>
+        <td style="white-space:nowrap">
+          {% if r.fits %}
+          <form method="post" action="{% url 'ui:carton_opt_variant_promote' r.alt.pk %}" style="margin:0 0 4px;display:inline"
+                onsubmit="return confirm('Utworzy NOWĄ wersję instrukcji paletyzacji z wymiarami „{{ r.alt.label|escapejs }}”. Kontynuować?')">
+            {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+            {% if issue %}<input type="hidden" name="issue" value="{{ issue.pk }}">{% endif %}
+            <button class="btn btn-primary btn-sm" type="submit">Przenieś do instrukcji{% if issue %} + rozwiąż zgł.{% endif %}</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{% url 'ui:carton_opt_variant_delete' r.alt.pk %}" style="margin:0;display:inline"
+                onsubmit="return confirm('Usunąć wariant „{{ r.alt.label|escapejs }}”?')">
+            {% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button class="btn btn-ghost btn-sm" type="submit">Usuń</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      {% if not baseline %}<tr><td colspan="5" style="text-align:center;color:var(--gray-500);padding:20px">Brak wariantów — dodaj pierwszy poniżej.</td></tr>{% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <form method="post" action="{% url 'ui:carton_opt_variant_save' %}" class="vform" style="padding:14px 16px;grid-template-columns:1fr repeat(3,80px) auto;grid-template-rows:auto auto">
+    {% csrf_token %}
+    <input type="hidden" name="product_id" value="{{ product.pk }}">
+    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <div><label>Nazwa wariantu</label><input aria-label="Nazwa wariantu" name="label" placeholder="np. Wariant A" required></div>
+    <div><label>L [cm]</label><input aria-label="L [cm]" name="length_cm" type="number" min="1" required></div>
+    <div><label>W [cm]</label><input aria-label="W [cm]" name="width_cm" type="number" min="1" required></div>
+    <div><label>H [cm]</label><input aria-label="H [cm]" name="height_cm" type="number" min="1" required></div>
+    <div><label>Slot</label>
+      <select aria-label="Slot" name="slot"><option value="">—</option><option value="B">B</option><option value="C">C</option></select>
+    </div>
+    <div><label>OPZ L [cm]</label><input aria-label="OPZ L [cm]" name="pack_l" type="number" min="1" placeholder="bez zmian"></div>
+    <div><label>OPZ W [cm]</label><input aria-label="OPZ W [cm]" name="pack_w" type="number" min="1" placeholder="bez zmian"></div>
+    <div><label>OPZ H [cm]</label><input aria-label="OPZ H [cm]" name="pack_h" type="number" min="1" placeholder="bez zmian"></div>
+    <div><label>Sztuka L [cm]</label><input aria-label="Sztuka L [cm]" name="unit_l" type="number" min="1" placeholder="bez zmian"></div>
+    <div><label>Sztuka W [cm]</label><input aria-label="Sztuka W [cm]" name="unit_w" type="number" min="1" placeholder="bez zmian"></div>
+    <div><label>Sztuka H [cm]</label><input aria-label="Sztuka H [cm]" name="unit_h" type="number" min="1" placeholder="bez zmian"></div>
+    <button class="btn btn-primary" type="submit">Dodaj wariant</button>
+  </form>
+</div>
+
+{% if promotions %}
+<div class="card" style="padding:0;margin-bottom:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-100);font-weight:700">Historia promocji</div>
+  <table class="vtable">
+    <thead><tr><th>Kiedy</th><th>Wymiary</th><th>Źródło</th><th>Wypełnienie</th><th>Wersja</th><th>Wykonał</th></tr></thead>
+    <tbody>
+      {% for p in promotions %}
+      <tr>
+        <td>{{ p.created_at|date:"d.m.Y H:i" }}</td>
+        <td class="vdims">{{ p.dims }}</td>
+        <td>{{ p.source_label|default:"—" }}{% if p.issue_id %} · <span class="vhist">zgł. #{{ p.issue_id }}</span>{% endif %}</td>
+        <td>{% if p.fill_before is not None %}{{ p.fill_before }}% → {% endif %}<strong>{{ p.fill_after|default:"—" }}%</strong>
+            {% if p.delta_pp and p.delta_pp > 0 %}<span class="vbadge vbadge--up">+{{ p.delta_pp }} pp</span>{% endif %}</td>
+        <td>v{{ p.version }}</td>
+        <td>{% if p.user %}{{ p.user.get_full_name|default:p.user.username }}{% else %}—{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endif %}
+{% if pallet_three or hier_a %}
+<script type="module">
+  import { renderPalVizLevel } from "/static/ui/js/palviz-three.js";
+  // Układ kolumnowy — wszystkie canvasy widoczne, renderuj od razu.
+  document.querySelectorAll("canvas[data-three]").forEach(c => {
+    try { renderPalVizLevel(c, JSON.parse(c.dataset.three)); }
+    catch (e) { console.warn("PalViz 3D:", e); }
+  });
+</script>
+{% endif %}
+{% endblock %}

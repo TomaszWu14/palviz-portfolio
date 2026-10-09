@@ -1,0 +1,120 @@
+{% extends "ui/base.html" %}{% load palviz_extras %}
+{% block title %}Kartony — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block subnav %}{% include "ui/planner/_tabs.html" %}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Kartony</span>
+</nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#2563eb;--pcbg:var(--blue-light)">
+    <div class="panel-head__chip">{% icon "box" 24 %}</div>
+    <div>
+      <h1 class="page-header__title">Baza kartonów</h1>
+      <div class="page-header__sub">{{ page_obj.paginator.count }} kartonów w bazie</div>
+    </div>
+  </div>
+  <div class="page-header__actions toolbar__end">
+    <details class="menu" data-testid="cartons-more">
+      <summary class="btn btn-secondary">{% icon "ellipsis" %}Więcej</summary>
+      <div class="menu__panel">
+        <a class="menu__item" href="{% url 'ui:planner_carton_csv_template' %}">{% icon "file-down" %}Pobierz wzór CSV</a>
+        {% if can_write_products %}<form method="post" action="{% url 'ui:planner_carton_import' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <label class="menu__item menu__upload">{% icon "file-up" %}Importuj CSV…
+            <input type="file" name="file" accept=".csv" onchange="gvUpload(this)"></label>
+        </form>{% endif %}
+        {# „Opakowania zbiorcze" usunięte — to dublet zakładki w subnav tuż wyżej. #}
+        <a class="menu__item" href="{% url 'ui:data_center_packaging' %}">{% icon "pencil" %}Edycja zbiorcza wymiarów</a>
+        {% if can_write_products %}<a class="menu__item" href="{% url 'ui:planner_carton_unify' %}">{% icon "copy" %}Zunifikuj duplikaty</a>{% endif %}
+      </div>
+    </details>
+    {% if can_write_products %}<a href="{% url 'ui:planner_carton_new' %}" class="btn btn-primary" data-testid="carton-new">{% icon "plus" %}Nowy karton</a>{% endif %}
+  </div>
+</div>
+
+<form method="get" class="filterbar" role="search" data-testid="cartons-filter">
+  <label class="filterbar__search"><span class="sr-only">Szukaj kartonu</span>{% icon "search" %}
+    <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Szukaj nazwy lub EAN…"></label>
+  <button type="submit" class="btn btn-secondary">{% icon "filter" %}Szukaj</button>
+  {% if query %}<a href="{% url 'ui:planner_cartons' %}" class="btn btn-ghost">{% icon "x" %}Wyczyść</a>{% endif %}
+</form>
+
+<div class="card card--accent" style="--pc:#2563eb">
+  <div class="table-scroll" tabindex="0" role="region" aria-label="Lista kartonów">
+    <table class="table" data-testid="cartons-table">
+      <thead>
+        <tr>
+          <th>Nazwa</th>
+          <th class="num">L×W×H [cm]</th>
+          <th class="num">Waga jedn.</th>
+          <th class="num">Szt/karton</th>
+          <th>Opak. zbiorcze</th>
+          <th class="num">Waga kartonu</th>
+          <th>Status</th>
+          <th><span class="sr-only">Akcje</span></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in page_obj %}
+      <tr>
+        <td class="cell-clip" style="--clip:40ch" title="{{ c.name }}">
+          <div class="font-semibold" style="overflow:hidden;text-overflow:ellipsis">{{ c.name }}</div>
+          {% if c.ean %}<div class="text-sm text-muted">EAN: {{ c.ean }}</div>{% endif %}
+          {% if c.notes %}<div class="text-sm text-muted">{{ c.notes|truncatechars:40 }}</div>{% endif %}
+        </td>
+        <td class="num" style="font-family:var(--font-mono)">{{ c.length_cm }}×{{ c.width_cm }}×{{ c.height_cm }}</td>
+        <td class="num">{{ c.unit_weight_kg }} kg</td>
+        <td class="num">{{ c.pieces_per_carton }}</td>
+        <td>
+          {% if c.inner_pack %}
+          <span style="font-size:12px;color:var(--blue-mid)">{{ c.inner_pack.name }}</span>
+          <div style="font-size:12px;color:var(--gray-500)">{{ c.inner_pack.units_per_pack }} szt/opak.</div>
+          {% else %}
+          <span class="text-muted text-sm">—</span>
+          {% endif %}
+        </td>
+        <td class="num">{{ c.carton_weight_kg }} kg</td>
+        <td>
+          {% if c.is_active %}<span class="badge badge-green">Aktywny</span>{% else %}<span class="badge badge-gray">Nieaktywny</span>{% endif %}
+        </td>
+        <td>
+          <div class="actions">
+            {% if can_write_products %}{% url 'ui:planner_carton_edit' c.pk as edit_url %}{% icon_button "pencil" label="Edytuj karton "|add:c.name href=edit_url size="sm" %}
+            <form method="post" action="{% url 'ui:planner_carton_delete' c.pk %}">
+              {% csrf_token %}
+              {% icon_button "trash-2" label="Usuń karton "|add:c.name type="submit" variant="btn-ghost text-danger" size="sm" confirm="Usunąć karton "|add:c.name|add:"?" %}
+            </form>{% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="8">
+          {% if query %}{% include "ui/components/_empty.html" with icon="search" title="Brak wyników" desc="Nic nie pasuje do „"|add:query|add:"”." %}
+          {% elif can_write_products %}{% url 'ui:planner_carton_new' as new_url %}{% include "ui/components/_empty.html" with icon="box" title="Brak kartonów" desc="Dodaj pierwszy karton albo zaimportuj CSV z menu „Więcej”." action_url=new_url action_label="Nowy karton" action_icon="plus" %}
+          {% else %}{% include "ui/components/_empty.html" with icon="box" title="Brak kartonów" %}{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="pagination" aria-label="Strony listy kartonów">
+  {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">‹</a>{% else %}<span class="disabled">‹</span>{% endif %}
+  {% for num in page_obj.paginator.page_range %}
+  {% if page_obj.number == num %}<span class="current">{{ num }}</span>
+  {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}<a href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+  {% endif %}{% endfor %}
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">›</a>{% else %}<span class="disabled">›</span>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

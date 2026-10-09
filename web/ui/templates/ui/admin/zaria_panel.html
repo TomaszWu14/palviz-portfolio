@@ -1,0 +1,108 @@
+{% extends "ui/base.html" %}
+{% block title %}ZARIA — administracja — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .za-kpi { display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--gray-200);
+    border:1px solid var(--gray-200); border-radius:12px; overflow:hidden; margin:16px 0; }
+  .za-kpi > div { background:var(--surface); padding:14px 16px 15px; display:flex; flex-direction:column; gap:5px; }
+  .za-kpi .lbl { font-size:11px; letter-spacing:.07em; text-transform:uppercase; color:var(--gray-500); font-weight:600; }
+  .za-kpi .val { font-size:24px; font-weight:800; line-height:1; }
+  .za-kpi .note { font-size:12px; color:var(--gray-400); }
+  .za-grid3 { display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:16px; margin-bottom:18px; }
+  @media (max-width:900px){ .za-kpi{grid-template-columns:repeat(2,1fr)} .za-grid3{grid-template-columns:1fr} }
+  .za-card { background:var(--surface); border:1px solid var(--gray-200); border-radius:12px; padding:17px 18px; display:flex; flex-direction:column; gap:12px; }
+  .za-card h2 { margin:0; font-size:15px; font-weight:700; }
+  .za-bar { height:6px; border-radius:99px; background:var(--gray-100); overflow:hidden; }
+  .za-bar > div { height:100%; border-radius:99px; background:var(--green); }
+  .za-tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  @media (max-width:900px){ .za-tiles{grid-template-columns:repeat(2,1fr)} }
+  .za-tile { background:var(--surface); border:1px solid var(--gray-200); border-radius:12px; padding:15px 16px 16px;
+    display:flex; flex-direction:column; gap:8px; text-decoration:none; color:inherit; transition:border-color .12s,background .12s; }
+  .za-tile:hover { border-color:var(--green); background:var(--green-light); }
+  .za-tag { width:30px; height:30px; flex:none; border-radius:9px; background:var(--green-light); display:grid; place-items:center;
+    color:var(--green); font-weight:800; font-size:11px; }
+  .za-sec { font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--green); margin-bottom:11px; }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_panel' %}">Panel admina</a><span class="breadcrumb__sep">›</span><span>ZARIA</span></nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">ZARIA — administracja</div>
+    <div class="page-header__sub">Katalog modeli, dostęp ról i użytkowników, konfiguracja globalna, raport zużycia</div>
+  </div>
+  <div style="display:flex;gap:9px;align-items:center">
+    <span class="btn btn-ghost" style="pointer-events:none">{{ month_label }}</span>
+    <a href="{% url 'ui:admin_zaria_usage' %}" class="btn btn-secondary">Raport zużycia</a>
+    <a href="{% url 'ui:admin_zaria_config' %}" class="btn btn-primary">Konfiguracja</a>
+  </div>
+</div>
+
+<div class="za-kpi">
+  <div><span class="lbl">Aktywne modele</span><span class="val">{{ n_models }}</span><span class="note">w katalogu</span></div>
+  <div><span class="lbl">Rozmowy</span><span class="val">{{ n_conversations }}</span><span class="note">{{ month_label }}</span></div>
+  <div><span class="lbl">Wiadomości</span><span class="val">{{ n_messages }}</span><span class="note">łącznie</span></div>
+  <div><span class="lbl">Aktywni użytkownicy</span><span class="val">{{ active_users }}</span><span class="note">{{ month_label }}</span></div>
+  <div><span class="lbl">Tokeny</span><span class="val">{{ month_tokens }}</span><span class="note">{{ month_label }}</span></div>
+</div>
+
+<div class="za-grid3">
+  <div class="za-card">
+    <div style="display:flex;align-items:baseline;justify-content:space-between">
+      <h2>Budżet organizacji</h2><span style="font-size:12px;color:var(--gray-500)">{{ month_label }}</span>
+    </div>
+    <div style="display:flex;align-items:baseline;gap:8px">
+      <span style="font-size:28px;font-weight:800;line-height:1">{{ month_spend|floatformat:2 }}</span>
+      <span style="font-size:13px;font-weight:600;color:var(--gray-500)">PLN wydane</span>
+    </div>
+    <div class="za-bar"><div style="width:{% if cap_pct is not None %}{{ cap_pct }}{% else %}0{% endif %}%;background:{% if cap_pct >= 80 %}var(--red){% elif cap_pct >= 60 %}var(--yellow-dark){% else %}var(--green){% endif %}"></div></div>
+    <div style="font-size:12px;color:var(--gray-500)">
+      {% if month_cap %}{{ cap_pct }}% z {{ month_cap|floatformat:0 }} PLN{% else %}Limit nie ustawiony — <a href="{% url 'ui:admin_zaria_config' %}">ustaw cap</a>{% endif %}
+    </div>
+  </div>
+
+  <div class="za-card">
+    <div style="display:flex;align-items:baseline;justify-content:space-between">
+      <h2>Top użytkownicy</h2><a href="{% url 'ui:admin_zaria_usage' %}" style="font-size:12px;font-weight:600">Raport</a>
+    </div>
+    {% for r in top_users %}
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span style="font-size:13px;font-weight:600">{{ r.name }}</span><div style="flex:1"></div>
+        <span style="font-size:13px;font-weight:700">{{ r.spend|floatformat:2 }} PLN</span>
+        <span style="font-size:12px;color:var(--gray-400)">{{ r.msgs }} odp.</span>
+      </div>
+      <div class="za-bar"><div style="width:{{ r.pct }}%"></div></div>
+    </div>
+    {% empty %}<div style="font-size:13px;color:var(--gray-500)">Brak użycia w tym miesiącu.</div>{% endfor %}
+  </div>
+
+  <div class="za-card">
+    <div style="display:flex;align-items:baseline;justify-content:space-between">
+      <h2>Koszt per model</h2><a href="{% url 'ui:admin_zaria_models' %}" style="font-size:12px;font-weight:600">Katalog</a>
+    </div>
+    {% for r in model_split %}
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span style="font-size:13px;font-weight:600">{{ r.name|default:"(auto)" }}</span><div style="flex:1"></div>
+        <span style="font-size:13px;font-weight:700">{{ r.spend|floatformat:2 }} PLN</span>
+        <span style="font-size:12px;color:var(--gray-400)">{{ r.msgs }} odp.</span>
+      </div>
+      <div class="za-bar"><div style="width:{{ r.pct }}%;background:var(--blue)"></div></div>
+    </div>
+    {% empty %}<div style="font-size:13px;color:var(--gray-500)">Brak użycia w tym miesiącu.</div>{% endfor %}
+  </div>
+</div>
+
+<div class="za-sec">Zarządzanie</div>
+<div class="za-tiles">
+  <a class="za-tile" href="{% url 'ui:admin_zaria_models' %}"><div style="display:flex;align-items:center;gap:10px"><div class="za-tag">KM</div><span style="font-weight:700;font-size:14px">Katalog modeli</span></div><p style="margin:0;font-size:12px;line-height:1.45;color:var(--gray-500)">Modele LLM, cennik PLN/1k tokenów, prompt systemowy per model.</p></a>
+  <a class="za-tile" href="{% url 'ui:admin_zaria_role_access' %}"><div style="display:flex;align-items:center;gap:10px"><div class="za-tag">DR</div><span style="font-weight:700;font-size:14px">Dostęp ról do modeli</span></div><p style="margin:0;font-size:12px;line-height:1.45;color:var(--gray-500)">Która rola widzi który model w pickerze.</p></a>
+  <a class="za-tile" href="{% url 'ui:admin_zaria_user_access' %}"><div style="display:flex;align-items:center;gap:10px"><div class="za-tag">NU</div><span style="font-weight:700;font-size:14px">Nadpisania per użytkownik</span></div><p style="margin:0;font-size:12px;line-height:1.45;color:var(--gray-500)">Wymuś dostęp albo zablokuj model dla pojedynczego loginu.</p></a>
+  <a class="za-tile" href="{% url 'ui:admin_zaria_config' %}"><div style="display:flex;align-items:center;gap:10px"><div class="za-tag">KG</div><span style="font-weight:700;font-size:14px">Konfiguracja globalna</span></div><p style="margin:0;font-size:12px;line-height:1.45;color:var(--gray-500)">Model domyślny, prompt systemowy, budżety, limity, komunikat RODO.</p></a>
+  <a class="za-tile" href="{% url 'ui:admin_zaria_usage' %}"><div style="display:flex;align-items:center;gap:10px"><div class="za-tag">RZ</div><span style="font-weight:700;font-size:14px">Raport zużycia</span></div><p style="margin:0;font-size:12px;line-height:1.45;color:var(--gray-500)">Zużycie i koszt per użytkownik, filtrowanie, eksport XLSX.</p></a>
+  <a class="za-tile" href="{% url 'ui:admin_zaria_audit' %}"><div style="display:flex;align-items:center;gap:10px"><div class="za-tag">AU</div><span style="font-weight:700;font-size:14px">Audyt administracyjny</span></div><p style="margin:0;font-size:12px;line-height:1.45;color:var(--gray-500)">Log zmian konfiguracji, modeli i uprawnień (bez treści rozmów).</p></a>
+  <a class="za-tile" href="{% url 'ui:zaria_home' %}"><div style="display:flex;align-items:center;gap:10px"><div class="za-tag">CZ</div><span style="font-weight:700;font-size:14px">Przejdź do czatu</span></div><p style="margin:0;font-size:12px;line-height:1.45;color:var(--gray-500)">Moduł ZARIA — rozmowy z asystentem AI.</p></a>
+</div>
+{% endblock %}

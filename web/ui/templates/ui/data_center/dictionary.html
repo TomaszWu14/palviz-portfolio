@@ -1,0 +1,60 @@
+{% extends "ui/base.html" %}
+{% block title %}Słownik pojęć — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:data_center' %}">Data Center</a> › <span>Słownik pojęć</span></nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Słownik pojęć</div>
+    <div class="page-header__sub">Kody SAP i ich znaczenie — katalog referencyjny (tylko do odczytu)</div>
+  </div>
+</div>
+
+<style>
+  .dic-bar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:6px 0 16px; }
+  .dic-cats { display:flex; gap:6px; flex-wrap:wrap; }
+  .dic-cat { padding:6px 12px; border-radius:8px; font-size:13px; font-weight:700;
+             text-decoration:none; border:1px solid var(--gray-200); color:var(--gray-600); }
+  .dic-cat.active { background:var(--teal-deep,#0f766e); color:#fff; border-color:transparent; }
+  .dic-search { flex:1; min-width:180px; }
+  .dic-search input { width:100%; padding:8px 12px; border:1px solid var(--gray-200);
+                      border-radius:8px; font-size:14px; }
+  .dic-group { margin:18px 0 6px; font-size:13px; font-weight:800; color:color-mix(in srgb, #0f766e 55%, var(--gray-900));
+               text-transform:uppercase; letter-spacing:.03em; }
+  table.dic { width:100%; border-collapse:collapse; }
+  table.dic th, table.dic td { text-align:left; padding:8px 12px; border-bottom:1px solid var(--gray-100); }
+  table.dic th { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--gray-500); }
+  table.dic td.code { font-family:monospace; font-weight:800; white-space:nowrap; }
+  .dic-empty { color:var(--gray-500); padding:24px 0; }
+</style>
+
+<form class="dic-bar" method="get" action="">
+  <div class="dic-cats">
+    {% for key, name in categories %}
+      <a class="dic-cat {% if key == category %}active{% endif %}"
+         href="?cat={{ key }}">{{ name }}</a>
+    {% endfor %}
+  </div>
+  <input type="hidden" name="cat" value="{{ category }}">
+  <div class="dic-search">
+    <input type="search" name="q" value="{{ q }}"
+           placeholder="Szukaj kodu, opisu lub grupy…" autofocus>
+  </div>
+</form>
+
+<div style="font-size:12px;color:var(--gray-500);margin-bottom:8px">{{ total }} pozycji{% if q %} · filtr „{{ q }}"{% endif %}</div>
+
+{% for g in grouped %}
+  <div class="dic-group">{{ g.name }}</div>
+  <table class="dic">
+    <thead><tr><th style="width:90px">Kod</th><th>Opis</th></tr></thead>
+    <tbody>
+      {% for e in g.entries %}
+        <tr><td class="code">{{ e.code }}</td><td>{{ e.label }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% empty %}
+  <div class="dic-empty">Brak pozycji{% if q %} dla filtra „{{ q }}"{% endif %}.</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,86 @@
+{% load palviz_extras %}
+{% comment %}
+Globalna koperta wiadomości + drawer nad bieżącym widokiem. Vanilla JS + fetch
+(stary Chrome skanera — bez importmap/htmx). Wątek otwiera się WEWNĄTRZ drawera
+(fragment), odpowiedź nie gubi ekranu, na którym pracuje użytkownik.
+Liczniki [data-msg-count] aktualizuje poll z _notif_alert.html.
+{% endcomment %}
+<span style="position:relative;display:inline-block">
+  <button type="button" id="msg-bell" aria-label="Wiadomości"
+          style="background:transparent;border:0;color:inherit;cursor:pointer;padding:2px 6px;position:relative;display:inline-flex;align-items:center">
+    {# Koperta SVG (currentColor → biała na pasku skanera): zaokrąglona, z klapką i linią listu. #}
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="2.5" y="5" width="19" height="14" rx="3"/>
+      <path d="M3.5 7.5 L12 13.5 L20.5 7.5"/>
+      <path d="M3.5 17 L9 12.4 M20.5 17 L15 12.4" stroke-width="1.2" opacity=".55"/>
+    </svg>
+    <span data-msg-count style="display:none;position:absolute;top:-4px;right:-6px;background:#ef4444;color:#fff;font-size:11px;font-weight:800;border-radius:999px;min-width:18px;height:18px;line-height:18px;text-align:center;padding:0 4px"></span>
+  </button>
+</span>
+<style>
+  /* Inline display:flex wygrywałby z [hidden] przeglądarki — drawer byłby widoczny
+     zawsze i wszędzie. Ten strażnik musi zostać. */
+  #msg-drawer[hidden], #msg-drawer-ovl[hidden] { display: none !important; }
+</style>
+<div id="msg-drawer" hidden
+     style="position:fixed;top:0;right:0;bottom:0;z-index:99990;width:min(94vw,400px);background:#fff;color:#0f172a;box-shadow:-12px 0 40px rgba(0,0,0,.35);display:flex;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid #e2e8f0">
+    <strong style="font-size:15px;flex:1">Wiadomości</strong>
+    <a href="{% url 'ui:message_compose' %}" style="font-size:13px;font-weight:700;color:#0c5c58;text-decoration:none">+ Nowa</a>
+    <button type="button" id="msg-drawer-close" aria-label="Zamknij"
+            style="background:transparent;border:0;font-size:20px;cursor:pointer;color:#64748b">{% icon "x" cls="icon--em" %}</button>
+  </div>
+  <div id="msg-drawer-body" style="flex:1;overflow-y:auto;padding:8px 10px;font-size:14px">
+    <div style="color:#94a3b8;padding:16px">Ładowanie…</div>
+  </div>
+</div>
+<div id="msg-drawer-ovl" hidden
+     style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:99980;background:rgba(2,20,20,.35)"></div>
+<script>
+(function(){
+  var LIST_URL = "{% url 'ui:messages_drawer' %}";
+  var bell=document.getElementById('msg-bell'), dr=document.getElementById('msg-drawer'),
+      ovl=document.getElementById('msg-drawer-ovl'), body=document.getElementById('msg-drawer-body');
+  if(!bell||!dr) return;
+  function getCookie(n){ var m=document.cookie.match('(?:^|; )'+n+'=([^;]*)'); return m?decodeURIComponent(m[1]):''; }
+  function load(url){
+    body.innerHTML='<div style="color:#94a3b8;padding:16px">Ładowanie…</div>';
+    fetch(url, {credentials:'same-origin'})
+      .then(function(r){ return r.text(); })
+      .then(function(h){ body.innerHTML=h; wire(); })
+      .catch(function(){ body.innerHTML='<div style="color:#b3402f;padding:16px">Błąd sieci.</div>'; });
+  }
+  function wire(){
+    // Wejście w wątek — fragment w drawerze zamiast nawigacji (kontekst ekranu zostaje).
+    var links=body.querySelectorAll('[data-thread-url]');
+    for(var i=0;i<links.length;i++){
+      links[i].onclick=function(e){ e.preventDefault(); load(this.getAttribute('data-thread-url')); };
+    }
+    var back=body.querySelector('[data-drawer-back]');
+    if(back){ back.onclick=function(e){ e.preventDefault(); load(LIST_URL); }; }
+    // Odpowiedź: POST fetch-em, po sukcesie przeładuj fragment wątku.
+    var form=body.querySelector('form[data-drawer-reply]');
+    if(form){
+      form.onsubmit=function(e){
+        e.preventDefault();
+        var fd=new FormData(form);
+        fetch(form.action, {method:'POST', body:fd, credentials:'same-origin',
+              headers:{'X-CSRFToken':getCookie('csrftoken')}})
+          .then(function(r){
+            if(!r.ok) throw new Error('HTTP '+r.status);
+            load(form.action.split('?')[0]+'?fragment=1');
+          })
+          .catch(function(){
+            if(window.gvToast) gvToast('Nie udało się wysłać odpowiedzi — spróbuj ponownie.',{type:'danger'});
+          });
+      };
+    }
+  }
+  function open(){ dr.hidden=false; ovl.hidden=false; load(LIST_URL); }
+  function close(){ dr.hidden=true; ovl.hidden=true; }
+  bell.onclick=function(){ dr.hidden ? open() : close(); };
+  ovl.onclick=close;
+  document.getElementById('msg-drawer-close').onclick=close;
+})();
+</script>

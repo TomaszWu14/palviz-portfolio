@@ -1,0 +1,110 @@
+{% extends "ui/base.html" %}
+{% block title %}Strefy kontroli HU — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .cz-banner { display:flex; gap:12px; padding:14px 16px; background:var(--green-light);
+    border:1px solid var(--green); border-radius:12px; color:var(--green); font-size:13px; line-height:1.55; }
+  .cz-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px; margin:16px 0; }
+  .cz-card { background:var(--surface); border:1px solid var(--gray-200); border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:7px; }
+  .cz-dot { width:10px; height:10px; border-radius:99px; flex:none; background:var(--green); }
+  .cz-code { font-size:11px; font-weight:600; color:var(--gray-400); }
+  .cz-assigned { font-size:12px; font-weight:600; color:var(--green); }
+  .cz-row { padding:14px 16px; border-top:1px solid var(--gray-100); }
+  .cz-row:first-child { border-top:0; }
+  .cz-rhead { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+  .cz-av { width:32px; height:32px; flex:none; border-radius:9px; display:grid; place-items:center;
+    font-weight:800; font-size:11px; background:var(--gray-100); color:var(--gray-700); }
+  .cz-chk { display:inline-flex; align-items:center; gap:7px; padding:6px 11px; border-radius:9px;
+    border:1px solid var(--gray-200); background:var(--gray-50); font-size:13px; cursor:pointer; }
+  .cz-chk input { accent-color:var(--green); }
+  .badge-bypass { font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--gray-100); color:var(--gray-600); }
+  .badge-all { font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--green-light); color:var(--green); }
+  .cz-empty { padding:46px 20px 50px; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center; }
+  .cz-empty .ic { width:56px; height:56px; border-radius:16px; background:var(--green-light); display:grid; place-items:center; color:var(--green); }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_users' %}">Użytkownicy</a><span class="breadcrumb__sep">›</span><span>Strefy kontroli</span></nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Strefy kontroli HU</div>
+    <div class="page-header__sub" style="max-width:640px">Kto może kontrolować HU w jakim typie magazynu (strefie).</div>
+  </div>
+</div>
+
+<div class="cz-banner">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+  <p style="margin:0">Zaznacz strefy, w których dany kontroler może kontrolować HU.
+    <strong>Brak zaznaczeń = wszystkie strefy</strong> — użytkownik nie jest ograniczony.
+    Administratorzy i liderzy kontroli zawsze mają dostęp do wszystkich stref.</p>
+</div>
+
+{% if zone_cards %}
+<div class="cz-cards">
+  {% for z in zone_cards %}
+  <div class="cz-card">
+    <div style="display:flex;align-items:center;gap:9px">
+      <span class="cz-dot"></span>
+      <span style="font-weight:700;font-size:13px">{{ z.code|default:"— (bez typu)" }}</span>
+      <div style="flex:1"></div>
+      <span class="cz-code">{{ z.code }}</span>
+    </div>
+    <div class="cz-assigned">{% if z.count %}{{ z.count }} przypisanych kontrolerów{% else %}brak ograniczeń — wszyscy{% endif %}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="card" style="padding:0;overflow:hidden">
+  <div class="card-header" style="display:flex;align-items:center;gap:12px">
+    <span class="card-header__title">Kontrolerzy</span>
+    <span class="badge-all">{{ rows|length }} osób</span>
+    <div style="flex:1"></div>
+    <span style="font-size:12px;color:var(--gray-500)">rola Kontrola HU lub Lider kontroli</span>
+  </div>
+
+  {% for row in rows %}
+  <div class="cz-row">
+    <div class="cz-rhead">
+      <div class="cz-av">{{ row.user.username|slice:":2"|upper }}</div>
+      <div>
+        <div style="font-weight:700">{{ row.user.get_full_name|default:row.user.username }}</div>
+        <div style="font-size:12px;color:var(--gray-500)">@{{ row.user.username }}</div>
+      </div>
+      <div style="flex:1"></div>
+      {% if row.bypass %}<span class="badge-bypass">wszystkie strefy (rola)</span>
+      {% elif row.all_zones %}<span class="badge-all">wszystkie strefy</span>{% endif %}
+    </div>
+    {% if row.bypass %}
+      <div style="font-size:12px;color:var(--gray-500)">Administrator / Lider kontroli — pełny dostęp, bez ograniczeń.</div>
+    {% else %}
+    <form method="post" action="{% url 'ui:admin_control_zones' %}">
+      {% csrf_token %}
+      <input type="hidden" name="user_id" value="{{ row.user.pk }}">
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        {% for c in row.cols %}
+        <label class="cz-chk"><input type="checkbox" name="zones" value="{{ c.code }}"{% if c.checked %} checked{% endif %}>{{ c.code|default:"— (bez typu)" }}</label>
+        {% empty %}
+        <span style="font-size:12px;color:var(--gray-500)">Brak zdefiniowanych typów magazynu.</span>
+        {% endfor %}
+      </div>
+      {% if row.cols %}<button type="submit" class="btn btn-primary btn-sm" style="margin-top:11px">Zapisz przypisania</button>{% endif %}
+    </form>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="cz-empty">
+    <div class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v5c0 5-3.4 8-8 9-4.6-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/></svg></div>
+    <div>
+      <div style="font-weight:700;font-size:15px">Brak użytkowników z rolą kontrolera</div>
+      <p style="margin:6px auto 0;max-width:420px;font-size:13px;line-height:1.55;color:var(--gray-500)">Nadaj komuś rolę <strong>Kontrola HU</strong> lub <strong>Lider kontroli</strong>, a pojawi się tutaj z przypisaniem stref.</p>
+    </div>
+    <div style="display:flex;gap:9px;margin-top:2px">
+      <a href="{% url 'ui:admin_users' %}" class="btn btn-primary">Przejdź do użytkowników</a>
+      <a href="{% url 'ui:admin_role_matrix' %}" class="btn btn-secondary">Otwórz macierz ról</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

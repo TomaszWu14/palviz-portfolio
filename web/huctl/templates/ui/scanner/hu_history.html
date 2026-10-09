@@ -1,0 +1,51 @@
+{% extends "ui/scanner/base.html" %}{% load palviz_extras %}
+{% block title %}Historia kontroli — {{ hu.ref }}{% endblock %}
+{% block bar %}Historia HU{% endblock %}
+{% block content %}
+<div style="padding:12px">
+  <a href="{% url 'ui:hu_control_detail' hu.pk %}" style="color:#0c5c58;display:inline-block;padding-block:4px">← HU {{ hu.ref }}</a>
+  <h2 style="margin:8px 0 4px">Historia kontroli — {{ hu.ref }}</h2>
+  <div style="font-size:13px;color:#475569;margin-bottom:10px">{{ hu.shipment.name }} · {{ hu.get_status_display }}</div>
+
+  <table class="msg" style="width:100%;border-collapse:collapse;background:#fff;font-size:13px">
+    <thead><tr style="text-align:left;border-bottom:1px solid #e2e8f0">
+      <th style="padding:6px">Czas</th><th style="padding:6px">Kontroler</th><th style="padding:6px">Pozycja</th>
+      <th style="padding:6px">Zliczono</th><th style="padding:6px">Oczek.</th><th style="padding:6px">Wynik</th><th style="padding:6px">Re</th>
+    </tr></thead>
+    <tbody>
+    {% for a in attempts %}
+      <tr style="border-bottom:1px solid #f1f5f9">
+        <td style="padding:6px;white-space:nowrap">{{ a.created_at|date:"d.m H:i:s" }}</td>
+        <td style="padding:6px">{{ a.controller.username|default:"—" }}</td>
+        <td style="padding:6px">{{ a.item.ref_code|default:"—" }}</td>
+        <td style="padding:6px">{{ a.counted_qty }} {{ a.counted_unit }}</td>
+        <td style="padding:6px">{{ a.exp_base_qty }} {{ a.exp_base_unit }}</td>
+        <td style="padding:6px;color:{% if a.result == 'error' %}#b91c1c{% elif a.result == 'ok' %}#166534{% else %}#64748b{% endif %}">{% if a.result == 'error' %}Błąd{% elif a.result == 'ok' %}Potwierdzony{% else %}—{% endif %}</td>
+        <td style="padding:6px">{% if a.is_recheck %}{% icon "refresh-cw" label="Rekontrola" %}{% endif %}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" style="padding:16px;color:#64748b">Brak zarejestrowanych kontroli tego HU.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <h2 style="margin:18px 0 6px;font-size:16px">Historia statusu</h2>
+  <table class="msg" style="width:100%;border-collapse:collapse;background:#fff;font-size:13px">
+    <thead><tr style="text-align:left;border-bottom:1px solid #e2e8f0">
+      <th style="padding:6px">Czas</th><th style="padding:6px">Zmiana</th><th style="padding:6px">Kto</th><th style="padding:6px">Powód</th>
+    </tr></thead>
+    <tbody>
+    {% for e in status_events %}
+      <tr style="border-bottom:1px solid #f1f5f9">
+        <td style="padding:6px;white-space:nowrap">{{ e.created_at|date:"d.m H:i:s" }}</td>
+        <td style="padding:6px">{{ e.get_from_status_display|default:"—" }} → <strong>{{ e.get_to_status_display }}</strong></td>
+        <td style="padding:6px">{{ e.by_user.username|default:"—" }}</td>
+        <td style="padding:6px;color:#64748b">{{ e.note|default:"" }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4" style="padding:16px;color:#64748b">Brak zdarzeń statusu.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "ui/base.html" %}
+{% block title %}{% if instance %}Edytuj{% else %}Nowe{% endif %} opakowanie zbiorcze — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+{% block subnav %}{% include "ui/planner/_tabs.html" %}{% endblock %}
+
+{% block extra_head %}
+{% if instance %}<script src="/static/ui/vendor/three.r128.min.js"></script>
+<script src="/static/ui/vendor/OrbitControls.r128.js"></script>{% endif %}
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_cartons' %}">Kartony</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_inner_packs' %}">Opakowania zbiorcze</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{% if instance %}Edytuj: {{ instance.name }}{% else %}Nowe{% endif %}</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">{% if instance %}Edytuj opakowanie{% else %}Nowe opakowanie zbiorcze{% endif %}</div>
+    <div class="page-header__sub">Opakowanie zbiorcze to pudełko wewnątrz kartonu zbiorczego</div>
+  </div>
+</div>
+
+<div class="card" style="max-width:640px">
+  <div class="card-body">
+    <form method="post">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-error" style="margin-bottom:12px">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <div class="form-group">
+        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+        {{ form.name }}
+        {% if form.name.errors %}<div class="field-error">{{ form.name.errors }}</div>{% endif %}
+      </div>
+
+      <div class="form-grid-3" style="margin-top:12px">
+        <div class="form-group">
+          <label for="{{ form.length_cm.id_for_label }}">{{ form.length_cm.label }}</label>
+          {{ form.length_cm }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.width_cm.id_for_label }}">{{ form.width_cm.label }}</label>
+          {{ form.width_cm }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.height_cm.id_for_label }}">{{ form.height_cm.label }}</label>
+          {{ form.height_cm }}
+        </div>
+      </div>
+
+      <div class="form-grid-2" style="margin-top:12px">
+        <div class="form-group">
+          <label for="{{ form.units_per_pack.id_for_label }}">{{ form.units_per_pack.label }}</label>
+          {{ form.units_per_pack }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.tare_kg.id_for_label }}">{{ form.tare_kg.label }}</label>
+          {{ form.tare_kg }}
+        </div>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;
+                  border-top:1px solid var(--gray-100);padding-top:12px;margin-top:14px;margin-bottom:10px">
+        Opakowanie handlowe (Sales unit — opcjonalne)
+      </div>
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label for="{{ form.sales_unit_l_cm.id_for_label }}">{{ form.sales_unit_l_cm.label }}</label>
+          {{ form.sales_unit_l_cm }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.sales_unit_w_cm.id_for_label }}">{{ form.sales_unit_w_cm.label }}</label>
+          {{ form.sales_unit_w_cm }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.sales_unit_h_cm.id_for_label }}">{{ form.sales_unit_h_cm.label }}</label>
+          {{ form.sales_unit_h_cm }}
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:8px;max-width:200px">
+        <label for="{{ form.sales_units_per_pack.id_for_label }}">{{ form.sales_units_per_pack.label }}</label>
+        {{ form.sales_units_per_pack }}
+      </div>
+
+      <div class="form-group" style="margin-top:12px">
+        <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+        {{ form.notes }}
+      </div>
+      <div class="form-group" style="margin-top:8px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          {{ form.is_active }} {{ form.is_active.label }}
+        </label>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button type="submit" class="btn btn-primary">
+          {% if instance %}Zapisz zmiany{% else %}Dodaj opakowanie{% endif %}
+        </button>
+        <a href="{% url 'ui:planner_inner_packs' %}" class="btn btn-ghost">Anuluj</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if instance %}
+{% url 'ui:inner_pack_artwork_list' instance.pk as au_list %}
+{% url 'ui:inner_pack_artwork_upload' instance.pk as au_upload %}
+{% url 'ui:inner_pack_artwork_update' 0 as au_upd0 %}
+{% url 'ui:inner_pack_artwork_delete' 0 as au_del0 %}
+{% include "ui/planner/_artwork_designer.html" with art_title="Wygląd OPZ — nadruki i etykiety (3D)" art_l=instance.length_cm art_w=instance.width_cm art_h=instance.height_cm art_url_list=au_list art_url_upload=au_upload art_url_update0=au_upd0 art_url_delete0=au_del0 %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,439 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% load palviz_extras %}
+{% block title %}{{ instr.product.code }} v{{ instr.version }} — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'ui/js/plotly.min.js' %}"></script>
+<style>
+/* ── Page layout ── */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 16px;
+  align-items: start;
+}
+@media(max-width:1100px){ .detail-grid{ grid-template-columns:1fr; } }
+
+/* ── Header ── */
+.instr-topbar {
+  background:var(--surface); border:1px solid var(--gray-200); border-radius:var(--radius);
+  padding:16px 20px; margin-bottom:16px; display:flex;
+  align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+  box-shadow:var(--shadow-sm);
+}
+.instr-code { font-size:24px; font-weight:800; font-family:monospace; color:var(--gray-900); }
+.instr-name { font-size:13px; color:var(--gray-500); margin-top:2px; }
+
+/* ── KPI strip ── */
+.kpi-strip {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px,1fr));
+  gap:10px; margin-bottom:16px;
+}
+.kpi-card {
+  background:var(--surface); border:1px solid var(--gray-200); border-radius:var(--radius);
+  padding:12px 14px; text-align:center; box-shadow:var(--shadow-sm);
+}
+.kpi-card__val { font-size:20px; font-weight:800; color:var(--blue-mid); line-height:1; }
+.kpi-card__lbl { font-size:10px; color:var(--gray-500); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+.kpi-card--best { border-color:var(--green); background:var(--green-light); }
+.kpi-card--best .kpi-card__val { color:var(--green); }
+
+/* ── Plotly panels ── */
+.viz-card {
+  background:var(--surface); border:1px solid var(--gray-200);
+  border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm);
+}
+.viz-card__title {
+  padding:9px 14px; font-size:11px; font-weight:700;
+  color:var(--gray-500); text-transform:uppercase; letter-spacing:.5px;
+  border-bottom:1px solid var(--gray-100); display:flex;
+  align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;
+}
+/* ── Camera preset buttons ── */
+.cam-btns { display:flex; gap:3px; }
+.cam-btn {
+  padding:3px 9px; font-size:10px; font-weight:700; letter-spacing:.3px;
+  border:1px solid var(--gray-200); border-radius:4px; background:var(--surface);
+  color:var(--gray-500); cursor:pointer; transition:all .12s;
+}
+.cam-btn:hover { background:var(--gray-50); color:var(--gray-800); border-color:var(--gray-300); }
+.cam-btn.active { background:var(--blue); color:#fff; border-color:var(--blue); }
+/* ── Display toggle buttons ── */
+.disp-btns { display:flex; gap:3px; }
+.disp-btn {
+  padding:3px 9px; font-size:10px; font-weight:700;
+  border:1px solid var(--gray-200); border-radius:4px; background:var(--surface);
+  color:var(--gray-500); cursor:pointer; transition:all .12s;
+}
+.disp-btn:hover { background:var(--gray-50); color:var(--gray-800); }
+.disp-btn.on { background:var(--gray-800); color:var(--gray-50); border-color:var(--gray-800); }
+
+/* ── Layout comparison ── */
+.layouts-strip {
+  display:flex; gap:10px; overflow-x:auto;
+  padding-bottom:6px; margin-bottom:16px;
+}
+.layout-card {
+  flex-shrink:0; background:var(--surface); border:2px solid var(--gray-200);
+  border-radius:var(--radius); padding:10px; cursor:pointer;
+  transition:border-color .15s, box-shadow .15s; min-width:130px;
+  text-align:center; text-decoration:none; color:inherit;
+}
+.layout-card:hover { border-color:#93c5fd; box-shadow:var(--shadow); }
+.layout-card.active { border-color:var(--blue); box-shadow:0 0 0 3px rgba(26,86,219,.12); }
+.layout-card__name { font-size:11px; font-weight:700; color:var(--blue-mid); margin-top:4px; }
+.layout-card__kpi { font-size:12px; font-weight:600; color:var(--gray-700); }
+.layout-card__sub { font-size:10px; color:var(--gray-400); }
+.layout-card__best { display:inline-block; background:var(--green-solid); color:#fff; border-radius:10px; font-size:9px; font-weight:700; padding:1px 6px; margin-bottom:2px; }
+
+/* ── Layer table ── */
+.layer-table { width:100%; border-collapse:collapse; font-size:12px; }
+.layer-table th { background:var(--gray-50); padding:7px 10px; text-align:left; font-size:10px; font-weight:700; color:var(--gray-400); text-transform:uppercase; letter-spacing:.4px; border-bottom:2px solid var(--gray-200); }
+.layer-table td { padding:6px 10px; border-bottom:1px solid var(--gray-100); vertical-align:middle; }
+.layer-table tbody tr:hover td { background:var(--gray-50); }
+
+/* ── Info grid ── */
+.info-2col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:700px){ .info-2col{grid-template-columns:1fr;} }
+.spec-table { width:100%; border-collapse:collapse; font-size:13px; }
+.spec-table td { padding:5px 0; }
+.spec-table td:first-child { color:var(--gray-400); width:52%; }
+.spec-table td:last-child { font-weight:600; color:var(--gray-800); }
+
+/* ── Hints ── */
+.hint { display:flex; align-items:flex-start; gap:8px; padding:5px 0; border-bottom:1px solid var(--gray-100); font-size:12px; color:var(--gray-600); }
+.hint:last-child { border-bottom:none; }
+.hint-dot { width:8px; height:8px; border-radius:50%; margin-top:3px; flex-shrink:0; }
+.hint-dot-ok { background:var(--green); }
+.hint-dot-warn { background:var(--yellow); }
+.hint-dot-err { background:var(--red); }
+
+/* ── Print ── */
+@media print {
+  .topnav, .breadcrumb, .no-print { display:none !important; }
+  body { background:var(--surface); font-size:11px; }
+  .detail-grid { grid-template-columns:1fr !important; }
+  .viz-card { page-break-inside:avoid; }
+  .layouts-strip { flex-wrap:wrap; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb no-print">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_instructions' %}">Instrukcje</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>{{ instr.product.code }}</span>
+</nav>
+
+<!-- ── Top bar ─────────────────────────────────────────────────────────────── -->
+<div class="instr-topbar">
+  <div>
+    <div class="instr-code">{{ instr.product.code }}</div>
+    <div class="instr-name">{{ instr.product.name }}</div>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+      <span class="badge badge-blue">v{{ instr.version }}</span>
+      {% if instr.name %}<span class="badge badge-gray">{{ instr.name }}</span>{% endif %}
+      <span class="badge badge-gray">{{ instr.get_pallet_code_display }}</span>
+      {% if instr.is_active %}<span class="badge badge-green">Aktywna</span>{% else %}<span class="badge badge-red">Nieaktywna</span>{% endif %}
+      {% if instr.custom_layers %}<span class="badge badge-cyan" title="Układ ułożony ręcznie w edytorze warstw — ma pierwszeństwo przed układem silnika">Układ ręczny</span>{% if instr.custom_layout_stale %}<span class="badge badge-yellow" title="Po ręcznej edycji zmieniły się wymiary/wejścia i układ przeliczono — sprawdź, czy ręczny układ jest wciąż poprawny">{% icon "triangle-alert" %} może być nieaktualny</span>{% endif %}{% endif %}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <button onclick="window.print()" class="btn btn-secondary btn-sm no-print">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Drukuj / PDF
+    </button>
+    <a href="{% url 'ui:planner_instruction_excel' instr.pk %}" class="btn btn-secondary btn-sm">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Excel
+    </a>
+    <a href="{% url 'ui:planner_instruction_edit' instr.pk %}" class="btn btn-secondary btn-sm">Edytuj</a>
+    <a href="{% url 'ui:pallet_custom_editor' instr.pk %}" class="btn btn-secondary btn-sm">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+      {% if instr.custom_layers %}Popraw układ ręczny{% else %}Edytuj układ ręcznie{% endif %}
+    </a>
+    {% if instr.custom_layers %}
+    <form method="post" action="{% url 'ui:pallet_custom_reset' instr.pk %}" style="margin:0"
+          onsubmit="return confirm('Porzucić ręczny układ i wrócić do układu wyliczonego przez silnik?')">
+      {% csrf_token %}
+      <button class="btn btn-secondary btn-sm">Przywróć układ silnika</button>
+    </form>
+    {% endif %}
+    <form method="post" style="margin:0">
+      {% csrf_token %}
+      <button name="recalculate" value="1" class="btn btn-primary btn-sm">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        Przelicz
+      </button>
+    </form>
+  </div>
+</div>
+
+{% if not layout %}
+<div class="card">
+  <div class="card-body empty-state">
+    <div class="empty-state__icon">{% icon "settings" cls="icon--em" %}</div>
+    <div class="empty-state__title">Brak wyliczonych layoutów</div>
+    <div class="empty-state__desc">
+      <form method="post" style="display:inline">{% csrf_token %}<button name="recalculate" value="1" class="btn btn-primary">Przelicz teraz</button></form>
+    </div>
+  </div>
+</div>
+{% else %}
+
+<!-- ── KPI strip ─────────────────────────────────────────────────────────────── -->
+<div class="kpi-strip">
+  <div class="kpi-card"><div class="kpi-card__val">{{ layout.cartons_per_pallet }}</div><div class="kpi-card__lbl">Kart / paletę</div></div>
+  <div class="kpi-card"><div class="kpi-card__val">{{ layout.layers_used }}</div><div class="kpi-card__lbl">Warstw</div></div>
+  <div class="kpi-card"><div class="kpi-card__val">{{ layout.cartons_per_layer }}</div><div class="kpi-card__lbl">Kart./warstwa</div></div>
+  <div class="kpi-card"><div class="kpi-card__val">{{ layout.total_height_used_cm }}<small style="font-size:12px"> cm</small></div><div class="kpi-card__lbl">Wys. towaru</div></div>
+  <div class="kpi-card"><div class="kpi-card__val">{{ layout.weight_per_pallet_kg }}<small style="font-size:12px"> kg</small></div><div class="kpi-card__lbl">Waga całk.</div></div>
+  {% if layout.utilization_percent %}<div class="kpi-card {% if layout.utilization_percent >= 90 %}kpi-card--best{% endif %}"><div class="kpi-card__val">{{ layout.utilization_percent }}<small style="font-size:12px">%</small></div><div class="kpi-card__lbl">Wydajność</div></div>{% endif %}
+</div>
+
+<!-- ── Layout comparison ─────────────────────────────────────────────────────── -->
+{% if all_layouts_data|length > 1 %}
+<div style="margin-bottom:16px">
+  <div class="section-title" style="margin-bottom:8px">Warianty ułożenia ({{ all_layouts_data|length }})</div>
+  <div class="layouts-strip">
+    {% for l in all_layouts_data %}
+    <form method="post" style="margin:0">
+      {% csrf_token %}
+      <input type="hidden" name="select_layout" value="1">
+      <input type="hidden" name="selected_layout" value="{{ l.name }}">
+      <button type="submit" class="layout-card {% if l.is_selected %}active{% endif %}" style="border:none;background:none;padding:10px">
+        {% if forloop.first %}<div class="layout-card__best">{% icon "star" %} NAJLEPSZY</div>{% endif %}
+        {{ l.thumb }}
+        <div class="layout-card__name">{{ l.name }}</div>
+        <div class="layout-card__kpi">{{ l.cartons_per_pallet }} kart/pal</div>
+        <div class="layout-card__sub">{{ l.layers_used }} warstw | {{ l.cartons_per_layer }} kart.{% if l.efficiency_pct %} | {{ l.efficiency_pct }}%{% endif %}</div>
+      </button>
+    </form>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ── Main grid: 3D left + side panel right ─────────────────────────────────── -->
+<div class="detail-grid" style="margin-bottom:16px">
+
+  <!-- 3D pallet view -->
+  <div class="viz-card">
+    <div class="viz-card__title">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span>Widok 3D — {{ instr.pallet_code }} {{ meta.length_cm }}×{{ meta.width_cm }} cm</span>
+        <!-- Camera presets -->
+        <div class="cam-btns" id="camBtns">
+          <button class="cam-btn active" onclick="setCamera('iso')"  id="cam-iso">Izo</button>
+          <button class="cam-btn"        onclick="setCamera('front')" id="cam-front">Przód</button>
+          <button class="cam-btn"        onclick="setCamera('side')"  id="cam-side">Bok</button>
+          <button class="cam-btn"        onclick="setCamera('top')"   id="cam-top">Góra</button>
+        </div>
+        <!-- Display toggles -->
+        <div class="disp-btns">
+          <button class="disp-btn on"  id="tog-dims"   onclick="toggleDims(this)">Wymiary</button>
+          <button class="disp-btn on"  id="tog-grid"   onclick="toggleGrid(this)">Siatka</button>
+        </div>
+      </div>
+      <div></div>
+    </div>
+    <div id="fig3d" style="height:min(70vh,640px);min-height:420px"></div>
+  </div>
+
+  <!-- Right column -->
+  <div style="display:flex;flex-direction:column;gap:14px">
+
+    <!-- Layer view -->
+    <div class="viz-card">
+      <div class="viz-card__title">
+        Widok warstwy (góra)
+        <div style="display:flex;gap:4px;align-items:center">
+          <button onclick="prevLayer()" class="btn btn-ghost btn-sm btn-icon">◀</button>
+          <span id="layer-lbl" style="font-size:12px;font-weight:700;color:var(--blue-mid);min-width:72px;text-align:center">Warstwa 1</span>
+          <button onclick="nextLayer()" class="btn btn-ghost btn-sm btn-icon">▶</button>
+        </div>
+      </div>
+      <div id="fig2d" style="height:260px"></div>
+    </div>
+
+    <!-- Carton 3D -->
+    <div class="viz-card">
+      <div class="viz-card__title">Karton 3D — {{ instr.carton_l }}×{{ instr.carton_w }}×{{ instr.carton_h }} cm</div>
+      <div id="figCarton" style="height:220px"></div>
+    </div>
+
+    <!-- Carton specs -->
+    <div class="card">
+      <div class="card-header" style="padding:10px 14px"><span class="card-header__title" style="font-size:12px">Parametry kartonu</span></div>
+      <div class="card-body" style="padding:12px 14px">
+        <table class="spec-table">
+          {% for k,v in carton_rows %}
+          <tr><td>{{ k }}</td><td>{{ v }}</td></tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+
+    <!-- Optimization hints -->
+    {% if layout.hints %}
+    <div class="card">
+      <div class="card-header" style="padding:10px 14px"><span class="card-header__title" style="font-size:12px">Wskazówki optymalizacji</span></div>
+      <div class="card-body" style="padding:10px 14px">
+        {% for h in layout.hints %}
+        <div class="hint">
+          <span class="hint-dot hint-dot-{% if h.level == 'warn' %}warn{% elif h.level == 'error' or h.level == 'err' %}err{% else %}ok{% endif %}"></span>
+          {{ h.msg }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Layer breakdown table ─────────────────────────────────────────────────── -->
+{% if layer_data %}
+<div class="card" style="margin-bottom:16px">
+  <div class="card-header">
+    <span class="card-header__title">Rozkład warstw ({{ layer_data|length }} warstw)</span>
+  </div>
+  <div class="table-wrap">
+    <table class="layer-table">
+      <thead>
+        <tr>
+          <th>Warstwa</th>
+          <th>Układ (góra)</th>
+          <th>Kartonów</th>
+          <th>Wysokość od [cm]</th>
+          <th>Wysokość do [cm]</th>
+          <th>Grubość warstwy</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for layer in layer_data %}
+      <tr>
+        <td><span class="badge badge-blue">W{{ layer.num }}</span></td>
+        <td>{{ layer.thumb }}</td>
+        <td style="font-weight:600">{{ layer.count }}</td>
+        <td>{{ layer.z_start }}</td>
+        <td>{{ layer.z_end }}</td>
+        <td>{{ instr.carton_h }} cm</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── Notes + Reports ───────────────────────────────────────────────────────── -->
+<div class="info-2col">
+  {% if instr.notes %}
+  <div class="card">
+    <div class="card-header" style="padding:10px 14px"><span class="card-header__title" style="font-size:12px">Uwagi dla magazyniera</span></div>
+    <div class="card-body" style="padding:12px 14px">
+      <pre style="font-family:inherit;font-size:13px;color:var(--gray-700);white-space:pre-wrap;margin:0">{{ instr.notes }}</pre>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if instr.reports.exists %}
+  <div class="card">
+    <div class="card-header" style="padding:10px 14px">
+      <span class="card-header__title" style="font-size:12px">Zgłoszenia błędów</span>
+      <span class="badge badge-red">{{ instr.reports.count }}</span>
+    </div>
+    <div class="table-wrap">
+      <table class="layer-table">
+        <thead><tr><th>Zgłaszający</th><th>Status</th><th>Data</th><th></th></tr></thead>
+        <tbody>
+        {% for r in instr.reports.all %}
+        <tr>
+          <td>{{ r.reporter_name|default:"anonim." }}<div style="color:var(--gray-400);font-size:11px">{{ r.reporter_location }}</div></td>
+          <td><span class="badge {% if r.status == 'new' %}badge-red{% elif r.status == 'in_review' %}badge-yellow{% else %}badge-green{% endif %}">{{ r.get_status_display }}</span></td>
+          <td style="color:var(--gray-400)">{{ r.created_at|date:"d.m H:i" }}</td>
+          <td><a href="{% url 'ui:planner_report_detail' r.pk %}" class="btn btn-ghost btn-sm">→</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if fig_pallet_json %}
+<script>
+const figPallet  = {{ fig_pallet_json|safe }};
+const figLayer   = {{ fig_layer_json|safe }};
+const figCarton  = {{ fig_carton_json|safe }};
+const placements = {{ placements_json|safe }};
+const cartonDims = {{ carton_dims_json|safe }};
+const totalLayers = {{ layout.layers_used }};
+let currentLayer = 1;
+
+Plotly.react('fig3d',    figPallet.data,  figPallet.layout,  {responsive:true, displayModeBar:false});
+Plotly.react('fig2d',    figLayer.data,   figLayer.layout,   {responsive:true, displayModeBar:false});
+Plotly.react('figCarton',figCarton.data,  figCarton.layout,  {responsive:true, displayModeBar:false});
+
+/* ── Camera presets ── */
+const CAMERAS = {
+  iso:   {eye:{x:1.4,y:1.4,z:1.1}, up:{x:0,y:0,z:1}, center:{x:0,y:0,z:0}},
+  front: {eye:{x:0,y:-2.8,z:0.6},  up:{x:0,y:0,z:1}, center:{x:0,y:0,z:0}},
+  side:  {eye:{x:2.8,y:0,z:0.6},   up:{x:0,y:0,z:1}, center:{x:0,y:0,z:0}},
+  top:   {eye:{x:0.001,y:0.001,z:3.2}, up:{x:0,y:1,z:0}, center:{x:0,y:0,z:0}},
+};
+let activeCam = 'iso';
+function setCamera(key) {
+  activeCam = key;
+  document.querySelectorAll('.cam-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('cam-' + key).classList.add('active');
+  Plotly.relayout('fig3d', {'scene.camera': CAMERAS[key]});
+}
+
+/* ── Display toggles ── */
+let showDims = true, showGrid = true;
+function _applyDisplay() {
+  Plotly.relayout('fig3d', {
+    'scene.xaxis.visible': showGrid,
+    'scene.yaxis.visible': showGrid,
+    'scene.zaxis.visible': showGrid,
+  });
+  const d = document.getElementById('fig3d').data || [];
+  const upd = {};
+  d.forEach((t,i) => {
+    if (t.name === 'dims') upd['visible[' + i + ']'] = showDims;
+  });
+  if (Object.keys(upd).length) Plotly.restyle('fig3d', upd);
+}
+function toggleDims(btn) { showDims = !showDims; btn.classList.toggle('on', showDims); _applyDisplay(); }
+function toggleGrid(btn) { showGrid = !showGrid; btn.classList.toggle('on', showGrid); _applyDisplay(); }
+
+function prevLayer() { if(currentLayer > 1) renderLayer(--currentLayer); }
+function nextLayer() { if(currentLayer < totalLayers) renderLayer(++currentLayer); }
+function renderLayer(idx) {
+  document.getElementById('layer-lbl').textContent = 'Warstwa ' + idx;
+  const pts = placements.filter(p => (p.layer||1) === idx);
+  const traces = pts.length ? pts.map(p => ({
+    type:'scatter', mode:'lines',
+    x:[p.x,p.x+cartonDims.l,p.x+cartonDims.l,p.x,p.x],
+    y:[p.y,p.y,p.y+cartonDims.w,p.y+cartonDims.w,p.y],
+    fill:'toself', fillcolor:'rgba(26,86,219,0.12)',
+    line:{color:'#1a56db',width:1.5}, showlegend:false,
+  })) : figLayer.data;
+  Plotly.react('fig2d', traces, figLayer.layout, {responsive:true, displayModeBar:false});
+}
+
+</script>
+{% endif %}
+{% endblock %}

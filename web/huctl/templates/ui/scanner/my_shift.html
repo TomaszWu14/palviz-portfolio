@@ -1,0 +1,74 @@
+{% extends "ui/scanner/base.html" %}{% load palviz_extras %}
+{% block title %}Moja zmiana{% endblock %}
+{% block bar %}Moja zmiana{% endblock %}
+{% block back %}<a href="{% url 'ui:hu_control_menu' %}">‹</a>{% endblock %}
+{% block content %}
+  {# Pasek procesu: motyw strefy + licznik kolejki + przełącznik. #}
+  <div class="card" style="display:flex;align-items:center;gap:10px;background:{{ theme.summary_bg }};border:1px solid {{ theme.summary_border }}">
+    <span class="pill" style="background:{{ theme.pill_bg }};color:{{ theme.pill_text }};font-weight:800">{{ section_title }}</span>
+    <span style="font-weight:900;font-size:15px">{{ queue_count }} do kontroli</span>
+    {% if section %}<a href="{% url 'ui:hu_zone_select' %}" style="margin-left:auto;font-size:12px;color:{{ theme.ink }}">zmień proces</a>{% endif %}
+  </div>
+
+  {% if my_inv %}
+  <a class="card" style="display:block;border-left:4px solid #b45309;background:#fff7ed;text-decoration:none;color:inherit"
+     href="{% url 'ui:hu_control_detail' my_inv.hu.pk %}">
+    <div style="font-weight:900;color:#8a4b0f">{% icon "wrench" %} Wyjaśnianie błędu — {{ my_inv.hu.ref }}</div>
+    <div style="font-size:12px;color:#475569;margin-top:2px">
+      od {{ my_inv.started_at|date:"H:i" }} ·
+      {% if my_inv.confirmed_at %}{% icon "check" %} potwierdzone ({{ my_inv.confirmed_by.get_username }}){% else %}{% icon "hourglass" %} czeka na potwierdzenie{% endif %}
+    </div>
+  </a>
+  {% endif %}
+
+  {# „W toku": moje palety (rezerwacja / w kontroli / wyjaśnianie). #}
+  {% for h in mine %}
+  <a class="card" style="display:flex;justify-content:space-between;align-items:center;text-decoration:none;color:inherit;border-left:4px solid #0f7d79"
+     href="{% url 'ui:hu_control_detail' h.pk %}">
+    <div>
+      <div style="font-weight:900">{{ h.ref }}</div>
+      <div style="font-size:12px;color:#475569">{% if h.shipment.kunnr %}{{ h.shipment.kunnr }} · {% endif %}{{ h.shipment.recipient_name|default:h.recipient_type }} · {% icon "map-pin" %}{{ h.location|default:"—" }}</div>
+      {% if h.sla.level == 'overdue' %}<div style="font-size:12px;font-weight:800;color:#b91c1c">{% icon "alarm-clock" %} {{ h.sla.label }}</div>
+      {% elif h.sla.level == 'soon' %}<div style="font-size:12px;font-weight:800;color:#b45309">{% icon "hourglass" %} {{ h.sla.label }}</div>{% endif %}
+    </div>
+    <span class="pill pill--{{ h.status }}">{% if h.status == 'in_control' %}Wróć do liczenia{% else %}{{ h.get_status_display }}{% endif %}</span>
+  </a>
+  {% endfor %}
+
+  {# WEŹ NASTĘPNĄ — serce hybrydy: ranking VIP → PILNE → rekontrole → rodziny → najstarsze. #}
+  <form method="post" action="{% url 'ui:hu_take_next' %}" style="margin:14px 0">
+    {% csrf_token %}
+    <button type="submit" class="btn btn--accent" data-testid="take-next" style="width:100%;padding:22px;font-size:20px;font-weight:900" {% if not next_hu %}disabled{% endif %}>
+      WEŹ NASTĘPNĄ
+    </button>
+    {% if next_hu %}
+    <div style="text-align:center;font-size:13px;color:#475569;margin-top:6px">
+      następna: <b>{{ next_hu.ref }}</b>{% if next_badge %} <span class="pill" style="background:#fde9d9;color:#8a4b0f;font-size:11px">{{ next_badge }}</span>{% endif %}
+      · {% icon "map-pin" %}{{ next_hu.location|default:"—" }}
+      {% if next_hu.sla.level == 'overdue' %}<span style="font-weight:800;color:#b91c1c">· {% icon "alarm-clock" %} {{ next_hu.sla.label }}</span>
+      {% elif next_hu.sla.level == 'soon' %}<span style="font-weight:800;color:#b45309">· {% icon "hourglass" %} {{ next_hu.sla.label }}</span>{% endif %}
+    </div>
+    {% else %}
+    <div style="text-align:center;font-size:13px;color:#64748b;margin-top:6px">Kolejka pusta {% icon "party-popper" %}</div>
+    {% endif %}
+  </form>
+
+  {# Skan przejmuje kontekst w każdej chwili (istniejący hu_control_scan). #}
+  {# Stały (sticky) pasek skanu — kciuk, zawsze pod ręką (spec §1.4). #}
+  <form method="post" action="{% url 'ui:hu_control_scan' %}"
+        style="position:sticky;bottom:0;background:var(--app-bg,#eef9f7);padding:8px 0 4px;z-index:20">
+    {% csrf_token %}
+    <div class="field">
+      <div style="display:flex;gap:8px;align-items:stretch">
+        <input type="text" name="code" id="ms-scan" data-testid="scan-input" autocomplete="off" placeholder="Skanuj HU…" style="flex:1;min-width:0">
+        <button type="button" onclick="palvizScan('ms-scan')" aria-label="Skanuj aparatem" style="flex:0 0 auto;width:52px">{% icon "scan-barcode" 24 %}</button>
+      </div>
+    </div>
+    <button type="submit" class="btn btn--primary" data-testid="scan-submit" style="width:100%">Skanuj / szukaj HU</button>
+  </form>
+
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <a class="btn btn--ghost" style="flex:1;text-align:center" href="{% url 'ui:hu_control_status' %}">Status</a>
+    <a class="btn btn--ghost" style="flex:1;text-align:center" href="{% url 'ui:hu_control_find_recipient' %}">Znajdź dla odbiorcy</a>
+  </div>
+{% endblock %}

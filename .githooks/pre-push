@@ -1,0 +1,17 @@
+#!/bin/bash
+# Optional: sync knowledge graph to Obsidian. Must never block a push — run the
+# sync if present, otherwise skip quietly. Always exit 0.
+#
+# AKTYWACJA (domyślnie ten hook NIE działa — świeży klon go nie widzi):
+#   git config core.hooksPath .githooks
+# UWAGA: ustawiony core.hooksPath WYKLUCZA `pre-commit install` (pre-commit
+# odmawia wtedy instalacji swoich hooków). Wybierz jedną ścieżkę świadomie —
+# zalecenia i pełny opis: README, sekcja „Git hooks i graf wiedzy (Obsidian)”.
+# Dotyczy tylko maszyny z vaultem Obsidiana (~/graphify-workspace); wszędzie
+# indziej skrypt i tak cicho nic nie robi.
+sync=~/graphify-workspace/sync-knowledge-graph.sh
+if [ -x "$sync" ]; then
+    echo "Synchronizuję graf wiedzy do Obsidian..."
+    "$sync" || echo "graf-sync failed (non-blocking) — push continues"
+fi
+exit 0

@@ -1,0 +1,121 @@
+{% extends "ui/base.html" %}
+{% block title %}Zadania i powiadomienia — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<style>
+  .notif { display:block; padding:11px 16px; border-bottom:1px solid var(--gray-100); text-decoration:none; color:inherit; }
+  .notif--unread { background:var(--yellow-light); }
+  .notif__title { font-weight:500; font-size:13px; color:var(--gray-900); }
+  .notif--unread .notif__title { font-weight:700; }
+  .notif__title--error { color: var(--red); }
+  .notif__title--warning { color: var(--yellow-dark); }
+  .notif__body { font-size:12px; color:var(--gray-500); margin-top:2px; }
+  .notif__time { font-size:11px; color:var(--gray-400); margin-top:3px; }
+  .task-row--overdue td { background:var(--red-light); }
+  .prio--high { color:var(--red); font-weight:600; }
+  .prio--low  { color:var(--gray-400); }
+  .due--overdue { color:var(--red); font-weight:700; }
+</style>
+{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><span>Zadania i powiadomienia</span></nav>
+
+<div class="page-header">
+  <div class="panel-head" style="--pc:#e11d48;--pcbg:#fff1f2">
+    <div class="panel-head__chip">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+    </div>
+    <div>
+      <div class="page-header__title">Zadania i powiadomienia</div>
+      <div class="page-header__sub">Zadania zespołu i alerty o niezgodnościach stocku</div>
+    </div>
+  </div>
+  <div class="page-header__actions">
+    <a class="btn btn-primary" href="{% url 'ui:task_new_form' %}">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14m-7-7h14"/></svg>
+      Nowe zadanie
+    </a>
+    <form method="post" action="{% url 'ui:tasks_run_checks' %}" style="margin:0">{% csrf_token %}
+      <button class="btn btn-secondary" type="submit">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Sprawdź niezgodności stocku
+      </button>
+    </form>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1.5fr;gap:16px">
+  <!-- Notifications -->
+  <div class="card">
+    <div class="card-header" style="padding:12px 16px">
+      <span class="card-header__title" style="display:flex;align-items:center;gap:8px">
+        Powiadomienia
+        {% if unread %}<span class="badge badge-red">{{ unread }} nowych</span>{% endif %}
+      </span>
+      <form method="post" action="{% url 'ui:notifications_read' %}" style="margin:0">{% csrf_token %}
+        <button class="btn btn-ghost btn-sm" type="submit">Oznacz przeczytane</button>
+      </form>
+    </div>
+    <div style="max-height:560px;overflow:auto">
+      {% for n in notifs %}
+      <a href="{{ n.url|default:'#' }}" class="notif {% if not n.is_read %}notif--unread{% endif %}">
+        <div class="notif__title {% if n.level == 'error' %}notif__title--error{% elif n.level == 'warning' %}notif__title--warning{% endif %}">{{ n.title }}</div>
+        {% if n.body %}<div class="notif__body">{{ n.body }}</div>{% endif %}
+        <div class="notif__time">{{ n.created_at|date:"d.m.Y H:i" }}</div>
+      </a>
+      {% empty %}<div class="empty-state" style="padding:24px"><div class="empty-state__desc">Brak powiadomień.</div></div>{% endfor %}
+    </div>
+  </div>
+
+  <!-- Tasks -->
+  <div class="card">
+    <div class="card-header" style="padding:12px 16px"><span class="card-header__title">Zadania</span></div>
+
+    <!-- Filters -->
+    <form method="get" style="padding:12px 16px;border-bottom:1px solid var(--gray-100);display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <input name="q" value="{{ q }}" placeholder="Szukaj…" style="flex:1;min-width:140px">
+      <select aria-label="Status" name="status">
+        <option value="open" {% if f_status == 'open' %}selected{% endif %}>Otwarte</option>
+        <option value="all" {% if f_status == 'all' %}selected{% endif %}>Wszystkie</option>
+        {% for v, l in status_choices %}<option value="{{ v }}" {% if f_status == v %}selected{% endif %}>{{ l }}</option>{% endfor %}
+      </select>
+      <select aria-label="Priorytet" name="priority"><option value="">Priorytet</option>{% for v, l in priority_choices %}<option value="{{ v }}" {% if f_priority == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+      <select aria-label="Kategoria" name="category"><option value="">Kategoria</option>{% for v, l in category_choices %}<option value="{{ v }}" {% if f_category == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+      <label class="form-check" style="font-size:13px"><input type="checkbox" name="mine" value="1" {% if f_mine %}checked{% endif %} onchange="this.form.submit()"> Moje ({{ my_open_count }})</label>
+      <button class="btn btn-secondary btn-sm" type="submit">Filtruj</button>
+    </form>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Zadanie</th><th>Priorytet</th><th>Termin</th><th>Przypisane</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for t in tasks %}
+          <tr class="{% if t.is_overdue %}task-row--overdue{% endif %}">
+            <td>
+              <strong>{{ t.title }}</strong>
+              {% if t.category == 'stock_discrepancy' %}<span class="badge" style="background:#ede9fe;color:#5b21b6">stock</span>{% endif %}
+              {% if t.url %}<a class="text-sm" href="{{ t.url }}"> {{ t.source_ref|default:"Otwórz" }} →</a>{% endif %}
+              {% if t.description %}<div class="text-sm text-muted">{{ t.description|truncatechars:90 }}</div>{% endif %}
+            </td>
+            <td><span class="{% if t.priority == 'high' %}prio--high{% elif t.priority == 'low' %}prio--low{% endif %}">{{ t.get_priority_display }}</span></td>
+            <td>{% if t.due_date %}<span class="{% if t.is_overdue %}due--overdue{% endif %}">{{ t.due_date|date:"d.m.Y" }}</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+            <td>{% if t.assignee %}{{ t.assignee.username }}{% else %}<span class="text-muted">zespół</span>{% endif %}</td>
+            <td>{{ t.get_status_display }}</td>
+            <td style="white-space:nowrap">
+              <a class="btn btn-ghost btn-sm" href="{% url 'ui:task_edit' t.pk %}">Edytuj</a>
+              {% if t.status != 'done' %}
+              <form method="post" action="{% url 'ui:task_set_status' t.pk %}" style="display:inline;margin:0">{% csrf_token %}
+                <input type="hidden" name="status" value="{% if t.status == 'todo' %}in_progress{% else %}done{% endif %}">
+                <button class="btn btn-ghost btn-sm" type="submit">{% if t.status == 'todo' %}Start{% else %}Zrobione{% endif %}</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6"><div class="empty-state" style="padding:24px"><div class="empty-state__title">Brak zadań dla tych filtrów</div></div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

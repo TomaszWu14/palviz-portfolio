@@ -1,0 +1,1183 @@
+{
+ "carton_heavier_than_cap": {
+  "max_h_cm": 200,
+  "n_pallets": 2,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 34.0,
+    "mixed": false,
+    "n_boxes": 1,
+    "skus": [
+     "OVER"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 34.0,
+    "mixed": false,
+    "n_boxes": 1,
+    "skus": [
+     "OVER"
+    ]
+   }
+  ],
+  "rendered_pallets": 2,
+  "sha256": "688a72049c0280978e3ac392e27ea0c408314291e91b4042380f94cf3c0202fa",
+  "truncated": false,
+  "type": "shipment",
+  "warnings": [
+   "Karton OVER (1500 kg) cięższy niż limit palety (1000 kg) — paleta z nim przekracza limit wagi"
+  ]
+ },
+ "carton_taller_than_load": {
+  "max_h_cm": 150,
+  "n_pallets": 4,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 214.0,
+    "mixed": false,
+    "n_boxes": 8,
+    "skus": [
+     "TALL"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 214.0,
+    "mixed": false,
+    "n_boxes": 1,
+    "skus": [
+     "TALL"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 214.0,
+    "mixed": false,
+    "n_boxes": 1,
+    "skus": [
+     "TALL"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 214.0,
+    "mixed": false,
+    "n_boxes": 1,
+    "skus": [
+     "TALL"
+    ]
+   }
+  ],
+  "rendered_pallets": 4,
+  "sha256": "92607dd4f8409f94fe0abf533556b85cb272c7f589760ad3b01a025ceb13cd77",
+  "truncated": false,
+  "type": "shipment",
+  "warnings": [
+   "Karton TALL (wys. 200 cm) wyższy niż limit ładunku (136 cm przy palecie 150 cm) — paleta z nim przekracza limit wysokości"
+  ]
+ },
+ "dominant_sku": {
+  "max_h_cm": 200,
+  "n_pallets": 2,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 184.0,
+    "mixed": true,
+    "n_boxes": 48,
+    "skus": [
+     "DOM",
+     "X",
+     "Y"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 94.0,
+    "mixed": false,
+    "n_boxes": 19,
+    "skus": [
+     "DOM"
+    ]
+   }
+  ],
+  "rendered_pallets": 2,
+  "sha256": "43025fb6e8648895985a1226d0c2eeaea68248cd3e87a0edbb2e00c587ce97c1",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "empty_lines": null,
+ "max_layers_cap": {
+  "max_h_cm": 200,
+  "n_pallets": 3,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 16,
+    "skus": [
+     "ML"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 16,
+    "skus": [
+     "ML"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 8,
+    "skus": [
+     "ML"
+    ]
+   }
+  ],
+  "rendered_pallets": 3,
+  "sha256": "bc0421a0bc18ae0696129145e114d7f83b345725cb25f7b9cfaef4018c7f774f",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "missing_weight_defaults_1kg": {
+  "max_h_cm": 200,
+  "n_pallets": 1,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 114.0,
+    "mixed": true,
+    "n_boxes": 25,
+    "skus": [
+     "NW",
+     "NW0"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "bd51f13ac091995d87f261f54e62aeca0eb94f323fd267f221a9c219769e9235",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "mixed_heights_settle": {
+  "max_h_cm": 200,
+  "n_pallets": 1,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 174.0,
+    "mixed": true,
+    "n_boxes": 48,
+    "skus": [
+     "S",
+     "T"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "8ae724b4de5616ef5acca093610904a896957e9e73c5bd4018945b74e84d51d4",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "mixed_leftovers": {
+  "max_h_cm": 200,
+  "n_pallets": 2,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 189.0,
+    "mixed": true,
+    "n_boxes": 28,
+    "skus": [
+     "A",
+     "B",
+     "C",
+     "D"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 39.0,
+    "mixed": false,
+    "n_boxes": 3,
+    "skus": [
+     "B"
+    ]
+   }
+  ],
+  "rendered_pallets": 2,
+  "sha256": "2f8af493201afb62560609e4418d180cc5b8743f1eca5c47c2f48e22cd7d62fe",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "mono_exact_full_pallets": {
+  "max_h_cm": 200,
+  "n_pallets": 2,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   }
+  ],
+  "rendered_pallets": 2,
+  "sha256": "144f6d4db6a11f8588ea6b37352a868530e1b76b3cc48904c1e21d94d01981d4",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "mono_full_plus_remainder": {
+  "max_h_cm": 200,
+  "n_pallets": 3,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 34.0,
+    "mixed": false,
+    "n_boxes": 6,
+    "skus": [
+     "A"
+    ]
+   }
+  ],
+  "rendered_pallets": 3,
+  "sha256": "5e699ffcd2e082d21807b504c333f0e37fe90b4d7f952c265e40f45f112fe818",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "mono_overhang_tie_orientation": {
+  "max_h_cm": 60,
+  "n_pallets": 3,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 2,
+    "skus": [
+     "R"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 2,
+    "skus": [
+     "R"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 2,
+    "skus": [
+     "R"
+    ]
+   }
+  ],
+  "rendered_pallets": 3,
+  "sha256": "3b01198927372e3be96265f0ede0685f3564efc58d9634d217e5f8eed4b95c3e",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "no_weight_limit_none": {
+  "max_h_cm": 240,
+  "n_pallets": 1,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 114.0,
+    "mixed": false,
+    "n_boxes": 30,
+    "skus": [
+     "HEAVY"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "d324fdd83a3a67d47fad9e4482b4e073e253869b5a784d41f81c4666cf83d1e4",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "no_weight_limit_zero": {
+  "max_h_cm": 240,
+  "n_pallets": 2,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 234.0,
+    "mixed": false,
+    "n_boxes": 88,
+    "skus": [
+     "HEAVY"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 12,
+    "skus": [
+     "HEAVY"
+    ]
+   }
+  ],
+  "rendered_pallets": 2,
+  "sha256": "ed191e8e30de6ee7bc7b3d70a5f51e6f857c6a60e92c736b1b20a8935dd3ceaf",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "only_oversize_carton": null,
+ "only_zero_quantities": null,
+ "oversize_skipped_others_kept": {
+  "max_h_cm": 200,
+  "n_pallets": 1,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 10,
+    "skus": [
+     "OK"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "a09baee7139f28e497649d9047c1cd9372c7a7959e94f019380f47bc54f191e7",
+  "truncated": false,
+  "type": "shipment",
+  "warnings": [
+   "Karton BIG (90×90 cm) większy niż paleta 120×80 cm (+2 cm zwisu) — 5 szt. pominięto w modelu 3D"
+  ]
+ },
+ "paz_broken_below_build_height": {
+  "max_h_cm": 180,
+  "n_pallets": 2,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 174.0,
+    "mixed": false,
+    "n_boxes": 48,
+    "skus": [
+     "PAZ"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 12,
+    "skus": [
+     "PAZ"
+    ]
+   }
+  ],
+  "rendered_pallets": 2,
+  "sha256": "3226c186b9f4e08aa4e944736902a8366f128a67af355d6225706a03e3a1d426",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "paz_no_cpp_uses_geometry": {
+  "max_h_cm": 230,
+  "n_pallets": 1,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 214.0,
+    "mixed": false,
+    "n_boxes": 80,
+    "skus": [
+     "PAZ"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "adb75c28f4f015a7813d4b1ff12309ae5693842c583913476044ce3f692e8b31",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "paz_whole_at_build_height": {
+  "max_h_cm": 225,
+  "n_pallets": 2,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 94.0,
+    "mixed": false,
+    "n_boxes": 30,
+    "skus": [
+     "PAZ"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 94.0,
+    "mixed": false,
+    "n_boxes": 30,
+    "skus": [
+     "PAZ"
+    ]
+   }
+  ],
+  "rendered_pallets": 2,
+  "sha256": "b475d920797ffa8a0d0a0d257dfc8855ff387ca76425415e77ac1537954a60f1",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "paz_zero_pallets_packs_cartons": {
+  "max_h_cm": 225,
+  "n_pallets": 1,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 94.0,
+    "mixed": false,
+    "n_boxes": 20,
+    "skus": [
+     "PZ"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "81bbb614d45347248fbe1ac048390a07e28724d8db5d32e2cbdc12044332b191",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "pool_drops_rotatable_carton": {
+  "max_h_cm": 60,
+  "n_pallets": 1,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 34.0,
+    "mixed": false,
+    "n_boxes": 1,
+    "skus": [
+     "R"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "e95a234f9d105f6d994dbb00ac9fa0ff81c8e582d2e96ca661fabbc4c106553c",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "pool_rotates_wide_carton": {
+  "max_h_cm": 120,
+  "n_pallets": 1,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 74.0,
+    "mixed": false,
+    "n_boxes": 3,
+    "skus": [
+     "W"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "86adf7c2ea01db842ffe01f4d41cfd8524451cae7a318133a2a4e95b7f788e8d",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "render_cap_none": {
+  "max_h_cm": 200,
+  "n_pallets": 5,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 12,
+    "skus": [
+     "A"
+    ]
+   }
+  ],
+  "rendered_pallets": 5,
+  "sha256": "4b3082769e68209b04e1fd12c1fbed99cf5472499bc9047278dbd01771ed0b3f",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "render_cap_truncates": {
+  "max_h_cm": 200,
+  "n_pallets": 5,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "a3dfa77b068eba3a5ee348e6a095c09b3d5acee12196687120e3efe4e3e4e650",
+  "truncated": true,
+  "type": "shipment"
+ },
+ "render_cap_with_slack": {
+  "max_h_cm": 200,
+  "n_pallets": 4,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 10,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": true,
+    "height_cm": 14.0,
+    "mixed": false,
+    "n_boxes": 0,
+    "skus": []
+   }
+  ],
+  "rendered_pallets": 2,
+  "sha256": "4288af8583ec50c4eff4775767afc7e82d66023e232cd9756f466900720ea788",
+  "truncated": true,
+  "type": "shipment"
+ },
+ "rotation_layer_no_turn": {
+  "max_h_cm": 34,
+  "n_pallets": 1,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 34.0,
+    "mixed": false,
+    "n_boxes": 8,
+    "skus": [
+     "S"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "c7a640d7cc5acd199561926c170b095f26790cd8864922323f53a58d87a6adb1",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "rotation_layer_turn": {
+  "max_h_cm": 34,
+  "n_pallets": 1,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 34.0,
+    "mixed": false,
+    "n_boxes": 8,
+    "skus": [
+     "T"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "4cedb4643a1dedb34f685349037219f3f7dc77843ca51b688e27a0f762891b7c",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "target_below_mono_count": {
+  "max_h_cm": 200,
+  "n_pallets": 5,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 194.0,
+    "mixed": false,
+    "n_boxes": 72,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 12,
+    "skus": [
+     "A"
+    ]
+   }
+  ],
+  "rendered_pallets": 5,
+  "sha256": "4b3082769e68209b04e1fd12c1fbed99cf5472499bc9047278dbd01771ed0b3f",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "target_forces_repack": {
+  "max_h_cm": 120,
+  "n_pallets": 1,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 244.0,
+    "mixed": true,
+    "n_boxes": 50,
+    "skus": [
+     "A",
+     "B",
+     "C"
+    ]
+   }
+  ],
+  "rendered_pallets": 1,
+  "sha256": "465924ed7a482164038c2a49a24493dc0386d9d2b93f1135542c27e6acfe5da1",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "target_mono_and_pool_repack": {
+  "max_h_cm": 120,
+  "n_pallets": 2,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 104.0,
+    "mixed": false,
+    "n_boxes": 12,
+    "skus": [
+     "M"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 169.0,
+    "mixed": true,
+    "n_boxes": 40,
+    "skus": [
+     "B",
+     "C"
+    ]
+   }
+  ],
+  "rendered_pallets": 2,
+  "sha256": "aa88403266cff4214f1c043c6e5484233903f45e2cd23aeb8b6087c48929523e",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "target_mono_plus_repack": {
+  "max_h_cm": 150,
+  "n_pallets": 7,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 134.0,
+    "mixed": false,
+    "n_boxes": 48,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 134.0,
+    "mixed": false,
+    "n_boxes": 48,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 134.0,
+    "mixed": false,
+    "n_boxes": 48,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 134.0,
+    "mixed": false,
+    "n_boxes": 16,
+    "skus": [
+     "B"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 134.0,
+    "mixed": false,
+    "n_boxes": 16,
+    "skus": [
+     "B"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 134.0,
+    "mixed": true,
+    "n_boxes": 24,
+    "skus": [
+     "B",
+     "C"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 94.0,
+    "mixed": true,
+    "n_boxes": 20,
+    "skus": [
+     "A",
+     "C"
+    ]
+   }
+  ],
+  "rendered_pallets": 7,
+  "sha256": "1dcfac634cbb8e863d50e4448cf81bafcd56a0569df414b5c3efa9990b0b5f54",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "target_not_above_mono": {
+  "max_h_cm": 120,
+  "n_pallets": 4,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 104.0,
+    "mixed": false,
+    "n_boxes": 12,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 104.0,
+    "mixed": false,
+    "n_boxes": 12,
+    "skus": [
+     "A"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 119.0,
+    "mixed": false,
+    "n_boxes": 24,
+    "skus": [
+     "B"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 109.0,
+    "mixed": true,
+    "n_boxes": 27,
+    "skus": [
+     "A",
+     "B",
+     "C"
+    ]
+   }
+  ],
+  "rendered_pallets": 4,
+  "sha256": "b2c6c30e591ecaba3b52d789338e2b895a40ba4794fe6eb61d52e09d290fed50",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "target_pads_empty_slack": {
+  "max_h_cm": 220,
+  "n_pallets": 5,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 184.0,
+    "mixed": true,
+    "n_boxes": 32,
+    "skus": [
+     "A",
+     "B"
+    ]
+   },
+   {
+    "empty": true,
+    "height_cm": 14.0,
+    "mixed": false,
+    "n_boxes": 0,
+    "skus": []
+   },
+   {
+    "empty": true,
+    "height_cm": 14.0,
+    "mixed": false,
+    "n_boxes": 0,
+    "skus": []
+   },
+   {
+    "empty": true,
+    "height_cm": 14.0,
+    "mixed": false,
+    "n_boxes": 0,
+    "skus": []
+   },
+   {
+    "empty": true,
+    "height_cm": 14.0,
+    "mixed": false,
+    "n_boxes": 0,
+    "skus": []
+   }
+  ],
+  "rendered_pallets": 5,
+  "sha256": "b50cacb15aa4a1d57d407b94d1bc8b906b16c4a609805020ef7a8b2b612cf94d",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "target_pool_fits_budget": {
+  "max_h_cm": 200,
+  "n_pallets": 3,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 94.0,
+    "mixed": true,
+    "n_boxes": 15,
+    "skus": [
+     "A",
+     "B"
+    ]
+   },
+   {
+    "empty": true,
+    "height_cm": 14.0,
+    "mixed": false,
+    "n_boxes": 0,
+    "skus": []
+   },
+   {
+    "empty": true,
+    "height_cm": 14.0,
+    "mixed": false,
+    "n_boxes": 0,
+    "skus": []
+   }
+  ],
+  "rendered_pallets": 3,
+  "sha256": "b249303adefd4307d322063fd6e5d56ef2c833ccbf2016f7389308b1bf8e974d",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "weight_cap_below_one_layer": {
+  "max_h_cm": 200,
+  "n_pallets": 3,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 34.0,
+    "mixed": false,
+    "n_boxes": 5,
+    "skus": [
+     "HV"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 34.0,
+    "mixed": false,
+    "n_boxes": 5,
+    "skus": [
+     "HV"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 34.0,
+    "mixed": false,
+    "n_boxes": 2,
+    "skus": [
+     "HV"
+    ]
+   }
+  ],
+  "rendered_pallets": 3,
+  "sha256": "98fdf1cab15cae2d736d04fafbc764a009645c3907e410bebef75cb68e6b253b",
+  "truncated": false,
+  "type": "shipment"
+ },
+ "weight_cap_limits_layers": {
+  "max_h_cm": 240,
+  "n_pallets": 7,
+  "pallet_base": 14,
+  "pallet_l": 120,
+  "pallet_w": 80,
+  "pallets": [
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 16,
+    "skus": [
+     "HEAVY"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 16,
+    "skus": [
+     "HEAVY"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 16,
+    "skus": [
+     "HEAVY"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 16,
+    "skus": [
+     "HEAVY"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 16,
+    "skus": [
+     "HEAVY"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 54.0,
+    "mixed": false,
+    "n_boxes": 16,
+    "skus": [
+     "HEAVY"
+    ]
+   },
+   {
+    "empty": false,
+    "height_cm": 34.0,
+    "mixed": false,
+    "n_boxes": 4,
+    "skus": [
+     "HEAVY"
+    ]
+   }
+  ],
+  "rendered_pallets": 7,
+  "sha256": "cf6d4d85cfcc2c9587453a5854421c9aec16a53164b50d0bdc5c128f13a33b3f",
+  "truncated": false,
+  "type": "shipment"
+ }
+}

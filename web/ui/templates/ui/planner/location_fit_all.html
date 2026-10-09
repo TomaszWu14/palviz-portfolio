@@ -1,0 +1,373 @@
+{% extends "ui/base.html" %}
+{% load static %}
+{% load palviz_extras %}
+{% block title %}Przymierz do lokalizacji — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'ui/js/plotly.min.js' %}"></script>
+<style>
+.fit-layout { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
+@media(max-width:900px){ .fit-layout { grid-template-columns:1fr; } }
+
+/* Location result card */
+.loc-card {
+  background:var(--surface); border:1px solid var(--gray-200); border-radius:12px;
+  overflow:hidden; margin-bottom:20px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+.loc-card__header {
+  padding:12px 18px; background:var(--gray-50);
+  border-bottom:1px solid var(--gray-200);
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+}
+.loc-card__name { font-size:15px; font-weight:800; color:var(--gray-900); }
+.loc-card__dims { font-size:12px; color:var(--gray-500); }
+
+/* Mode tabs inside each card */
+.mode-tabs { display:flex; border-bottom:1px solid var(--gray-200); }
+.mode-tab {
+  padding:8px 18px; font-size:12px; font-weight:700; cursor:pointer;
+  border:none; background:none; color:var(--gray-500);
+  border-bottom:2px solid transparent; margin-bottom:-1px;
+  transition:color .12s, border-color .12s;
+}
+.mode-tab.active { color:#1a56db; border-bottom-color:#1a56db; }
+
+.mode-panel { display:none; padding:16px 18px; }
+.mode-panel.active { display:block; }
+
+/* Fit summary row */
+.fit-summary {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+  gap:10px; margin-bottom:14px;
+}
+.fit-kpi {
+  background:var(--gray-50); border:1px solid var(--gray-200); border-radius:8px;
+  padding:10px 12px; text-align:center;
+}
+.fit-kpi__lbl { font-size:10px; font-weight:700; color:var(--gray-400); text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px; }
+.fit-kpi__val { font-size:20px; font-weight:800; color:var(--gray-900); }
+.fit-kpi--green .fit-kpi__val { color:var(--green); }
+.fit-kpi--blue  .fit-kpi__val { color:#1a56db; }
+.fit-kpi--red   .fit-kpi__val { color:var(--red); }
+
+.fit-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 14px; border-radius:8px; font-size:13px; font-weight:700; margin-bottom:12px;
+}
+.fit-badge--ok  { background:var(--green-light); color:var(--green); border:1px solid #6ee7b7; }
+.fit-badge--err { background:var(--red-light); color:var(--red); border:1px solid #fca5a5; }
+
+/* 2D + 3D side by side */
+.viz-grid { display:grid; grid-template-columns:1fr 2fr; gap:12px; }
+@media(max-width:700px){ .viz-grid { grid-template-columns:1fr; } }
+
+.viz-box { background:var(--gray-50); border:1px solid var(--gray-200); border-radius:8px; overflow:hidden; }
+.viz-box__title {
+  padding:7px 12px; font-size:10px; font-weight:700; color:var(--gray-400);
+  text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--gray-200);
+}
+
+/* Placeholder when no results */
+.no-results {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  min-height:380px; color:var(--gray-400); text-align:center; gap:10px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:planner_dashboard' %}">Planer</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:planner_locations' %}">Lokalizacje</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Przymierz do lokalizacji</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Przymierz karton do lokalizacji</div>
+    <div class="page-header__sub">Sprawdź ile kartonów zmieści się w każdej zdefiniowanej lokalizacji magazynowej — z paletą i bez palety</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:planner_location_new' %}" class="btn btn-secondary btn-sm">
+      <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 4v16M4 12h16"/></svg>
+      Nowa lokalizacja
+    </a>
+  </div>
+</div>
+
+<div class="fit-layout">
+
+  <!-- ── Left: carton params ─────────────────────────────── -->
+  <div style="position:sticky;top:72px">
+    <div class="card">
+      <div class="card-header" style="padding:10px 14px">
+        <span class="card-header__title" style="font-size:12px">Karton do przymiarki</span>
+      </div>
+      <div class="card-body" style="padding:14px">
+        <form method="get" action="">
+          <div class="form-group" style="margin-bottom:12px">
+            <label for="{{ form.carton_from_db.id_for_label }}">{{ form.carton_from_db.label }}</label>
+            {{ form.carton_from_db }}
+            <span class="help-text">Lub wpisz ręcznie poniżej</span>
+          </div>
+
+          <div style="font-size:11px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;border-top:1px solid var(--gray-100);padding-top:10px;margin-bottom:8px">
+            Wymiary kartonu
+          </div>
+          <div class="form-grid-3" style="margin-bottom:10px">
+            <div class="form-group">
+              <label for="{{ form.carton_l.id_for_label }}">{{ form.carton_l.label }}</label>
+              {{ form.carton_l }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.carton_w.id_for_label }}">{{ form.carton_w.label }}</label>
+              {{ form.carton_w }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.carton_h.id_for_label }}">{{ form.carton_h.label }}</label>
+              {{ form.carton_h }}
+            </div>
+          </div>
+
+          <div class="form-grid-2" style="margin-bottom:10px">
+            <div class="form-group">
+              <label for="{{ form.unit_weight.id_for_label }}">{{ form.unit_weight.label }}</label>
+              {{ form.unit_weight }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.pcs_per_carton.id_for_label }}">{{ form.pcs_per_carton.label }}</label>
+              {{ form.pcs_per_carton }}
+            </div>
+            <div class="form-group">
+              <label for="{{ form.carton_tare.id_for_label }}">{{ form.carton_tare.label }}</label>
+              {{ form.carton_tare }}
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
+            Przymierz do lokalizacji
+          </button>
+        </form>
+
+        {% if cl %}
+        <div style="margin-top:14px;padding:10px 12px;background:var(--blue-light);border:1px solid #bfdbfe;border-radius:8px;font-size:12px">
+          <div style="font-weight:700;color:var(--blue-mid);margin-bottom:4px">Karton:</div>
+          <div style="color:var(--gray-700)">L={{ cl }} × W={{ cw }} × H={{ ch }} cm</div>
+        </div>
+        {% endif %}
+
+        {% if not results and form.is_valid %}
+        <div style="margin-top:10px;padding:10px;background:var(--yellow-light);border-radius:8px;font-size:12px;color:var(--yellow-dark)">
+          Brak aktywnych lokalizacji.
+          <a href="{% url 'ui:planner_location_new' %}" style="color:#1a56db">Dodaj lokalizację »</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right: results ──────────────────────────────────── -->
+  <div>
+    {% if results %}
+    {% for row in results %}
+    {% with loc=row.loc mode_primary=row.modes.0 mode_secondary=row.modes.1 %}
+    <div class="loc-card">
+
+      <div class="loc-card__header">
+        <div>
+          <div class="loc-card__name">
+            {{ loc.name }}
+            <span style="font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;margin-left:6px;
+              {% if loc.location_class == 'pallet_full' %}background:var(--blue-light);color:var(--blue-mid)
+              {% elif loc.location_class == 'pallet_half' %}background:rgba(139,92,246,.18);color:#c4b5fd
+              {% elif loc.location_class == 'floor' %}background:var(--yellow-light);color:var(--yellow-dark)
+              {% elif loc.location_class == 'shelf' %}background:var(--green-light);color:var(--green)
+              {% else %}background:var(--gray-100);color:var(--gray-500){% endif %}">
+              {{ loc.get_location_class_display }}
+            </span>
+          </div>
+          <div class="loc-card__dims">
+            {{ loc.width_cm }}×{{ loc.depth_cm }}×{{ loc.total_height_cm }} cm &nbsp;|&nbsp; użytk. {{ loc.usable_height_cm }} cm
+            {% if loc.max_load_kg %}&nbsp;|&nbsp; max {{ loc.max_load_kg|floatformat:0 }} kg{% endif %}
+          </div>
+        </div>
+        {% with f=mode_primary.fit %}
+        <div style="margin-left:auto">
+          {% if f.fits_h and f.fits_w and f.fits_d %}
+          <span class="fit-badge fit-badge--ok">{% icon "check" %} Mieści się: {{ f.total_cartons }} kart. ({{ f.n_x }}×{{ f.n_y }}×{{ f.n_layers }})</span>
+          {% else %}
+          <span class="fit-badge fit-badge--err">{% icon "x" %} Nie mieści się w trybie podstawowym</span>
+          {% endif %}
+        </div>
+        {% endwith %}
+        <a href="{% url 'ui:planner_location_simulate' loc.pk %}?carton_l={{ cl }}&carton_w={{ cw }}&carton_h={{ ch }}&unit_weight={{ uw }}&pcs_per_carton={{ ppc }}"
+           class="btn btn-ghost btn-sm" style="font-size:11px">Szczegóły »</a>
+      </div>
+
+      <!-- Mode tabs: primary (based on location type) / secondary -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" onclick="switchTab(this,'{{ forloop.counter }}-primary')">
+          {% if loc.is_pallet_location %}{% icon "construction" %} Z paletą{% else %}{% icon "package" %} Luzem{% endif %}
+          ({{ mode_primary.fit.total_cartons }} kart.)
+        </button>
+        <button class="mode-tab" onclick="switchTab(this,'{{ forloop.counter }}-secondary')">
+          {% if loc.is_pallet_location %}{% icon "package" %} Bez palety{% else %}{% icon "construction" %} Z paletą{% endif %}
+          ({{ mode_secondary.fit.total_cartons }} kart.)
+        </button>
+      </div>
+
+      <!-- Primary mode panel -->
+      <div id="tab-{{ forloop.counter }}-primary" class="mode-panel active">
+        {% with f=mode_primary.fit %}
+        <div class="fit-summary">
+          <div class="fit-kpi {% if f.fits_h and f.fits_w and f.fits_d %}fit-kpi--green{% else %}fit-kpi--red{% endif %}">
+            <div class="fit-kpi__lbl">Kartonów</div>
+            <div class="fit-kpi__val">{{ f.total_cartons }}</div>
+          </div>
+          {% if f.szt_total %}
+          <div class="fit-kpi fit-kpi--green">
+            <div class="fit-kpi__lbl">Szt w lokalizacji</div>
+            <div class="fit-kpi__val">{{ f.szt_total }}</div>
+          </div>
+          {% endif %}
+          <div class="fit-kpi fit-kpi--blue">
+            <div class="fit-kpi__lbl">Warstwy</div>
+            <div class="fit-kpi__val">{{ f.n_layers }}</div>
+          </div>
+          <div class="fit-kpi">
+            <div class="fit-kpi__lbl">Na warstwę ({{ f.n_x }}×{{ f.n_y }})</div>
+            <div class="fit-kpi__val">{{ f.per_layer }}</div>
+          </div>
+          <div class="fit-kpi">
+            <div class="fit-kpi__lbl">Wys. dostępna</div>
+            <div class="fit-kpi__val">{{ f.avail_h }} cm</div>
+          </div>
+          <div class="fit-kpi">
+            <div class="fit-kpi__lbl">Vol dostępna</div>
+            <div class="fit-kpi__val">{{ f.avail_vol }} m³</div>
+          </div>
+        </div>
+        {% endwith %}
+        <div class="viz-grid">
+          <div class="viz-box">
+            <div class="viz-box__title">Rzut z przodu — pełna siatka kartonów</div>
+            <div id="fig2d-{{ forloop.counter }}-primary" style="height:280px"></div>
+          </div>
+          <div class="viz-box">
+            <div class="viz-box__title">Widok 3D</div>
+            <div id="fig3d-{{ forloop.counter }}-primary" style="height:340px"></div>
+          </div>
+        </div>
+        <script>
+        (function(){
+          var f2 = {{ mode_primary.fig2d_json|safe }};
+          Plotly.react('fig2d-{{ forloop.counter }}-primary', f2.data, f2.layout, {responsive:true, displayModeBar:false});
+          var f3 = {{ mode_primary.fig3d_json|safe }};
+          f3.layout.height = 340; f3.layout.margin = {l:0,r:0,t:36,b:0};
+          Plotly.react('fig3d-{{ forloop.counter }}-primary', f3.data, f3.layout, {responsive:true, displayModeBar:false});
+        })();
+        </script>
+      </div>
+
+      <!-- Secondary mode panel -->
+      <div id="tab-{{ forloop.counter }}-secondary" class="mode-panel">
+        {% with f=mode_secondary.fit %}
+        <div class="fit-summary">
+          <div class="fit-kpi {% if f.fits_h and f.fits_w and f.fits_d %}fit-kpi--green{% else %}fit-kpi--red{% endif %}">
+            <div class="fit-kpi__lbl">Kartonów</div>
+            <div class="fit-kpi__val">{{ f.total_cartons }}</div>
+          </div>
+          {% if f.szt_total %}
+          <div class="fit-kpi fit-kpi--green">
+            <div class="fit-kpi__lbl">Szt w lokalizacji</div>
+            <div class="fit-kpi__val">{{ f.szt_total }}</div>
+          </div>
+          {% endif %}
+          <div class="fit-kpi fit-kpi--blue">
+            <div class="fit-kpi__lbl">Warstwy</div>
+            <div class="fit-kpi__val">{{ f.n_layers }}</div>
+          </div>
+          <div class="fit-kpi">
+            <div class="fit-kpi__lbl">Na warstwę ({{ f.n_x }}×{{ f.n_y }})</div>
+            <div class="fit-kpi__val">{{ f.per_layer }}</div>
+          </div>
+          <div class="fit-kpi">
+            <div class="fit-kpi__lbl">Wys. dostępna</div>
+            <div class="fit-kpi__val">{{ f.avail_h }} cm</div>
+          </div>
+          <div class="fit-kpi">
+            <div class="fit-kpi__lbl">Vol dostępna</div>
+            <div class="fit-kpi__val">{{ f.avail_vol }} m³</div>
+          </div>
+        </div>
+        {% endwith %}
+        <div class="viz-grid">
+          <div class="viz-box">
+            <div class="viz-box__title">Rzut z przodu — pełna siatka kartonów</div>
+            <div id="fig2d-{{ forloop.counter }}-secondary" style="height:280px"></div>
+          </div>
+          <div class="viz-box">
+            <div class="viz-box__title">Widok 3D</div>
+            <div id="fig3d-{{ forloop.counter }}-secondary" style="height:340px"></div>
+          </div>
+        </div>
+        <script>
+        (function(){
+          var f2 = {{ mode_secondary.fig2d_json|safe }};
+          Plotly.react('fig2d-{{ forloop.counter }}-secondary', f2.data, f2.layout, {responsive:true, displayModeBar:false});
+          var f3 = {{ mode_secondary.fig3d_json|safe }};
+          f3.layout.height = 340; f3.layout.margin = {l:0,r:0,t:36,b:0};
+          Plotly.react('fig3d-{{ forloop.counter }}-secondary', f3.data, f3.layout, {responsive:true, displayModeBar:false});
+        })();
+        </script>
+      </div>
+
+    </div>
+    {% endwith %}
+    {% endfor %}
+
+    {% else %}
+    <div class="card" style="display:flex;align-items:center;justify-content:center;min-height:450px">
+      <div class="no-results">
+        <svg width="52" height="52" fill="none" viewBox="0 0 24 24" stroke="var(--gray-300)" stroke-width="1.2">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+        </svg>
+        <div style="font-size:15px;font-weight:700;color:var(--gray-700)">Wprowadź wymiary kartonu i kliknij „Przymierz"</div>
+        <div style="font-size:13px">Zobaczysz widok 2D z przodu i 3D dla każdej zdefiniowanej lokalizacji magazynowej</div>
+        {% if not results and not form.is_valid %}
+        <a href="{% url 'ui:planner_locations' %}" class="btn btn-secondary btn-sm" style="margin-top:8px">
+          Zarządzaj lokalizacjami
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function switchTab(btn, tabId) {
+  var card = btn.closest('.loc-card');
+  card.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  card.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+  // Trigger Plotly resize for lazy-rendered divs
+  setTimeout(function(){
+    card.querySelectorAll('[id^="fig"]').forEach(function(el){
+      if (el.closest('.mode-panel.active')) {
+        try { Plotly.relayout(el, {}); } catch(e){}
+      }
+    });
+  }, 50);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "ui/base.html" %}
+{% block title %}Usuń użytkownika — {{ app_name }}{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:admin_users' %}">Użytkownicy</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Usuń</span>
+</nav>
+<div style="max-width:480px">
+  <div class="card" style="padding:28px">
+    <div style="font-size:18px;font-weight:700;margin-bottom:10px;color:var(--red)">Usuń użytkownika</div>
+    <p>Czy na pewno chcesz usunąć konto <strong>{{ obj.username }}</strong>?
+    Tej operacji nie można cofnąć.</p>
+    <form method="post" style="display:flex;gap:10px;margin-top:20px">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Usuń konto</button>
+      <a href="{% url 'ui:admin_users' %}" class="btn btn-secondary">Anuluj</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

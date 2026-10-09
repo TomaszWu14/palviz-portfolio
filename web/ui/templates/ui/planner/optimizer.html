@@ -1,0 +1,186 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Optymalizator opakowań — {{ app_name }}{% endblock %}
+{% block nav_planner %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  #opt-form input, #opt-form select { width:100%; padding:6px 9px; border:1px solid var(--gray-300); border-radius:6px; font-size:13px; box-sizing:border-box; }
+  #opt-form label { display:block; margin-bottom:2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="panel-head" style="--pc:#0d9488;--pcbg:#f0fdfa">
+    <div class="panel-head__chip">
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.27 6.96 8.73 5.05 8.73-5.05"/><path d="M12 22.08V12"/></svg>
+    </div>
+    <div>
+      <div class="page-header__title">Optymalizator opakowań</div>
+      <div class="page-header__sub">Przymierz karton do palety: wypełnienie %, tolerancja nawisu, układ na żywo</div>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start">
+  <!-- ── Inputs (GET form, live on change) ── -->
+  <form method="get" id="opt-form" class="card card--accent" style="--pc:#0d9488;padding:16px;display:flex;flex-direction:column;gap:12px"
+        {% if mode != 'suggest' %}oninput="clearTimeout(window._t);window._t=setTimeout(()=>this.submit(),400)"{% endif %}>
+    <!-- Mode tabs -->
+    <div style="display:flex;gap:6px;background:var(--gray-100);padding:3px;border-radius:8px">
+      <button type="submit" name="mode" value="check" class="btn btn-sm" style="flex:1;{% if mode != 'suggest' %}background:#0f766e;color:#fff{% else %}background:transparent;color:var(--gray-700);border:none{% endif %}">Sprawdź karton</button>
+      <button type="submit" name="mode" value="suggest" class="btn btn-sm" style="flex:1;{% if mode == 'suggest' %}background:#0f766e;color:#fff{% else %}background:transparent;color:var(--gray-700);border:none{% endif %}">Dobierz opakowanie</button>
+    </div>
+
+    {% if mode == 'suggest' %}
+    <div><label style="font-size:12px;color:var(--gray-700)" for="{{ form.product.id_for_label }}">{{ form.product.label }}</label>{{ form.product }}
+      {{ form.product_dims|json_script:"prod_dims" }}</div>
+    {% if suggest_median_auto %}<div class="text-sm" style="color:var(--green)">Mediana wydań z ruchów: <strong>{{ suggest_median_auto }} szt</strong></div>{% endif %}
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-500)">Jednostka bazowa [cm]</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div><label style="font-size:11px;color:var(--gray-500)">L</label>{{ form.unit_l }}</div>
+      <div><label style="font-size:11px;color:var(--gray-500)">W</label>{{ form.unit_w }}</div>
+      <div><label style="font-size:11px;color:var(--gray-500)">H</label>{{ form.unit_h }}</div>
+    </div>
+    <div><label style="font-size:12px;color:var(--gray-700)" for="{{ form.products_per_pack.id_for_label }}">{{ form.products_per_pack.label }}</label>{{ form.products_per_pack }}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label style="font-size:12px;color:var(--gray-700)" for="{{ form.target_pct.id_for_label }}">{{ form.target_pct.label }}</label>{{ form.target_pct }}</div>
+      <div><label style="font-size:12px;color:var(--gray-700)" for="{{ form.max_units.id_for_label }}">{{ form.max_units.label }}</label>{{ form.max_units }}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label style="font-size:12px;color:var(--gray-700)" for="{{ form.unit_weight.id_for_label }}">{{ form.unit_weight.label }}</label>{{ form.unit_weight }}</div>
+      <div><label style="font-size:12px;color:var(--gray-700)" for="{{ form.median_qty.id_for_label }}">{{ form.median_qty.label }}</label>{{ form.median_qty }}</div>
+    </div>
+    {% else %}
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gray-500)">Karton [cm]</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+      <div><label for="{{ form.carton_l.id_for_label }}" style="font-size:11px;color:var(--gray-500)">L</label>{{ form.carton_l }}</div>
+      <div><label for="{{ form.carton_w.id_for_label }}" style="font-size:11px;color:var(--gray-500)">W</label>{{ form.carton_w }}</div>
+      <div><label for="{{ form.carton_h.id_for_label }}" style="font-size:11px;color:var(--gray-500)">H</label>{{ form.carton_h }}</div>
+    </div>
+    <div><label style="font-size:12px;color:var(--gray-700)" for="{{ form.carton_weight.id_for_label }}">{{ form.carton_weight.label }}</label>{{ form.carton_weight }}</div>
+    {% endif %}
+
+    <div><label style="font-size:12px;color:var(--gray-700)" for="{{ form.location.id_for_label }}">{{ form.location.label }}</label>{{ form.location }}
+      {{ form.location_heights|json_script:"loc_heights" }}</div>
+    <div><label style="font-size:12px;color:var(--gray-700)" for="{{ form.max_height_total.id_for_label }}">{{ form.max_height_total.label }}</label>{{ form.max_height_total }}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label style="font-size:12px;color:var(--gray-700)" for="{{ form.tolerance_cm.id_for_label }}">{{ form.tolerance_cm.label }}</label>{{ form.tolerance_cm }}</div>
+      <div><label style="font-size:12px;color:var(--gray-700)" for="{{ form.max_weight.id_for_label }}">{{ form.max_weight.label }}</label>{{ form.max_weight }}</div>
+    </div>
+    <input type="hidden" name="pallet" value="EU">
+    {% if mode == 'suggest' %}<button type="submit" name="mode" value="suggest" class="btn btn-primary" style="margin-top:4px">Dobierz opakowanie</button>{% endif %}
+  </form>
+
+  <!-- ── Result ── -->
+  <div>
+  {% if mode == 'suggest' %}
+    {% if suggestions %}
+    <div class="card card--accent" style="--pc:#0d9488;padding:16px">
+      <div style="font-weight:700;margin-bottom:6px">Propozycje opakowania{% if form.target_pct.value %} — cel {{ form.target_pct.value }}% wypełnienia{% endif %}</div>
+      {% if chain_info %}<div class="text-sm" style="color:#0d9488;margin-bottom:8px">Łańcuch: produkt {{ chain_info.product.0 }}×{{ chain_info.product.1 }}×{{ chain_info.product.2 }} → {{ chain_info.ppp }} szt. w opak. odbiorczym ({{ chain_info.inner_dims.0 }}×{{ chain_info.inner_dims.1 }}×{{ chain_info.inner_dims.2 }} cm) → opak. w kartonie ↓</div>{% endif %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>{% if chain_info %}Opak./karton{% else %}Szt./karton{% endif %}</th><th>Układ</th><th>Karton [cm]</th>{% if chain_info %}<th>Szt. prod./karton</th>{% endif %}<th>Wypełnienie</th><th>Kart./paleta</th><th>Szt./paleta</th><th>Wydanie</th></tr></thead>
+          <tbody>
+          {% for s in suggestions %}
+          <tr{% if forloop.first %} style="background:#f0fdfa"{% endif %}>
+            <td><strong>{{ s.units_per_carton }}</strong></td>
+            <td class="text-muted">{{ s.arrange }}</td>
+            <td><a href="?mode=check&carton_l={{ s.carton.l }}&carton_w={{ s.carton.w }}&carton_h={{ s.carton.h }}&max_height_total={{ s.cargo_h|add:15 }}&tolerance_cm={{ s.tol }}&carton_weight={{ s.carton_weight_kg }}" style="color:#0d9488;font-weight:600">{{ s.carton.l }}×{{ s.carton.w }}×{{ s.carton.h }}</a></td>
+            {% if chain_info %}<td><strong>{{ s.products_per_carton }}</strong></td>{% endif %}
+            <td><strong style="color:var(--green)">{{ s.fill_volume }}%</strong></td>
+            <td>{{ s.cartons_per_pallet }}</td>
+            <td>{{ s.units_per_pallet }}</td>
+            <td>{% if s.whole_cartons %}<span class="badge badge-green">całe kartony</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="text-sm text-muted" style="margin-top:8px">Kliknij wymiary kartonu, aby zobaczyć układ w trybie „Sprawdź". „Całe kartony" = mediana wydań dzieli się bez reszty przez szt./karton.</div>
+    </div>
+    {% else %}
+    <div class="card" style="padding:24px;text-align:center;color:var(--gray-500)">Wpisz wymiary jednostki bazowej i kliknij „Dobierz opakowanie".</div>
+    {% endif %}
+  {% elif result and result.ok %}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <!-- Layout SVG -->
+      <div class="card" style="padding:16px">
+        <div style="font-weight:700;margin-bottom:8px">Układ warstwy — {{ result.per_layer }} kart. ({{ result.best_name }})</div>
+        <svg width="100%" viewBox="{{ result.vb }}" style="background:var(--surface);border:1px solid var(--gray-200);border-radius:8px">
+          <!-- tolerance zone -->
+          <rect x="0" y="0" width="{{ result.frame_w }}" height="{{ result.frame_h }}" fill="none" stroke="#10b981" stroke-width="0.6" stroke-dasharray="3 2"/>
+          <!-- real pallet -->
+          <rect x="0" y="0" width="{{ result.PL }}" height="{{ result.PW }}" fill="var(--gray-100)" stroke="#93c5fd" stroke-width="1"/>
+          {% for p in result.placements %}
+          <rect x="{{ p.x }}" y="{{ p.y }}" width="{{ p.dx }}" height="{{ p.dy }}"
+                fill="{% if p.rot %}#fed7aa{% else %}#bfdbfe{% endif %}"
+                stroke="{% if p.rot %}#f97316{% else %}#3b82f6{% endif %}" stroke-width="0.5"/>
+          {% endfor %}
+        </svg>
+        <div class="text-sm text-muted" style="margin-top:6px">Niebieski = wzdłuż · pomarańcz = obrócony · zielona przerywana = dozwolony nawis</div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:14px">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Wypełnienie objętości</span><strong style="color:var(--green)">{{ result.fill_volume }}%</strong></div>
+          <div style="height:9px;background:var(--gray-200);border-radius:5px;overflow:hidden"><div style="height:100%;width:{% if result.fill_volume > 100 %}100{% else %}{{ result.fill_volume }}{% endif %}%;background:#16a34a"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Wykorzystanie podstawy</span><strong style="color:#2563eb">{{ result.base_pct }}%</strong></div>
+          <div style="height:9px;background:var(--gray-200);border-radius:5px;overflow:hidden"><div style="height:100%;width:{% if result.base_pct > 100 %}100{% else %}{{ result.base_pct }}{% endif %}%;background:#2563eb"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>Wysokość wykorzystana</span><strong style="color:#7c3aed">{{ result.height_pct }}%</strong></div>
+          <div style="height:9px;background:var(--gray-200);border-radius:5px;overflow:hidden"><div style="height:100%;width:{{ result.height_pct }}%;background:#7c3aed"></div></div>
+        </div>
+        <hr style="border:none;border-top:1px solid var(--gray-200);margin:4px 0">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
+          <div>Kartonów / warstwa<br><strong style="font-size:18px">{{ result.per_layer }}</strong></div>
+          <div>Warstw<br><strong style="font-size:18px">{{ result.layers }}</strong></div>
+          <div>Kartonów / paleta<br><strong style="font-size:18px;color:#0d9488">{{ result.cartons_per_pallet }}</strong></div>
+          <div>Waga / paleta<br><strong style="font-size:18px">{{ result.weight_per_pallet }} kg</strong></div>
+        </div>
+        {% if result.overhang_x or result.overhang_y %}
+        <div style="background:var(--yellow-light);border:1px solid #92400e;border-radius:8px;padding:8px 10px;font-size:12px;color:var(--yellow-dark)">
+          {% icon "triangle-alert" %} Nawis poza paletę: {{ result.overhang_x }} cm (dł.) × {{ result.overhang_y }} cm (szer.) — w granicach tolerancji {{ result.tol }} cm
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  {% elif result %}
+    <div class="card" style="padding:24px;text-align:center;color:var(--red)">Karton nie mieści się na palecie (nawet z tolerancją). Zmniejsz wymiary kartonu lub zwiększ tolerancję.</div>
+  {% endif %}
+  </div>
+</div>
+
+<script>
+(function () {
+  const heightsEl = document.getElementById('loc_heights');
+  const sel = document.getElementById('id_location');
+  const mh = document.getElementById('id_max_height_total');
+  if (!heightsEl || !sel || !mh) return;
+  const LOC_H = JSON.parse(heightsEl.textContent);
+  sel.addEventListener('change', function () {
+    const h = LOC_H[this.value];
+    if (h) mh.value = h;
+  });
+})();
+// Picking a product auto-fills the base-unit dimensions.
+(function () {
+  const el = document.getElementById('prod_dims');
+  const sel = document.getElementById('id_product');
+  if (!el || !sel) return;
+  const DIMS = JSON.parse(el.textContent);
+  sel.addEventListener('change', function () {
+    const d = DIMS[this.value];
+    if (!d) return;
+    const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+    set('id_unit_l', d[0]); set('id_unit_w', d[1]); set('id_unit_h', d[2]);
+  });
+})();
+</script>
+{% endblock %}

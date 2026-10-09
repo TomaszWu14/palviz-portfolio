@@ -1,0 +1,20 @@
+{% extends "ui/base.html" %}
+{% block title %}Usuń lokalizację — {{ app_name }}{% endblock %}
+{% block nav_locations %}topnav__link--active{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header__title">Usuń lokalizację</div>
+</div>
+<div class="card" style="max-width:480px">
+  <div class="card-body">
+    <p style="margin-bottom:16px">Czy na pewno chcesz usunąć lokalizację <strong>{{ loc.name }}</strong>?</p>
+    <div style="display:flex;gap:10px">
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary" style="background:var(--red)">Usuń</button>
+      </form>
+      <a href="{% url 'ui:planner_locations' %}" class="btn btn-secondary">Anuluj</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

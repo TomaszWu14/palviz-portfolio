@@ -1,0 +1,48 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}ZARIA — nadpisania użytkowników — {{ app_name }}{% endblock %}
+{% block content %}
+<nav class="breadcrumb"><a href="{% url 'ui:admin_zaria_panel' %}">ZARIA</a><span class="breadcrumb__sep">›</span><span>Nadpisania per użytkownik</span></nav>
+<div class="page-header"><div><div class="page-header__title">Nadpisania dostępu per użytkownik</div>
+  <div class="page-header__sub">Wymuś dostęp albo zablokuj konkretny model dla jednego loginu — ponad siatkę ról.</div></div></div>
+
+<div class="card" style="padding:16px;margin-bottom:16px">
+  <form method="get" style="display:flex;gap:10px;align-items:flex-end">
+    <div>
+      <label style="display:block;font-size:12px;font-weight:600">Użytkownik</label>
+      <select aria-label="Użytkownik" name="user_id" onchange="this.form.submit()">
+        <option value="">— wybierz —</option>
+        {% for u in users %}<option value="{{ u.pk }}" {% if selected.pk == u.pk %}selected{% endif %}>{{ u.username }}</option>{% endfor %}
+      </select>
+    </div>
+  </form>
+</div>
+
+{% if selected %}
+<div class="card" style="padding:16px">
+  <div style="font-weight:700;margin-bottom:10px">{{ selected.username }}</div>
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="user_id" value="{{ selected.pk }}">
+    <table class="table">
+      <thead><tr><th>Model</th><th>Dostęp</th></tr></thead>
+      <tbody>
+      {% for m in models %}
+        <tr>
+          <td>{{ m.display_name }}</td>
+          <td>
+            <select name="m_{{ m.pk }}">
+              <option value="inherit" {% if m.pk not in overrides %}selected{% endif %}>Dziedzicz (wg roli)</option>
+              <option value="allow" {% if overrides|get_item:m.pk == True %}selected{% endif %}>Dostęp ✓</option>
+              <option value="deny" {% if overrides|get_item:m.pk == False %}selected{% endif %}>Blokada ✕</option>
+            </select>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div style="margin-top:12px"><button type="submit" class="btn btn-primary">Zapisz</button></div>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

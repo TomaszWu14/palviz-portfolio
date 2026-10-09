@@ -1,0 +1,93 @@
+{% extends "ui/base.html" %}
+{% load palviz_extras %}
+{% block title %}Szerokości alej — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+
+{% block extra_head %}
+<style>
+  .aisle-table input[type=number] { width: 90px; padding: 5px 8px; font-size: 12px; }
+  .aisle-table input[type=text]   { width: 100%; padding: 5px 8px; font-size: 12px; }
+  .aisle-table td { vertical-align: middle; }
+  .aisle-row:hover td { background: #fafbff; }
+  .angle-btns { display: inline-flex; gap: 2px; margin-left: 4px; vertical-align: middle; }
+  .angle-btns button {
+    width: 22px; height: 22px; padding: 0; line-height: 1;
+    border: 1px solid var(--gray-300); background: var(--surface);
+    border-radius: 4px; cursor: pointer; font-size: 12px; color: var(--gray-600);
+  }
+  .angle-btns button:hover { background: var(--blue-light); color: var(--blue-mid); border-color: var(--blue); }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+  <a href="{% url 'ui:warehouse_map' %}">Magazyn 3D</a>
+  <span class="breadcrumb__sep">›</span>
+  <a href="{% url 'ui:warehouse_map_detail' snapshot.pk %}">{{ snapshot.name|default:snapshot.pk }}</a>
+  <span class="breadcrumb__sep">›</span>
+  <span>Szerokości alej</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Szerokości korytarzy — alej po alej</div>
+    <div class="page-header__sub">Ustaw szerokość korytarza [m] dla każdej alei. Puste pole = domyślny rozstaw jak dotychczas. Layout: <strong>{{ active_layout.name }}</strong>.</div>
+  </div>
+  <div class="page-header__actions">
+    <a href="{% url 'ui:warehouse_map_detail' snapshot.pk %}" class="btn btn-secondary">Wróć do mapy 3D</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-header__title">Aleje snapshotu</span>
+    <span class="text-sm text-muted">{{ rows|length }} alej</span>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    <div class="table-wrap">
+      <table class="table aisle-table">
+        <thead>
+          <tr><th>Aleja</th><th>Szerokość korytarza [m]</th><th>Kąt [°]</th><th>Uwagi</th></tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr class="aisle-row">
+            <td><span class="badge badge-blue">{{ r.aisle }}</span></td>
+            <td><input type="number" name="width_{{ r.aisle }}" value="{{ r.width_m }}" step="0.1" min="0" placeholder="domyślnie"></td>
+            <td>
+              <input type="number" name="angle_{{ r.aisle }}" value="{{ r.angle_deg }}" step="5" min="-180" max="180" style="width:64px">
+              <span class="angle-btns">
+                <button type="button" data-set="0" title="Równolegle (0°)">{% icon "arrow-left-right" cls="icon--em" %}</button>
+                <button type="button" data-set="90" title="Prostopadle (90°)">{% icon "arrow-up-down" cls="icon--em" %}</button>
+              </span>
+            </td>
+            <td><input type="text" name="notes_{{ r.aisle }}" value="{{ r.notes }}" placeholder="—"></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-muted" style="padding:16px">Snapshot nie zawiera rozpoznanych alej.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer" style="display:flex;gap:10px;align-items:center">
+      <button type="submit" class="btn btn-primary">Zapisz konfigurację</button>
+      <span class="text-sm text-muted" style="margin-left:auto">Kąt 90° = skrzydło prostopadłe obok głównego bloku (np. regały 55-82)</span>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // ⇔ 0° (równolegle) / ⇕ 90° (prostopadle) ustawiają kąt alei; zapis istniejącym POST-em.
+  document.querySelectorAll('.angle-btns').forEach(function (box) {
+    box.addEventListener('click', function (e) {
+      var btn = e.target.closest('button');
+      if (!btn) return;
+      var input = box.parentElement.querySelector('input[type=number]');
+      if (input) input.value = btn.dataset.set;
+    });
+  });
+</script>
+{% endblock %}

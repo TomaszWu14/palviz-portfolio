@@ -1,0 +1,354 @@
+{% extends "ui/base.html" %}{% load palviz_extras %}
+{% load static %}
+{% block title %}Magazyn 3D — {{ app_name }}{% endblock %}
+{% block nav_warehouse_map %}topnav__link--active{% endblock %}
+{% block extra_head %}
+<style>
+  .wh-tabs { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+  .wh-tabs a { padding:9px 18px; border-radius:9px; text-decoration:none; font-weight:700;
+               font-size:14px; color:var(--gray-700); border:1px solid var(--gray-200); background:var(--surface); display:inline-flex; align-items:center; gap:8px; }
+  .wh-tabs a.active { background:var(--green-solid); border-color:var(--green-solid); color:#fff; }
+  .wh-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; margin-bottom:20px; }
+  .wh-link { display:block; padding:16px; border:1px solid var(--gray-200); border-radius:10px;
+             text-decoration:none; background:var(--surface); transition:border-color .12s; }
+  .wh-link:hover { border-color:var(--green-solid); }
+  .wh-link__t { font-weight:700; font-size:14px; color:var(--gray-900); display:flex; align-items:center; gap:8px; }
+  .wh-link__d { font-size:12px; color:var(--gray-500); margin-top:5px; line-height:1.4; }
+  .wh-step { position:relative; padding-left:44px; }
+  .wh-step__n { position:absolute; left:14px; top:14px; width:22px; height:22px; border-radius:50%;
+                background:var(--green-solid); color:#fff; font-size:12px; font-weight:700;
+                display:flex; align-items:center; justify-content:center; }
+  .wh-step--off { opacity:.55; pointer-events:none; }
+  .wh-sec__h { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+               color:var(--gray-400); margin:4px 0 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header__title">Magazyn 3D</div>
+    <div class="page-header__sub">Lokalizacje, widok 3D i kompletacja — wszystko w jednym miejscu</div>
+  </div>
+</div>
+
+<nav class="wh-tabs">
+  <a href="#lokalizacje" data-whtab="lokalizacje">{% icon "map-pin" %} Lokalizacje</a>
+  <a href="#widok3d" data-whtab="widok3d">{% icon "factory" %} Widok 3D</a>
+  <a href="#kompletacja" data-whtab="kompletacja">{% icon "footprints" %} Kompletacja i analiza</a>
+  <a href="#projektowanie" data-whtab="projektowanie">{% icon "warehouse" %} Projektowanie magazynu</a>
+</nav>
+
+<!-- ══ LOKALIZACJE ══════════════════════════════════════════════════════════ -->
+<section data-whsec="lokalizacje">
+  <div class="wh-sec__h">Definiowanie lokalizacji, wymiarów i typów</div>
+  <div class="wh-grid">
+    <a class="wh-link" href="{% url 'ui:planner_locations' %}">
+      <div class="wh-link__t">{% icon "ruler" %} Typy lokalizacji</div>
+      <div class="wh-link__d">Definicje typów miejsc + wymiary; symulacja dopasowania kartonu.</div>
+    </a>
+    <a class="wh-link" href="{% url 'ui:location_master_browse' %}">
+      <div class="wh-link__t">{% icon "folder" %} Master data lokalizacji</div>
+      <div class="wh-link__d">Przeglądaj / filtruj / eksportuj lokalizacje z wymiarami i pojemnością.</div>
+    </a>
+    <a class="wh-link" href="{% url 'ui:warehouse_rack_type_list' %}">
+      <div class="wh-link__t">{% icon "blocks" %} Typy regałów</div>
+      <div class="wh-link__d">Wymiary regału, wysokości i kolumny per poziom.</div>
+    </a>
+  </div>
+
+  <!-- Master data upload -->
+  <div class="card" style="padding:24px;max-width:560px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:4px">
+      Wgraj master data lokalizacji
+      {% if active_master %}
+      <span style="font-size:11px;font-weight:400;color:var(--ok-fg);margin-left:8px">
+        {% icon "check" %} Aktywny: {{ active_master.name }} ({{ active_master.location_count }} lok.)</span>
+      {% else %}
+      <span style="font-size:11px;font-weight:400;color:var(--warn-fg);margin-left:8px">{% icon "triangle-alert" %} Brak danych</span>
+      {% endif %}
+    </div>
+    <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px">
+      Excel: <b>Adres lokalizacji · Poziom · Typ magazynu · Wysokość [mm] · Max objętość [m³] · Max waga [kg]</b>
+    </div>
+    <form method="post" action="{% url 'ui:warehouse_master_upload' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <div style="flex:1">
+          <label style="font-size:12px;font-weight:600;color:var(--gray-700)">Nazwa</label>
+          <input aria-label="Nazwa" type="text" name="name" placeholder="np. Master data V1"
+                 style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+        </div>
+        <div><input type="file" name="file" aria-label="Plik Excel" accept=".xlsx,.xls" required
+               style="display:block;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"></div>
+        <button type="submit" class="btn btn-secondary" style="white-space:nowrap">Wgraj</button>
+      </div>
+    </form>
+    {% if masters %}
+    <div style="margin-top:14px;font-size:12px;color:var(--gray-700)">
+      {% for m in masters %}
+      <span style="margin-right:12px">
+        <b>{{ m.name }}</b> ({{ m.location_count }} lok., {{ m.uploaded_at|date:"d.m.Y" }})
+        {% if m.is_active %}<span style="color:var(--ok-fg);font-weight:700">aktywny</span>{% endif %}
+        <form method="post" action="{% url 'ui:warehouse_master_delete' m.pk %}" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-ghost btn-sm text-danger"
+                  data-confirm="Usunąć master data?"  style="padding:0 4px">Usuń</button>
+        </form>
+      </span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Combined upload -->
+  <div class="card" style="padding:24px;max-width:560px;margin-bottom:16px;border:2px solid #1E40AF">
+    <div style="font-size:13px;font-weight:700;color:#1E40AF;margin-bottom:4px">
+      Wgraj plik kombinowany (lokalizacje + master + typy regałów)
+    </div>
+    <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px">
+      Jeden plik xlsx/csv: <b>location_code</b> · warehouse_type · height_mm · width_mm · depth_mm · max_weight_kg · max_volume_m3 · level_heights · level_cols.
+      <a href="{% url 'ui:warehouse_combined_template' %}" style="color:#1E40AF;font-weight:600;margin-left:8px">&#8595; Szablon xlsx</a>
+    </div>
+    {% if active_layout %}
+    <form method="post" action="{% url 'ui:warehouse_combined_upload' active_layout.pk %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <div><input type="file" name="file" aria-label="Plik Excel lub CSV" accept=".xlsx,.xls,.csv" required
+               style="display:block;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"></div>
+        <button type="submit" class="btn btn-primary" style="white-space:nowrap;background:#1E40AF">Wgraj plik kombinowany</button>
+      </div>
+    </form>
+    {% else %}
+    <div style="color:var(--warn-fg);font-size:12px">{% icon "triangle-alert" %} Brak aktywnego layoutu — wgraj układ w zakładce „Widok 3D".</div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ══ WIDOK 3D ═════════════════════════════════════════════════════════════ -->
+<section data-whsec="widok3d">
+  <div class="wh-sec__h">Budowa i podgląd widoku 3D magazynu</div>
+  <div class="page-header__actions" style="margin-bottom:20px;flex-wrap:wrap">
+    <a href="{% url 'ui:warehouse_editor3d' %}" class="btn btn-primary">Podgląd 3D regałów</a>
+    <a href="{% url 'ui:warehouse_editor' %}" class="btn btn-secondary">Edytor 2D</a>
+    <a href="{% url 'ui:warehouse_rack_generator' %}" class="btn btn-secondary">Generator regału</a>
+    <a href="{% url 'ui:warehouse_model_list' %}" class="btn btn-secondary">Model regałów</a>
+    <form method="post" action="{% url 'ui:warehouse_demo_seed' %}" style="display:inline"
+          data-confirm="Utworzyć przykładowy magazyn demo (3 aleje)? Stanie się aktywnym układem.">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-secondary" style="background:#ecfdf5;border-color:#a7f3d0;color:#047857">Magazyn demo (1 klik)</button>
+    </form>
+  </div>
+
+  <!-- Layout card -->
+  <div class="card" style="padding:24px;max-width:560px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:4px">
+      Fizyczny układ magazynu
+      {% if active_layout %}
+      <span style="font-size:11px;font-weight:400;color:var(--ok-fg);margin-left:8px">{% icon "check" %} Aktywny: {{ active_layout.name }} ({{ active_layout.location_count }} lok.)</span>
+      {% else %}
+      <span style="font-size:11px;font-weight:400;color:var(--warn-fg);margin-left:8px">{% icon "triangle-alert" %} Brak layoutu</span>
+      {% endif %}
+    </div>
+    <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px">
+      Wgraj arkusz MAP z pliku Excel — 3D użyje fizycznych współrzędnych z mapy.
+    </div>
+    <form method="post" action="{% url 'ui:warehouse_layout_seed' %}" style="margin-bottom:12px">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary" style="white-space:nowrap"
+              title="Wczytuje wbudowany układ magazynu B0 i ustawia go jako aktywny">Wczytaj wzorcowy układ B0</button>
+      <span style="font-size:12px;color:var(--gray-400);margin-left:8px">— gotowa mapa B0 (ustawia jako aktywny)</span>
+    </form>
+    <form method="post" action="{% url 'ui:warehouse_layout_upload' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <div style="flex:1">
+          <label style="font-size:12px;font-weight:600;color:var(--gray-700)">Nazwa</label>
+          <input aria-label="Nazwa" type="text" name="name" placeholder="np. Layout V4"
+                 style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;font-weight:600;color:var(--gray-700)">Arkusz</label>
+          <input type="text" name="sheet" aria-label="Nazwa arkusza" value="MAP (2)"
+                 style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+        </div>
+        <div><input type="file" name="file" aria-label="Plik Excel" accept=".xlsx,.xls" required
+               style="display:block;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"></div>
+        <button type="submit" class="btn btn-secondary" style="white-space:nowrap">Wgraj layout</button>
+      </div>
+    </form>
+    {% if layouts %}
+    <div style="margin-top:14px;font-size:12px;color:var(--gray-700)">
+      {% for l in layouts %}
+      <span style="margin-right:12px">
+        <b>{{ l.name }}</b> ({{ l.location_count }} lok., {{ l.uploaded_at|date:"d.m.Y" }})
+        {% if l.is_active %}<span style="color:var(--ok-fg);font-weight:700">aktywny</span>{% endif %}
+        <form method="post" action="{% url 'ui:warehouse_layout_delete' l.pk %}" style="display:inline">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-ghost btn-sm text-danger"
+                  data-confirm="Usunąć layout?"  style="padding:0 4px">Usuń</button>
+        </form>
+      </span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Layout from list -->
+  <div class="card" style="padding:24px;max-width:560px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:4px">Wgraj układ z listy lokalizacji</div>
+    <div style="font-size:12px;color:var(--gray-400);margin-bottom:16px">
+      Excel: <b>Lokalizacja · Przej. w miej. sk. · Stos miejsca skład. · Poziom miejsca skł.</b> — np. eksport z SAP po alei.
+    </div>
+    <form method="post" action="{% url 'ui:warehouse_layout_list_upload' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <div style="flex:1">
+          <label style="font-size:12px;font-weight:600;color:var(--gray-700)">Nazwa</label>
+          <input aria-label="Nazwa" type="text" name="name" placeholder="np. Aleja 01"
+                 style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+        </div>
+        <div><input type="file" name="file" aria-label="Plik Excel" accept=".xlsx,.xls" required
+               style="display:block;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px"></div>
+        <button type="submit" class="btn btn-secondary" style="white-space:nowrap">Wgraj układ</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Snapshot upload -->
+  <div class="card" style="padding:24px;max-width:560px;margin-bottom:24px">
+    <div style="font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:16px">Wgraj nowy stan (snapshot z WMS)</div>
+    <form method="post" action="{% url 'ui:warehouse_map_upload' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--gray-700)">Nazwa (opcjonalna)</label>
+          <input aria-label="Nazwa (opcjonalna)" type="text" name="name" placeholder="np. Stan na 24.05.2026 poranek"
+                 style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--gray-700)">Plik Excel lub CSV</label>
+          <input type="file" name="file" aria-label="Plik Excel lub CSV" accept=".xlsx,.xls,.csv" required
+                 style="display:block;width:100%;margin-top:4px;padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px">
+          <div style="font-size:11px;color:var(--gray-400);margin-top:4px">
+            Kolumny: <b>location</b> · <b>product</b> · <b>quantity</b> (rozpoznawane automatycznie PL/EN).
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="align-self:flex-start">Wgraj i wizualizuj →</button>
+      </div>
+    </form>
+  </div>
+
+  {% if snapshots %}
+  <div class="card">
+    <div style="padding:16px 20px;font-size:13px;font-weight:700;color:var(--gray-900);border-bottom:1px solid var(--gray-100)">Poprzednie snapshoty</div>
+    <table class="table">
+      <thead><tr><th>Nazwa</th><th>Data</th><th>Lokalizacji</th><th></th></tr></thead>
+      <tbody>
+      {% for s in snapshots %}
+      <tr>
+        <td><a href="{% url 'ui:warehouse_map_detail' s.pk %}" style="font-weight:600;color:var(--blue-mid)">{{ s.name }}</a></td>
+        <td>{{ s.uploaded_at|date:"d.m.Y H:i" }}</td>
+        <td>{{ s.row_count }}</td>
+        <td>
+          <form method="post" action="{% url 'ui:warehouse_map_delete' s.pk %}" style="display:inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-sm text-danger"
+                    data-confirm="Usunąć ten snapshot?" >Usuń</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+
+<!-- ══ KOMPLETACJA I ANALIZA ════════════════════════════════════════════════ -->
+<section data-whsec="kompletacja">
+  <div class="wh-sec__h">Ścieżki kompletacji, wyszukiwanie i analiza</div>
+  <div class="wh-grid">
+    <a class="wh-link" href="{% url 'ui:warehouse_where_is' %}">
+      <div class="wh-link__t">{% icon "map-pin" %} Gdzie jest produkt?</div>
+      <div class="wh-link__d">Znajdź lokalizacje stocku po indeksie.</div>
+    </a>
+    <a class="wh-link" href="{% url 'ui:warehouse_picking_route' %}">
+      <div class="wh-link__t">{% icon "footprints" %} Trasa kompletacji</div>
+      <div class="wh-link__d">Serpentynowa trasa z listy lokalizacji.</div>
+    </a>
+    <a class="wh-link" href="{% url 'ui:slotting_analysis' %}">
+      <div class="wh-link__t">{% icon "chart-column" %} Slotting &amp; symulacja</div>
+      <div class="wh-link__d">Analiza ABC/XYZ + what-if trasy (digital twin).</div>
+    </a>
+    <a class="wh-link" href="{% url 'ui:heatmap_list' %}">
+      <div class="wh-link__t">{% icon "flame" %} Heatmapa aktywności</div>
+      <div class="wh-link__d">Mapa cieplna pobrań z aktywności pickerów.</div>
+    </a>
+    {% if can_write_products %}<a class="wh-link" href="{% url 'ui:ewm_tasks_list' %}">
+      <div class="wh-link__t">{% icon "forklift" %} Zadania magazynowe EWM</div>
+      <div class="wh-link__d">Import WT z /SCWM/MON — realne ruchy wózków w animacji.</div>
+    </a>{% endif %}
+    <a class="wh-link" href="{% url 'ui:planner_occupancy' %}">
+      <div class="wh-link__t">{% icon "trending-up" %} Zajętość stref</div>
+      <div class="wh-link__d">KPI zajętości per strefa + eksport CSV.</div>
+    </a>
+  </div>
+</section>
+
+<!-- ══ PROJEKTOWANIE MAGAZYNU (plan 2026-10-02-model-nowego-magazynu) ═══════════ -->
+<section data-whsec="projektowanie">
+  <div class="wh-sec__h">Nowy magazyn od zera — kroki po kolei</div>
+  {% if not design_batch %}<p class="text-muted text-sm" style="margin:-4px 0 12px">Kroki 3–7 liczą się z zadań magazynowych EWM — najpierw zaimportuj plik w kroku 2 (eksport z /SCWM/MON albo plik demonstracyjny).</p>{% endif %}
+  <div class="wh-grid">
+    <a class="wh-link wh-step" href="{% url 'ui:warehouse_model_generator' %}"><span class="wh-step__n">1</span>
+      <div class="wh-link__t">{% icon "warehouse" %} Generator hali</div>
+      <div class="wh-link__d">Pojemność, wysokość, doki → układ hali z widokiem 3D i animacją (AGV, kombi, EPT, kontener).</div></a>
+    <a class="wh-link wh-step" href="{% url 'ui:ewm_tasks_list' %}"><span class="wh-step__n">2</span>
+      <div class="wh-link__t">{% icon "file-spreadsheet" %} Import zadań EWM</div>
+      <div class="wh-link__d">Historia ruchów (WT) — wsad do dnia projektowego, kalibracji, prognozy i symulacji.</div></a>
+    {% if design_batch %}
+    <a class="wh-link wh-step" href="{% url 'ui:ewm_tasks_profile' design_batch.pk %}"><span class="wh-step__n">3</span>
+      <div class="wh-link__t">{% icon "chart-column" %} Dzień projektowy</div>
+      <div class="wh-link__d">P90/P95/P99, godzina szczytu, ABC/XYZ — import „{{ design_batch.name }}”.</div></a>
+    <a class="wh-link wh-step" href="{% url 'ui:ewm_tasks_calibration' design_batch.pk %}"><span class="wh-step__n">4</span>
+      <div class="wh-link__t">{% icon "sliders-horizontal" %} Kalibracja na obecnej hali</div>
+      <div class="wh-link__d">Realne tempo wózków i pickerów vs katalog → współczynniki do symulacji.</div></a>
+    <a class="wh-link wh-step" href="{% url 'ui:ewm_tasks_forecast' design_batch.pk %}"><span class="wh-step__n">5</span>
+      <div class="wh-link__t">{% icon "trending-up" %} Prognoza wzrostu</div>
+      <div class="wh-link__d">Trend z historii → mnożnik P50/P90 na horyzont lat.</div></a>
+    <a class="wh-link wh-step" href="{% url 'ui:ewm_tasks_simulate' design_batch.pk %}"><span class="wh-step__n">6</span>
+      <div class="wh-link__t">{% icon "forklift" %} Symulacja dnia</div>
+      <div class="wh-link__d">Flota AGV / kombi / EPT, czekanie, godziny — z animacją wybranej godziny w 3D.</div></a>
+    <a class="wh-link wh-step" href="{% url 'ui:ewm_tasks_compare' design_batch.pk %}"><span class="wh-step__n">7</span>
+      <div class="wh-link__t">{% icon "layers" %} Porównanie wariantów</div>
+      <div class="wh-link__d">Do 4 hal obok siebie — pojemność, wymagana flota, droga, czekanie.</div></a>
+    {% else %}
+    {% for n, t, d in design_steps_off %}<div class="wh-link wh-step wh-step--off" aria-disabled="true"><span class="wh-step__n">{{ n }}</span>
+      <div class="wh-link__t">{{ t }}</div><div class="wh-link__d">{{ d }}</div></div>{% endfor %}
+    {% endif %}
+  </div>
+  <div class="wh-sec__h">Warianty</div>
+  <div class="wh-grid">
+    <a class="wh-link" href="{% url 'ui:warehouse_model_list' %}">
+      <div class="wh-link__t">{% icon "copy" %} Modele hali</div>
+      <div class="wh-link__d">Widok 3D modelu → „Kopiuj jako wariant” i „Edycja stref”.</div></a>
+  </div>
+</section>
+
+<script>
+(function(){
+  var tabs = document.querySelectorAll('.wh-tabs a[data-whtab]');
+  var secs = document.querySelectorAll('section[data-whsec]');
+  function show(t){
+    var found = false;
+    secs.forEach(function(s){ var on = s.dataset.whsec === t; s.style.display = on ? '' : 'none'; if(on) found = true; });
+    if(!found){ t = 'widok3d'; secs.forEach(function(s){ s.style.display = s.dataset.whsec===t ? '' : 'none'; }); }
+    tabs.forEach(function(a){ a.classList.toggle('active', a.dataset.whtab === t); });
+  }
+  tabs.forEach(function(a){ a.addEventListener('click', function(e){ e.preventDefault();
+    history.replaceState(null,'','#'+a.dataset.whtab); show(a.dataset.whtab); }); });
+  show((location.hash || '#widok3d').replace('#',''));
+})();
+</script>
+{% endblock %}

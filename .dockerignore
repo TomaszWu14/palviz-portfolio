@@ -1,0 +1,43 @@
+# Kontekst buildu = tylko to, co trafia do obrazu (Dockerfile kopiuje: requirements.txt,
+# palletizer/, web/, docker-entrypoint.sh). Reszta tylko spowalnia wysyłkę kontekstu.
+.git
+.github
+.claude
+.planning
+.scratch
+.githooks
+graphify-out
+docs
+plans
+tests
+android
+tools
+scripts
+excel_templates
+data
+output
+*.md
+*.bat
+.env
+.env.*
+!.env.example
+
+# Środowiska, cache, artefakty lokalne
+.venv
+venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+.coverage
+.coverage.*
+htmlcov
+**/node_modules
+*.sqlite3
+web/staticfiles
+web/media
+web/ui/static/ui/vendor/*
+!web/ui/static/ui/vendor/.gitignore
+
+# Testy aplikacji i narzędzia testowe nie są potrzebne w obrazie produkcyjnym
+web/*/tests
+web/testkit

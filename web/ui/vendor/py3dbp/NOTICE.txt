@@ -1,0 +1,8 @@
+Vendored third-party package.
+
+py3dbp 1.1.2 — 3D bin packing
+Source: https://pypi.org/project/py3dbp/ (https://github.com/enzoruiz/3dbinpacking)
+License: MIT
+
+Vendored into the repo (pure-Python, stdlib only) because the upstream setup.py
+fails to build a wheel with modern setuptools. No source changes were made.
